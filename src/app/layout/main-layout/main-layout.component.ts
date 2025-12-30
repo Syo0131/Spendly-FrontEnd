@@ -1,0 +1,246 @@
+import { Component } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { SidebarComponent } from '../sidebar/sidebar.component';
+import { TranslationService } from '../../core/services/translation.service';
+import { ThemeService } from '../../core/services/theme.service';
+
+@Component({
+  selector: 'app-main-layout',
+  standalone: true,
+  imports: [RouterOutlet, SidebarComponent, CommonModule, RouterLink, RouterLinkActive],
+  template: `
+    <div
+      class="min-h-screen bg-gray-50 dark:bg-slate-900 flex text-slate-900 dark:text-white font-sans relative transition-colors duration-300"
+    >
+      <!-- Desktop Sidebar -->
+      <app-sidebar></app-sidebar>
+
+      <!-- Main Content Area -->
+      <!-- Main Content Area -->
+      <main class="flex-1 lg:ml-64 min-h-screen relative z-0 overflow-y-auto w-full pb-20 lg:pb-0">
+        <!-- Desktop Tools (Floating Top-Right) -->
+        <div class="hidden lg:flex absolute top-6 right-8 z-30 space-x-3">
+          <!-- Theme Toggle -->
+          <button
+            (click)="themeService.toggleTheme()"
+            class="flex items-center justify-center w-10 h-10 rounded-full bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 border border-gray-200 dark:border-white/5 backdrop-blur-md transition-all text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white shadow-sm"
+            [title]="themeService.darkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+          >
+            <span class="material-icons-outlined text-xl">{{
+              themeService.darkMode() ? 'light_mode' : 'dark_mode'
+            }}</span>
+          </button>
+
+          <!-- Lang Switcher -->
+          <button
+            (click)="ts.toggleLang()"
+            class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 border border-gray-200 dark:border-white/5 backdrop-blur-md transition-all text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white group shadow-sm"
+          >
+            <span
+              class="material-icons-outlined text-base group-hover:text-primary transition-colors"
+              >translate</span
+            >
+            <span>{{ ts.currentLang() === 'es' ? 'ES' : 'EN' }}</span>
+          </button>
+        </div>
+
+        <!-- Topbar for Mobile -->
+        <header
+          class="lg:hidden h-14 flex items-center justify-between px-4 border-b border-gray-200 dark:border-white/5 bg-white/80 dark:bg-slate-900/50 backdrop-blur sticky top-0 z-30 transition-colors duration-300"
+        >
+          <span
+            class="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary"
+            >Spendly</span
+          >
+          <div class="flex items-center space-x-2">
+            <button
+              (click)="themeService.toggleTheme()"
+              class="p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors"
+            >
+              <span class="material-icons-outlined text-xl">{{
+                themeService.darkMode() ? 'light_mode' : 'dark_mode'
+              }}</span>
+            </button>
+            <button
+              (click)="ts.toggleLang()"
+              class="p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors"
+            >
+              <span class="text-xs font-bold border border-current rounded px-1">{{
+                ts.currentLang() === 'es' ? 'ES' : 'EN'
+              }}</span>
+            </button>
+          </div>
+        </header>
+
+        <div class="p-4 lg:p-8 max-w-7xl mx-auto pt-16 lg:pt-8">
+          <router-outlet></router-outlet>
+        </div>
+      </main>
+
+      <!-- Bottom Navigation (Mobile Only) -->
+      <div
+        class="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 z-50 grid grid-cols-6 items-center px-1 transition-colors duration-300"
+      >
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="text-primary"
+          class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-gray-300 transition-colors"
+        >
+          <span class="material-icons-outlined text-2xl mb-0.5">dashboard</span>
+          <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
+            ts.t()('nav.dashboard')
+          }}</span>
+        </a>
+
+        <a
+          routerLink="/banks"
+          routerLinkActive="text-primary"
+          class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-gray-300 transition-colors"
+        >
+          <span class="material-icons-outlined text-2xl mb-0.5">account_balance</span>
+          <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
+            ts.t()('nav.banks')
+          }}</span>
+        </a>
+
+        <a
+          routerLink="/incomes"
+          routerLinkActive="text-teal-500 dark:text-teal-400"
+          class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-teal-500 dark:hover:text-gray-300 transition-colors"
+        >
+          <span class="material-icons-outlined text-2xl mb-0.5">trending_up</span>
+          <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
+            ts.t()('nav.incomes')
+          }}</span>
+        </a>
+
+        <a
+          routerLink="/expenses"
+          routerLinkActive="text-rose-500 dark:text-rose-400"
+          class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-rose-500 dark:hover:text-gray-300 transition-colors"
+        >
+          <span class="material-icons-outlined text-2xl mb-0.5">trending_down</span>
+          <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
+            ts.t()('nav.expenses')
+          }}</span>
+        </a>
+
+        <a
+          routerLink="/budgets"
+          routerLinkActive="text-primary"
+          class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-gray-300 transition-colors"
+        >
+          <span class="material-icons-outlined text-2xl mb-0.5">pie_chart</span>
+          <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
+            ts.t()('nav.budgets')
+          }}</span>
+        </a>
+
+        <!-- Menu Button (Replaces Settings) -->
+        <button
+          (click)="toggleMobileMenu()"
+          class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-gray-300 transition-colors"
+        >
+          <span class="material-icons-outlined text-2xl mb-0.5">menu</span>
+          <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
+            ts.t()('nav.menu')
+          }}</span>
+        </button>
+      </div>
+
+      <!-- Mobile Side Menu Drawer -->
+      <div
+        *ngIf="showMobileMenu"
+        class="fixed inset-0 z-[60] lg:hidden"
+        role="dialog"
+        aria-modal="true"
+      >
+        <!-- Backdrop -->
+        <div
+          class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+          (click)="closeMobileMenu()"
+        ></div>
+
+        <!-- Drawer -->
+        <div
+          class="absolute right-0 top-0 bottom-0 w-3/4 max-w-sm bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-300 transform flex flex-col"
+        >
+          <div
+            class="p-6 border-b border-gray-100 dark:border-white/5 flex justify-between items-center"
+          >
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+              {{ ts.t()('nav.menu') }}
+            </h2>
+            <button
+              (click)="closeMobileMenu()"
+              class="p-2 -mr-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+            >
+              <span class="material-icons-outlined">close</span>
+            </button>
+          </div>
+
+          <nav class="flex-1 overflow-y-auto p-4 space-y-2">
+            <!-- New Features -->
+            <a
+              routerLink="/goals"
+              (click)="closeMobileMenu()"
+              routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
+              class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+            >
+              <span class="material-icons-outlined mr-3">flag</span>
+              <span class="font-medium">{{ ts.t()('nav.goals') }}</span>
+            </a>
+
+            <a
+              routerLink="/reminders"
+              (click)="closeMobileMenu()"
+              routerLinkActive="bg-purple-50 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300"
+              class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+            >
+              <span class="material-icons-outlined mr-3">notifications</span>
+              <span class="font-medium">{{ ts.t()('nav.reminders') }}</span>
+            </a>
+
+            <a
+              routerLink="/recurring"
+              (click)="closeMobileMenu()"
+              routerLinkActive="bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300"
+              class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+            >
+              <span class="material-icons-outlined mr-3">replay</span>
+              <span class="font-medium">{{ ts.t()('nav.recurring') }}</span>
+            </a>
+
+            <div class="my-4 border-t border-gray-100 dark:border-white/5"></div>
+
+            <!-- Settings (Moved here) -->
+            <a
+              routerLink="/settings"
+              (click)="closeMobileMenu()"
+              routerLinkActive="bg-gray-100 text-gray-900 dark:bg-white/10 dark:text-white"
+              class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+            >
+              <span class="material-icons-outlined mr-3">settings</span>
+              <span class="font-medium">{{ ts.t()('nav.settings') }}</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [],
+})
+export class MainLayoutComponent {
+  showMobileMenu = false;
+
+  constructor(public ts: TranslationService, public themeService: ThemeService) {}
+
+  toggleMobileMenu() {
+    this.showMobileMenu = !this.showMobileMenu;
+  }
+
+  closeMobileMenu() {
+    this.showMobileMenu = false;
+  }
+}

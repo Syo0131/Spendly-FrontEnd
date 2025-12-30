@@ -13,6 +13,8 @@ RUN npm ci
 COPY . .
 
 # Build the Angular app for production
+ARG API_URL
+ENV API_URL=$API_URL
 RUN npm run build
 
 # Stage 2: Serve the application with Nginx

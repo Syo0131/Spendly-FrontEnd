@@ -16,7 +16,7 @@ const targetPath = isProduction
 // The content to write
 const envConfigFile = `export const environment = {
   production: ${isProduction},
-  apiUrl: '${process.env.API_URL}'
+  apiUrl: '${process.env.API_URL || 'https://backend.daybeldiaz.dev/api'}'
 };
 `;
 

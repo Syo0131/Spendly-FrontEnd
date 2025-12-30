@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { TranslationService } from '../../core/services/translation.service';
 import { ThemeService } from '../../core/services/theme.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -11,7 +12,7 @@ import { ThemeService } from '../../core/services/theme.service';
   imports: [RouterOutlet, SidebarComponent, CommonModule, RouterLink, RouterLinkActive],
   template: `
     <div
-      class="min-h-screen bg-gray-50 dark:bg-slate-900 flex text-slate-900 dark:text-white font-sans relative transition-colors duration-300"
+      class="min-h-screen bg-gray-50 dark:bg-slate-900 flex text-slate-900 dark:text-white font-sans relative transition-colors duration-300 overflow-x-hidden"
     >
       <!-- Desktop Sidebar -->
       <app-sidebar></app-sidebar>
@@ -214,7 +215,6 @@ import { ThemeService } from '../../core/services/theme.service';
 
             <div class="my-4 border-t border-gray-100 dark:border-white/5"></div>
 
-            <!-- Settings (Moved here) -->
             <a
               routerLink="/settings"
               (click)="closeMobileMenu()"
@@ -224,6 +224,15 @@ import { ThemeService } from '../../core/services/theme.service';
               <span class="material-icons-outlined mr-3">settings</span>
               <span class="font-medium">{{ ts.t()('nav.settings') }}</span>
             </a>
+
+            <!-- Logout Button -->
+            <button
+              (click)="authService.logout(); closeMobileMenu()"
+              class="w-full flex items-center px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors mt-4"
+            >
+              <span class="material-icons-outlined mr-3">logout</span>
+              <span class="font-medium">{{ ts.t()('nav.logout') || 'Logout' }}</span>
+            </button>
           </nav>
         </div>
       </div>
@@ -234,7 +243,11 @@ import { ThemeService } from '../../core/services/theme.service';
 export class MainLayoutComponent {
   showMobileMenu = false;
 
-  constructor(public ts: TranslationService, public themeService: ThemeService) {}
+  constructor(
+    public ts: TranslationService,
+    public themeService: ThemeService,
+    public authService: AuthService
+  ) {}
 
   toggleMobileMenu() {
     this.showMobileMenu = !this.showMobileMenu;

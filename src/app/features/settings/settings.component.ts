@@ -22,8 +22,10 @@ import { UpdateUserDto } from '../../core/models/api.models';
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
-          <p class="text-gray-500 dark:text-gray-400">Manage your account and preferences</p>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            {{ ts.t()('nav.settings') }}
+          </h1>
+          <p class="text-gray-500 dark:text-gray-400">{{ ts.t()('settings.profile.title') }}</p>
         </div>
       </div>
 
@@ -42,7 +44,7 @@ import { UpdateUserDto } from '../../core/models/api.models';
           class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2"
         >
           <span class="material-icons-outlined text-lg">{{ tab.icon }}</span>
-          {{ tab.label }}
+          {{ ts.t()('settings.tabs.' + tab.id) }}
         </button>
       </div>
 
@@ -62,7 +64,7 @@ import { UpdateUserDto } from '../../core/models/api.models';
               <h3 class="text-xl font-bold text-gray-900 dark:text-white">
                 {{ authService.currentUserStr() }}
               </h3>
-              <p class="text-sm text-gray-500">Personal Account</p>
+              <p class="text-sm text-gray-500">{{ ts.t()('settings.profile.title') }}</p>
             </div>
           </div>
 
@@ -70,7 +72,7 @@ import { UpdateUserDto } from '../../core/models/api.models';
             <div>
               <label
                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
-                >Full Name</label
+                >{{ ts.t()('settings.profile.name') }}</label
               >
               <input
                 formControlName="name"
@@ -83,7 +85,7 @@ import { UpdateUserDto } from '../../core/models/api.models';
             <div>
               <label
                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
-                >Email Address</label
+                >{{ ts.t()('settings.profile.email') }}</label
               >
               <input
                 formControlName="email"
@@ -96,7 +98,7 @@ import { UpdateUserDto } from '../../core/models/api.models';
             <div>
               <label
                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
-                >Username</label
+                >{{ ts.t()('settings.profile.username') }}</label
               >
               <input
                 formControlName="username"
@@ -115,7 +117,7 @@ import { UpdateUserDto } from '../../core/models/api.models';
                 <span *ngIf="isLoading()" class="material-icons-outlined animate-spin text-lg mr-2"
                   >sync</span
                 >
-                Save Changes
+                {{ ts.t()('settings.profile.save') }}
               </button>
             </div>
           </form>
@@ -223,9 +225,11 @@ import { UpdateUserDto } from '../../core/models/api.models';
                   <span class="material-icons-outlined">dark_mode</span>
                 </div>
                 <div>
-                  <p class="text-gray-900 dark:text-white font-medium">Dark Mode</p>
+                  <p class="text-gray-900 dark:text-white font-medium">
+                    {{ ts.t()('settings.pref.dark_mode') }}
+                  </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
-                    Reduce eye strain in low light
+                    {{ ts.t()('settings.pref.dark_desc') }}
                   </p>
                 </div>
               </div>
@@ -246,9 +250,11 @@ import { UpdateUserDto } from '../../core/models/api.models';
                   <span class="material-icons-outlined">translate</span>
                 </div>
                 <div>
-                  <p class="text-gray-900 dark:text-white font-medium">Language</p>
+                  <p class="text-gray-900 dark:text-white font-medium">
+                    {{ ts.t()('settings.pref.lang') }}
+                  </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
-                    Change application language
+                    {{ ts.t()('settings.pref.lang_desc') }}
                   </p>
                 </div>
               </div>
@@ -272,16 +278,16 @@ import { UpdateUserDto } from '../../core/models/api.models';
 
             <!-- Delete Account -->
             <div class="mt-8 pt-8 border-t border-gray-200 dark:border-white/10">
-              <h4 class="text-red-500 font-bold mb-2">Danger Zone</h4>
+              <h4 class="text-red-500 font-bold mb-2">{{ ts.t()('settings.danger.title') }}</h4>
               <div class="flex items-center justify-between">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  Permanently delete your account and all data.
+                  {{ ts.t()('settings.danger.desc') }}
                 </p>
                 <button
                   (click)="todoDelete()"
                   class="px-4 py-2 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-lg text-sm font-bold border border-red-200 dark:border-red-900/50 hover:bg-red-100 transition-colors"
                 >
-                  Delete Account
+                  {{ ts.t()('settings.danger.btn') }}
                 </button>
               </div>
             </div>

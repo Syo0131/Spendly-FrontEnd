@@ -77,6 +77,8 @@ export class TranslationService {
     },
     'trans.cancel': { es: 'Cancelar', en: 'Cancel' },
     'trans.delete': { es: 'Eliminar', en: 'Delete' },
+    'trans.actions': { es: 'Acciones', en: 'Actions' },
+    'trans.edit': { es: 'Editar', en: 'Edit' },
     'trans.select_category': { es: 'Selecciona una categoría', en: 'Select a category' },
     'trans.loading_cat': { es: 'Cargando categorías...', en: 'Loading categories...' },
 
@@ -132,6 +134,35 @@ export class TranslationService {
       es: '¡Administra suscripciones y facturas recurrentes pronto!',
       en: 'Manage subscriptions and recurring bills soon!',
     },
+
+    // Settings
+    'settings.tabs.profile': { es: 'Perfil', en: 'Profile' },
+    'settings.tabs.security': { es: 'Seguridad', en: 'Security' },
+    'settings.tabs.preferences': { es: 'Preferencias', en: 'Preferences' },
+
+    'settings.profile.title': { es: 'Cuenta Personal', en: 'Personal Account' },
+    'settings.profile.name': { es: 'Nombre Completo', en: 'Full Name' },
+    'settings.profile.email': { es: 'Correo Electrónico', en: 'Email Address' },
+    'settings.profile.username': { es: 'Nombre de Usuario', en: 'Username' },
+    'settings.profile.save': { es: 'Guardar Cambios', en: 'Save Changes' },
+
+    'settings.pref.dark_mode': { es: 'Modo Oscuro', en: 'Dark Mode' },
+    'settings.pref.dark_desc': {
+      es: 'Reduce la fatiga visual en poca luz',
+      en: 'Reduce eye strain in low light',
+    },
+    'settings.pref.lang': { es: 'Idioma', en: 'Language' },
+    'settings.pref.lang_desc': {
+      es: 'Cambiar idioma de la aplicación',
+      en: 'Change application language',
+    },
+
+    'settings.danger.title': { es: 'Zona de Peligro', en: 'Danger Zone' },
+    'settings.danger.desc': {
+      es: 'Eliminar permanentemente tu cuenta y datos.',
+      en: 'Permanently delete your account and all data.',
+    },
+    'settings.danger.btn': { es: 'Eliminar Cuenta', en: 'Delete Account' },
   };
 
   /**

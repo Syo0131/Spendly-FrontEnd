@@ -34,25 +34,78 @@ import { RouterModule } from '@angular/router';
         class="flex space-x-1 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl w-fit backdrop-blur-sm border border-gray-200 dark:border-white/5"
       >
         <a
-          routerLink="/expenses"
-          class="px-6 py-2 rounded-lg text-sm font-medium transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm"
-        >
-          {{ ts.t()('nav.expenses') }}
-        </a>
-        <a
           routerLink="/incomes"
           class="px-6 py-2 rounded-lg text-sm font-medium transition-all text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
         >
           {{ ts.t()('nav.incomes') }}
         </a>
+        <a
+          routerLink="/expenses"
+          class="px-6 py-2 rounded-lg text-sm font-medium transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm"
+        >
+          {{ ts.t()('nav.expenses') }}
+        </a>
       </div>
 
+      <!-- List -->
       <!-- List -->
       <div
         class="glass-card overflow-hidden bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
       >
-        <div class="overflow-x-auto">
+        <!-- Mobile Card View (md:hidden) -->
+        <div class="md:hidden">
+          <div
+            *ngIf="expenses().length === 0"
+            class="p-8 text-center text-gray-500 dark:text-gray-400"
+          >
+            {{ ts.t()('trans.no_data') }}
+          </div>
+          <div class="divide-y divide-gray-200 dark:divide-white/5">
+            <div
+              *ngFor="let item of expenses()"
+              (click)="openActionMenu(item)"
+              class="p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer"
+            >
+              <!-- Left: Icon & Desc -->
+              <div class="flex items-center gap-3 overflow-hidden">
+                <div
+                  class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  [style.background-color]="item.category.color + '20'"
+                >
+                  <span class="material-icons-outlined text-lg" [style.color]="item.category.color">
+                    {{ item.category.icons }}
+                  </span>
+                </div>
+                <div class="min-w-0">
+                  <p class="font-medium text-gray-900 dark:text-white truncate">
+                    {{ item.description }}
+                  </p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ item.category.name || 'General' }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Right: Amount & Date -->
+              <div class="flex flex-col items-end gap-1 ml-2 shrink-0">
+                <span class="font-bold text-rose-600 dark:text-rose-400">
+                  - {{ item.amount | currency : 'DOP' : 'symbol' : '1.0-0' }}
+                </span>
+                <span class="text-xs text-gray-400">
+                  {{ item.date | date : 'MMM d' }}
+                </span>
+              </div>
+
+              <!-- Action Menu (Optional: could be a long press or slide, for now just simple click to edit?) -->
+              <!-- Let's keep it simple: Clicking the row opens Edit. We can add specific buttons if needed but row click is standard mobile pattern -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop Table View (hidden md:block) -->
+        <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left">
+            <!-- ... existing table header ... -->
             <thead
               class="bg-gray-50/50 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider"
             >
@@ -314,53 +367,61 @@ import { RouterModule } from '@angular/router';
         </div>
       </div>
     </div>
-  `,
-  styles: [
-    `
-      .animate-fade-in-up {
-        animation: fadeInUp 0.5s ease-out forwards;
-      }
-      .animate-scale-in {
-        animation: scaleIn 0.2s ease-out forwards;
-      }
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      @keyframes scaleIn {
-        from {
-          opacity: 0;
-          transform: scale(0.95);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
 
-      /* Custom Scrollbar */
-      .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-        margin-block: 4px; /* Simulate padding top/bottom to clear rounded corners */
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: #cbd5e1; /* slate-300 */
-        border-radius: 20px;
-      }
-      :host-context(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: #475569; /* slate-600 */
-      }
-    `,
-  ],
+    <!-- Mobile Action Menu (Bottom Sheet) -->
+    <div
+      *ngIf="showActionMenu()"
+      class="fixed inset-0 z-[100] flex items-end justify-center md:hidden"
+    >
+      <!-- Backdrop -->
+      <div
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+        (click)="closeActionMenu()"
+      ></div>
+
+      <!-- Sheet -->
+      <div
+        class="bg-white dark:bg-slate-900 w-full rounded-t-3xl p-6 relative z-10 animate-slide-up border-t border-gray-200 dark:border-white/10 shadow-2xl"
+      >
+        <!-- Handle -->
+        <div class="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-6"></div>
+
+        <div class="mb-6">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
+            {{ ts.t()('trans.actions') }}
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {{ actionMenuItem()?.description }}
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <button
+            (click)="onEditFromMenu()"
+            class="w-full flex items-center p-4 bg-gray-50 dark:bg-slate-800 rounded-xl text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+          >
+            <span class="material-icons-outlined mr-3 text-primary">edit</span>
+            {{ ts.t()('trans.edit') || 'Edit' }}
+          </button>
+
+          <button
+            (click)="onDeleteFromMenu()"
+            class="w-full flex items-center p-4 bg-red-50 dark:bg-red-500/10 rounded-xl text-red-600 dark:text-red-400 font-medium hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
+          >
+            <span class="material-icons-outlined mr-3">delete</span>
+            {{ ts.t()('trans.delete') }}
+          </button>
+
+          <button
+            (click)="closeActionMenu()"
+            class="w-full p-4 text-center text-gray-500 dark:text-gray-400 font-medium mt-2"
+          >
+            {{ ts.t()('trans.cancel') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  `,
 })
 export class ExpensesComponent implements OnInit {
   expenses = signal<ExpenseResponse[]>([]);
@@ -376,6 +437,10 @@ export class ExpensesComponent implements OnInit {
   // Delete Modal State
   showDeleteModal = signal(false);
   itemToDelete = signal<any>(null);
+
+  // Mobile Action Menu State
+  showActionMenu = signal(false);
+  actionMenuItem = signal<any>(null);
 
   constructor(
     private apiService: ApiService,
@@ -394,6 +459,28 @@ export class ExpensesComponent implements OnInit {
   ngOnInit() {
     this.loadData();
     this.loadCategories();
+  }
+
+  openActionMenu(item: any) {
+    this.actionMenuItem.set(item);
+    this.showActionMenu.set(true);
+  }
+
+  closeActionMenu() {
+    this.showActionMenu.set(false);
+    this.actionMenuItem.set(null);
+  }
+
+  onEditFromMenu() {
+    const item = this.actionMenuItem();
+    this.closeActionMenu();
+    if (item) this.openModal(item);
+  }
+
+  onDeleteFromMenu() {
+    const item = this.actionMenuItem();
+    this.closeActionMenu();
+    if (item) this.deleteItem(item);
   }
 
   loadCategories() {

@@ -56,11 +56,20 @@ import { TranslationService } from '../../../core/services/translation.service';
               >lock</span
             >
             <input
-              type="password"
+              [type]="showPassword() ? 'text' : 'password'"
               formControlName="password"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary block p-3.5 pl-9 transition-all placeholder-gray-400 dark:placeholder-gray-600"
+              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary block p-3.5 pl-9 pr-10 transition-all placeholder-gray-400 dark:placeholder-gray-600"
               placeholder="••••••••"
             />
+            <button
+              type="button"
+              (click)="$event.preventDefault(); showPassword.set(!showPassword())"
+              class="absolute right-3 top-3.5 z-10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none cursor-pointer"
+            >
+              <span class="material-icons-outlined text-lg">{{
+                showPassword() ? 'visibility' : 'visibility_off'
+              }}</span>
+            </button>
           </div>
         </div>
 
@@ -115,6 +124,7 @@ export class LoginComponent {
   loginForm: FormGroup;
   isLoading = signal(false);
   error = signal('');
+  showPassword = signal(false);
 
   constructor(
     private fb: FormBuilder,
@@ -129,6 +139,7 @@ export class LoginComponent {
   }
 
   onSubmit() {
+    console.log('Form Status:', this.loginForm.status, 'Errors:', this.loginForm.errors); // Debug
     if (this.loginForm.valid) {
       this.isLoading.set(true);
       this.error.set('');

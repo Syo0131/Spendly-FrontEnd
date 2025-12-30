@@ -67,12 +67,23 @@ import { TranslationService } from '../../../core/services/translation.service';
           <label class="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">{{
             ts.t()('auth.password')
           }}</label>
-          <input
-            type="password"
-            formControlName="password"
-            class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-primary focus:border-primary block p-3 transition-colors placeholder-gray-400 dark:placeholder-gray-500"
-            placeholder="••••••••"
-          />
+          <div class="relative">
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-primary focus:border-primary block p-3 pr-10 transition-colors placeholder-gray-400 dark:placeholder-gray-500"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              (click)="showPassword.set(!showPassword())"
+              class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
+            >
+              <span class="material-icons-outlined text-lg">{{
+                showPassword() ? 'visibility' : 'visibility_off'
+              }}</span>
+            </button>
+          </div>
         </div>
 
         <!-- Error Message -->
@@ -134,6 +145,7 @@ export class RegisterComponent {
   isLoading = signal(false);
   error = signal('');
   success = signal('');
+  showPassword = signal(false);
 
   constructor(
     private fb: FormBuilder,

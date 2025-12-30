@@ -56,14 +56,6 @@ import { forkJoin } from 'rxjs';
           >
             {{ totalBalance() | currency : 'DOP' : 'symbol' : '1.2-2' }}
           </h3>
-          <div class="mt-4 flex items-center md:text-sm text-xs">
-            <span
-              class="text-green-600 dark:text-green-400 flex items-center bg-green-100 dark:bg-green-400/10 px-2 py-1 rounded-full"
-            >
-              <span class="material-icons-outlined text-xs mr-1">trending_up</span> +12%
-            </span>
-            <span class="ml-2 text-gray-400 font-light">vs last month</span>
-          </div>
         </div>
 
         <!-- Income -->

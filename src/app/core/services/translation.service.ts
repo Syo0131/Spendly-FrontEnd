@@ -67,8 +67,18 @@ export class TranslationService {
     'trans.date': { es: 'Fecha', en: 'Date' },
     'trans.category': { es: 'Categoría', en: 'Category' },
     'trans.save': { es: 'Guardar', en: 'Save' },
-    'trans.loading_cat': { es: 'Cargando categorías...', en: 'Loading categories...' },
     'trans.no_data': { es: 'No hay transacciones aun.', en: 'No transactions found.' },
+    'trans.edit_income': { es: 'Editar Ingreso', en: 'Edit Income' },
+    'trans.edit_expense': { es: 'Editar Gasto', en: 'Edit Expense' },
+    'trans.delete_title': { es: '¿Eliminar Transacción?', en: 'Delete Transaction?' },
+    'trans.delete_msg': {
+      es: 'Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar este elemento?',
+      en: 'This action cannot be undone. Are you sure you want to remove this item?',
+    },
+    'trans.cancel': { es: 'Cancelar', en: 'Cancel' },
+    'trans.delete': { es: 'Eliminar', en: 'Delete' },
+    'trans.select_category': { es: 'Selecciona una categoría', en: 'Select a category' },
+    'trans.loading_cat': { es: 'Cargando categorías...', en: 'Loading categories...' },
 
     // Banks
     'banks.title': { es: 'Integración Bancaria', en: 'Bank Integration' },
@@ -77,9 +87,32 @@ export class TranslationService {
       en: 'Connect your bank accounts to automatically sync transactions',
     },
     'banks.connect': { es: 'Conectar', en: 'Connect' },
+    'banks.premium_title': { es: 'Función Premium', en: 'Premium Feature' },
+    'banks.premium_desc': {
+      es: 'Desbloquea integraciones bancarias ilimitadas y sincronización automática con Spendly Premium.',
+      en: 'Unlock unlimited bank integrations and automatic sync with Spendly Premium.',
+    },
+    'banks.premium_btn': { es: 'Obtener Premium - $4.99/mes', en: 'Get Premium - $4.99/mo' },
+    'banks.restore': { es: 'Restaurar Compra', en: 'Restore Purchase' },
 
-    // New Feature Placeholders
-    'budgets.title': { es: 'Presupuestos', en: 'Budgets' },
+    'settings.security.note_title': { es: 'Nota de Seguridad', en: 'Security Note' },
+    'settings.security.note_desc': {
+      es: 'Por tu seguridad, cambiar la contraseña requerirá que inicies sesión nuevamente.',
+      en: 'For your security, changing your password will require you to log in again.',
+    },
+    'settings.security.new_password': { es: 'Nueva Contraseña', en: 'New Password' },
+    'settings.security.confirm_password': { es: 'Confirmar Contraseña', en: 'Confirm Password' },
+    'settings.security.password_hint': {
+      es: 'Debe contener al menos 8 caracteres, un número, una mayúscula y un carácter especial.',
+      en: 'Must contain at least 8 characters, one number, one uppercase, one special char.',
+    },
+    'settings.security.mismatch': {
+      es: 'Las contraseñas no coinciden',
+      en: 'Passwords do not match',
+    },
+    'settings.security.btn_update': { es: 'Actualizar Contraseña', en: 'Update Password' },
+
+    // Core Features
     'budgets.desc': {
       es: '¡Gestión de presupuestos pronto!',
       en: 'Budget management coming soon!',

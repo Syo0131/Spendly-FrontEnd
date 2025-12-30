@@ -13,6 +13,7 @@ import {
   MonthlyStats,
   BankOption,
   UpdateUserDto,
+  PremiumStatusDto,
 } from '../models/api.models';
 import { CacheService } from './cache.service';
 import { of } from 'rxjs';
@@ -131,5 +132,11 @@ export class ApiService {
   // Users
   updateUser(id: number, data: UpdateUserDto): Observable<MessageResponse> {
     return this.http.put<MessageResponse>(`${this.baseUrl}/users/update/${id}`, data);
+  }
+
+  checkPremiumStatus(): Observable<PremiumStatusDto> {
+    // Add timestamp to prevent browser caching
+    const params = new HttpParams().set('t', Date.now().toString());
+    return this.http.get<PremiumStatusDto>(`${this.baseUrl}/users/premium-status`, { params });
   }
 }

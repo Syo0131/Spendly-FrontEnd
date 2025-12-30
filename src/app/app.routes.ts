@@ -30,19 +30,13 @@ export const routes: Routes = [
       },
       {
         path: 'incomes',
-        data: { type: 'incomes' },
         loadComponent: () =>
-          import('./features/transactions/transactions.component').then(
-            (m) => m.TransactionsComponent
-          ),
+          import('./features/incomes/incomes.component').then((m) => m.IncomesComponent),
       },
       {
         path: 'expenses',
-        data: { type: 'expenses' },
         loadComponent: () =>
-          import('./features/transactions/transactions.component').then(
-            (m) => m.TransactionsComponent
-          ),
+          import('./features/expenses/expenses.component').then((m) => m.ExpensesComponent),
       },
       { path: 'transactions', redirectTo: 'expenses' }, // Fallback
       {

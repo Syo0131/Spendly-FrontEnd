@@ -4,9 +4,14 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class CacheService {
-  private readonly TTL = 3600000; // 1 hour in ms (adjustable)
+  private readonly TTL = 3600000; // 1 hour
+  private readonly CACHE_PREFIX = 'spendly_cache_';
 
   constructor() {}
+
+  private getFullKey(key: string): string {
+    return this.CACHE_PREFIX + key;
+  }
 
   set(key: string, data: any): void {
     const item = {
@@ -14,7 +19,7 @@ export class CacheService {
       timestamp: Date.now(),
     };
     try {
-      localStorage.setItem(key, JSON.stringify(item));
+      localStorage.setItem(this.getFullKey(key), JSON.stringify(item));
     } catch (e) {
       console.warn('Error saving to cache', e);
     }
@@ -22,20 +27,15 @@ export class CacheService {
 
   get(key: string): any | null {
     try {
-      const itemStr = localStorage.getItem(key);
+      const fullKey = this.getFullKey(key);
+      const itemStr = localStorage.getItem(fullKey);
       if (!itemStr) return null;
 
       const item = JSON.parse(itemStr);
       const now = Date.now();
 
-      // Optional: Check if expired.
-      // For "Offline First" we might want to return expired data if network fails,
-      // but for now let's respect TTL or return it anyway?
-      // Strategy: Return data regardless of TTL if we want "stale-while-revalidate"?
-      // Let's enforce TTL to avoid showing completely wrong ancient data.
       if (now - item.timestamp > this.TTL) {
-        // Expired
-        localStorage.removeItem(key);
+        localStorage.removeItem(fullKey);
         return null;
       }
 
@@ -46,6 +46,14 @@ export class CacheService {
   }
 
   clear(): void {
-    localStorage.clear();
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(this.CACHE_PREFIX)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+    console.log('CacheService: Cache cleared (safe)');
   }
 }

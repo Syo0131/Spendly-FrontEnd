@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -23,12 +23,12 @@ import { TranslationService } from '../../core/services/translation.service';
       <!-- Content (Blurred if not premium) -->
       <div
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto transition-all duration-500"
-        [class.blur-md]="!authService.isPremium()"
-        [class.pointer-events-none]="!authService.isPremium()"
-        [class.select-none]="!authService.isPremium()"
+        [class.blur-md]="!isPremium()"
+        [class.pointer-events-none]="!isPremium()"
+        [class.select-none]="!isPremium()"
       >
         <!-- Mock Items for Lock Display if list empty -->
-        <ng-container *ngIf="banks().length === 0 && !authService.isPremium()">
+        <ng-container *ngIf="banks().length === 0 && !isPremium()">
           <div class="glass-card p-6 h-32 animate-pulse bg-gray-200 dark:bg-white/5"></div>
           <div class="glass-card p-6 h-32 animate-pulse bg-gray-200 dark:bg-white/5"></div>
           <div class="glass-card p-6 h-32 animate-pulse bg-gray-200 dark:bg-white/5"></div>
@@ -76,7 +76,7 @@ import { TranslationService } from '../../core/services/translation.service';
 
       <!-- Premium Lock Overlay -->
       <div
-        *ngIf="!authService.isPremium()"
+        *ngIf="!isPremium()"
         class="absolute inset-0 z-10 flex items-center justify-center -mt-20"
       >
         <div
@@ -88,9 +88,11 @@ import { TranslationService } from '../../core/services/translation.service';
             <span class="material-icons text-3xl text-white">lock</span>
           </div>
 
-          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Premium Feature</h3>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            {{ ts.t()('banks.premium_title') }}
+          </h3>
           <p class="text-gray-500 dark:text-gray-300 mb-6">
-            Unlock unlimited bank integrations and automatic sync with Spendly Premium.
+            {{ ts.t()('banks.premium_desc') }}
           </p>
 
           <div class="space-y-3">
@@ -98,21 +100,13 @@ import { TranslationService } from '../../core/services/translation.service';
               (click)="unlockPremium()"
               class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transform hover:scale-[1.02] transition-all"
             >
-              Get Premium - $4.99/mo
+              {{ ts.t()('banks.premium_btn') }}
             </button>
             <button class="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-              Restore Purchase
+              {{ ts.t()('banks.restore') }}
             </button>
           </div>
         </div>
-      </div>
-      <!-- DEBUG SECTION: REMOVE BEFORE PROD -->
-      <div
-        class="fixed bottom-0 left-0 bg-black/80 text-green-400 p-4 text-xs font-mono w-full z-50 overflow-auto max-h-40"
-      >
-        <p>DEBUG INFO:</p>
-        <pre>{{ debugInfo() }}</pre>
-        <p>Connected Banks: {{ connectedBanks() | json }}</p>
       </div>
       <!-- Disconnect Modal -->
       <div
@@ -197,14 +191,23 @@ import { TranslationService } from '../../core/services/translation.service';
 })
 export class BanksComponent implements OnInit {
   banks = signal<BankOption[]>([]);
-
   connectingBank = signal<string | null>(null);
 
-  constructor(
-    private apiService: ApiService,
-    public authService: AuthService, // Inject public for template
-    public ts: TranslationService
-  ) {}
+  // Inject Injectables
+  public authService = inject(AuthService);
+  private apiService = inject(ApiService);
+  public ts = inject(TranslationService);
+
+  // Alias the global signal directly! No flickering.
+  isPremium = this.authService.isPremium;
+
+  constructor() {
+    effect(() => {
+      if (this.isPremium()) {
+        this.refreshData();
+      }
+    });
+  }
 
   connectedBanks = signal<string[]>([]);
 
@@ -214,17 +217,15 @@ export class BanksComponent implements OnInit {
 
   refreshData() {
     this.loadBanks();
-    // Always check status, API handles permissions or returns empty
     this.checkStatus();
   }
 
-  debugInfo = signal<string>('Loading...');
-
   checkStatus() {
+    if (!this.isPremium()) return; // Don't call if not premium
+
     this.apiService.getBankStatus().subscribe({
       next: (res) => {
         console.log('Bank Status Response:', res); // DEBUG
-        this.debugInfo.set(JSON.stringify(res, null, 2)); // Show raw response in UI
 
         let connected: string[] = [];
         if (Array.isArray(res)) {
@@ -244,7 +245,6 @@ export class BanksComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to fetch bank status', err);
-        this.debugInfo.set('Error: ' + JSON.stringify(err));
       },
     });
   }

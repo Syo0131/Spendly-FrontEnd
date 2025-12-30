@@ -70,6 +70,7 @@ export interface CreateIncome {
 export interface UpdateIncome extends CreateIncome {}
 
 export interface IncomeResponse {
+  id: number;
   description: string;
   amount: number;
   date: string;
@@ -88,6 +89,7 @@ export interface CreateExpense {
 export interface UpdateExpense extends CreateExpense {}
 
 export interface ExpenseResponse {
+  id: number;
   description: string;
   amount: number;
   date: string;
@@ -109,6 +111,11 @@ export interface UpdateUserDto {
 }
 
 // Stats models
+export interface PremiumStatusDto {
+  isPremium: boolean;
+  message: string;
+}
+
 export interface MonthlyStats {
   [categoryName: string]: number;
 }

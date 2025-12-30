@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { LoginRequest, CreateUser, TokenResponse, MessageResponse } from '../models/api.models';
 import { Router } from '@angular/router';
+import { ApiService } from './api.service';
 
 import { environment } from '../../../environments/environment';
 
@@ -18,7 +19,28 @@ export class AuthService {
   isPremium = signal<boolean>(localStorage.getItem('spendly_premium') === 'true');
   isAuthenticated = signal<boolean>(!!localStorage.getItem(this.tokenKey));
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private apiService: ApiService // Injected to verify premium status
+  ) {
+    console.log('AuthService: Initialized. Token in storage:', localStorage.getItem(this.tokenKey));
+    if (this.isAuthenticated()) {
+      this.validatePremiumStatus();
+    }
+  }
+
+  validatePremiumStatus(): void {
+    if (!this.isAuthenticated()) return;
+    this.apiService.checkPremiumStatus().subscribe({
+      next: (res) => {
+        console.log('AuthService: Premium status verified:', res.isPremium);
+        this.isPremium.set(res.isPremium);
+        localStorage.setItem('spendly_premium', String(res.isPremium));
+      },
+      error: (err) => console.error('AuthService: Failed to verify premium status', err),
+    });
+  }
 
   login(credentials: LoginRequest): Observable<TokenResponse> {
     const url = `${this.apiUrl}/login`;
@@ -33,31 +55,38 @@ export class AuthService {
   }
 
   logout(): void {
+    console.log('AuthService: Logout called. Clearing token.');
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem('spendly_user');
+    localStorage.removeItem('spendly_premium');
     this.isAuthenticated.set(false);
+    this.isPremium.set(false);
     this.currentUserStr.set(null);
     this.router.navigate(['/auth/login']);
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    const token = localStorage.getItem(this.tokenKey);
+    return token;
+  }
+
+  readPremiumFromStorage(): string | null {
+    return localStorage.getItem('spendly_premium');
   }
 
   private handleAuthSuccess(response: TokenResponse): void {
+    console.log(
+      'AuthService: Auth Success. Saving token:',
+      response.token.substring(0, 10) + '...'
+    );
     localStorage.setItem(this.tokenKey, response.token);
     this.isAuthenticated.set(true);
     if (response.username) {
       localStorage.setItem('spendly_user', response.username);
       this.currentUserStr.set(response.username);
 
-      // Mock Premium check for now (random or hardcoded)
-      // In real app this comes from response.isPremium
-      // For testing locking, let's assume 'admin' is premium, others not?
-      // Or just hardcode to false initially so user sees the lock screen.
-      const isPrem = response.username === 'admin';
-      localStorage.setItem('spendly_premium', String(isPrem));
-      this.isPremium.set(isPrem);
+      // Initial optimism from persisted value or default false, then verify
+      this.validatePremiumStatus();
     }
   }
 }

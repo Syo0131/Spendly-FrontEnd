@@ -126,9 +126,11 @@ import { UpdateUserDto } from '../../core/models/api.models';
           <div
             class="border-l-4 border-amber-500 pl-4 py-1 bg-amber-50 dark:bg-amber-900/10 rounded-r-lg"
           >
-            <h4 class="text-amber-800 dark:text-amber-500 font-bold text-sm">Security Note</h4>
+            <h4 class="text-amber-800 dark:text-amber-500 font-bold text-sm">
+              {{ ts.t()('settings.security.note_title') }}
+            </h4>
             <p class="text-amber-700 dark:text-amber-600 text-xs">
-              For your security, changing your password will require you to log in again.
+              {{ ts.t()('settings.security.note_desc') }}
             </p>
           </div>
 
@@ -136,37 +138,59 @@ import { UpdateUserDto } from '../../core/models/api.models';
             <div>
               <label
                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
-                >New Password</label
+                >{{ ts.t()('settings.security.new_password') }}</label
               >
-              <input
-                formControlName="password"
-                type="password"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-                placeholder="••••••••"
-              />
+              <div class="relative">
+                <input
+                  formControlName="password"
+                  [type]="showPassword() ? 'text' : 'password'"
+                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 pr-10 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  (click)="$event.preventDefault(); showPassword.set(!showPassword())"
+                  class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none cursor-pointer"
+                >
+                  <span class="material-icons-outlined text-lg">{{
+                    showPassword() ? 'visibility' : 'visibility_off'
+                  }}</span>
+                </button>
+              </div>
               <p class="text-[10px] text-gray-400 mt-1">
-                Must contain at least 8 characters, one number, one uppercase, one special char.
+                {{ ts.t()('settings.security.password_hint') }}
               </p>
             </div>
 
             <div>
               <label
                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
-                >Confirm Password</label
+                >{{ ts.t()('settings.security.confirm_password') }}</label
               >
-              <input
-                formControlName="confirmPassword"
-                type="password"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-                placeholder="••••••••"
-              />
+              <div class="relative">
+                <input
+                  formControlName="confirmPassword"
+                  [type]="showConfirmPassword() ? 'text' : 'password'"
+                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 pr-10 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  (click)="$event.preventDefault(); showConfirmPassword.set(!showConfirmPassword())"
+                  class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none cursor-pointer"
+                >
+                  <span class="material-icons-outlined text-lg">{{
+                    showConfirmPassword() ? 'visibility' : 'visibility_off'
+                  }}</span>
+                </button>
+              </div>
               <p
                 *ngIf="
                   securityForm.hasError('mismatch') && securityForm.get('confirmPassword')?.touched
                 "
                 class="text-red-500 text-xs mt-1"
               >
-                Passwords do not match
+                {{ ts.t()('settings.security.mismatch') }}
               </p>
             </div>
 
@@ -179,7 +203,7 @@ import { UpdateUserDto } from '../../core/models/api.models';
                 <span *ngIf="isLoading()" class="material-icons-outlined animate-spin text-lg mr-2"
                   >sync</span
                 >
-                Update Password
+                {{ ts.t()('settings.security.btn_update') }}
               </button>
             </div>
           </form>
@@ -298,6 +322,8 @@ import { UpdateUserDto } from '../../core/models/api.models';
 export class SettingsComponent implements OnInit {
   activeTab = signal<'profile' | 'security' | 'preferences'>('profile');
   isLoading = signal(false);
+  showPassword = signal(false);
+  showConfirmPassword = signal(false);
   tabs = [
     { id: 'profile', label: 'Profile', icon: 'person' },
     { id: 'security', label: 'Security', icon: 'lock' },

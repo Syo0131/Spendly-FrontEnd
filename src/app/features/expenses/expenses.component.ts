@@ -1,59 +1,50 @@
-import { Component, OnInit, signal, computed, effect } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { TranslationService } from '../../core/services/translation.service';
-import { IncomeResponse, ExpenseResponse, Category } from '../../core/models/api.models';
+import { ExpenseResponse, Category } from '../../core/models/api.models';
+import { RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'app-transactions',
+  selector: 'app-expenses',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
     <div class="space-y-6 animate-fade-in-up">
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ getTitle() }}</h1>
-          <p class="text-gray-500 dark:text-gray-400">{{ getSubtitle() }}</p>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            {{ ts.t()('nav.expenses') }}
+          </h1>
+          <p class="text-gray-500 dark:text-gray-400">Track your spending habits</p>
         </div>
         <button
           (click)="openModal()"
           class="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
         >
           <span class="material-icons-outlined mr-2">add</span>
-          {{ activeTab() === 'incomes' ? ts.t()('trans.add_income') : ts.t()('trans.add_expense') }}
+          {{ ts.t()('trans.add_expense') }}
         </button>
       </div>
 
-      <!-- Tabs (Hidden if forced via route) -->
+      <!-- Tabs -->
       <div
-        *ngIf="!forcedType"
         class="flex space-x-1 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl w-fit backdrop-blur-sm border border-gray-200 dark:border-white/5"
       >
-        <button
-          (click)="activeTab.set('expenses')"
-          [class]="
-            activeTab() === 'expenses'
-              ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-          "
-          class="px-6 py-2 rounded-lg text-sm font-medium transition-all"
+        <a
+          routerLink="/expenses"
+          class="px-6 py-2 rounded-lg text-sm font-medium transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm"
         >
           {{ ts.t()('nav.expenses') }}
-        </button>
-        <button
-          (click)="activeTab.set('incomes')"
-          [class]="
-            activeTab() === 'incomes'
-              ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-          "
-          class="px-6 py-2 rounded-lg text-sm font-medium transition-all"
+        </a>
+        <a
+          routerLink="/incomes"
+          class="px-6 py-2 rounded-lg text-sm font-medium transition-all text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
         >
           {{ ts.t()('nav.incomes') }}
-        </button>
+        </a>
       </div>
 
       <!-- List -->
@@ -75,7 +66,7 @@ import { IncomeResponse, ExpenseResponse, Category } from '../../core/models/api
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-white/5">
               <tr
-                *ngFor="let item of transactions()"
+                *ngFor="let item of expenses()"
                 class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
               >
                 <td class="p-4 text-gray-900 dark:text-white font-medium">
@@ -83,28 +74,16 @@ import { IncomeResponse, ExpenseResponse, Category } from '../../core/models/api
                 </td>
                 <td class="p-4 text-gray-500 dark:text-gray-400">
                   <span
-                    *ngIf="activeTab() === 'expenses'"
                     class="px-2 py-1 rounded text-xs bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10"
                   >
-                    {{ $any(item).category?.name || 'General' }}
-                  </span>
-                  <span
-                    *ngIf="activeTab() === 'incomes'"
-                    class="px-2 py-1 rounded text-xs bg-teal-50 dark:bg-teal-900/50 text-teal-700 dark:text-teal-200 border border-teal-200 dark:border-teal-800"
-                  >
-                    Income
+                    {{ item.category.name || 'General' }}
                   </span>
                 </td>
-                <td class="p-4 text-gray-500 dark:text-gray-400 text-sm">{{ item.date | date }}</td>
-                <td
-                  class="p-4 text-right font-bold"
-                  [class.text-teal-600]="activeTab() === 'incomes'"
-                  [class.dark:text-teal-400]="activeTab() === 'incomes'"
-                  [class.text-rose-600]="activeTab() === 'expenses'"
-                  [class.dark:text-rose-400]="activeTab() === 'expenses'"
-                >
-                  {{ activeTab() === 'incomes' ? '+' : '-' }}
-                  {{ item.amount | currency : 'DOP' : 'symbol' : '1.2-2' }}
+                <td class="p-4 text-gray-500 dark:text-gray-400 text-sm">
+                  {{ item.date | date }}
+                </td>
+                <td class="p-4 text-right font-bold text-rose-600 dark:text-rose-400">
+                  - {{ item.amount | currency : 'DOP' : 'symbol' : '1.2-2' }}
                 </td>
                 <td class="p-4 text-center">
                   <div class="flex items-center justify-end gap-1 opacity-100">
@@ -127,7 +106,7 @@ import { IncomeResponse, ExpenseResponse, Category } from '../../core/models/api
               </tr>
 
               <!-- Empty State -->
-              <tr *ngIf="transactions().length === 0">
+              <tr *ngIf="expenses().length === 0">
                 <td colspan="5" class="p-8 text-center text-gray-500 dark:text-gray-400">
                   {{ ts.t()('trans.no_data') }}
                 </td>
@@ -138,7 +117,7 @@ import { IncomeResponse, ExpenseResponse, Category } from '../../core/models/api
       </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Edit Modal -->
     <div
       *ngIf="showModal()"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
@@ -157,20 +136,12 @@ import { IncomeResponse, ExpenseResponse, Category } from '../../core/models/api
           <div
             class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4"
           >
-            <span class="material-icons-outlined text-3xl text-primary">
-              {{ activeTab() === 'incomes' ? 'attach_money' : 'receipt_long' }}
+            <span class="material-icons-outlined text-3xl text-primary dark:text-primary-light">
+              receipt_long
             </span>
           </div>
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-            {{
-              editingId()
-                ? activeTab() === 'incomes'
-                  ? 'Edit Income'
-                  : 'Edit Expense'
-                : activeTab() === 'incomes'
-                ? ts.t()('trans.add_income')
-                : ts.t()('trans.add_expense')
-            }}
+            {{ editingId() ? ts.t()('trans.edit_expense') : ts.t()('trans.add_expense') }}
           </h2>
         </div>
 
@@ -196,10 +167,13 @@ import { IncomeResponse, ExpenseResponse, Category } from '../../core/models/api
                 >{{ ts.t()('trans.amount') }}</label
               >
               <div class="relative">
-                <span class="absolute left-3 top-3 text-gray-500">$</span>
+                <span class="absolute left-3 top-3 text-gray-500 dark:text-gray-400">$</span>
                 <input
                   formControlName="amount"
                   type="number"
+                  min="0"
+                  step="0.01"
+                  (keydown)="preventNonNumeric($event)"
                   class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 pl-7 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400 dark:placeholder-gray-600"
                 />
               </div>
@@ -209,31 +183,89 @@ import { IncomeResponse, ExpenseResponse, Category } from '../../core/models/api
                 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                 >{{ ts.t()('trans.date') }}</label
               >
-              <input
-                formControlName="date"
-                type="date"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-              />
+              <div class="relative">
+                <input
+                  formControlName="date"
+                  type="date"
+                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all dark:[color-scheme:dark]"
+                />
+              </div>
             </div>
           </div>
 
-          <!-- Category (Only for Expenses) -->
-          <div class="space-y-1.5" *ngIf="activeTab() === 'expenses'">
+          <!-- Category -->
+          <div class="space-y-1.5">
             <label
               class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
               >{{ ts.t()('trans.category') }}</label
             >
-            <select
-              formControlName="categoryId"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all appearance-none cursor-pointer"
-            >
-              <option *ngFor="let cat of categories()" [value]="cat.id">
-                {{ cat.name }}
-              </option>
-              <option *ngIf="categories().length === 0" [value]="1" disabled>
-                {{ ts.t()('trans.loading_cat') }}
-              </option>
-            </select>
+            <div class="relative">
+              <!-- Custom Trigger -->
+              <div
+                (click)="toggleDropdown()"
+                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all group"
+                [class.border-red-500]="
+                  form.get('categoryId')?.invalid && form.get('categoryId')?.touched
+                "
+              >
+                <div class="flex items-center gap-2">
+                  <ng-container *ngIf="getSelectedCategory() as selected; else placeholder">
+                    <div
+                      class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                      [style.background-color]="selected.color + '20'"
+                    >
+                      <span class="material-icons-outlined text-lg" [style.color]="selected.color">
+                        {{ selected.icons }}
+                      </span>
+                    </div>
+                    <span class="text-gray-900 dark:text-white font-medium">
+                      {{ selected.name }}
+                    </span>
+                  </ng-container>
+                  <ng-template #placeholder>
+                    <span class="text-gray-400">
+                      {{ ts.t()('trans.select_category') }}
+                    </span>
+                  </ng-template>
+                </div>
+                <span
+                  class="material-icons-outlined text-gray-400 group-hover:text-primary transition-colors"
+                  [class.rotate-180]="isDropdownOpen()"
+                >
+                  expand_more
+                </span>
+              </div>
+
+              <!-- Dropdown Menu -->
+              <div
+                *ngIf="isDropdownOpen()"
+                class="custom-scrollbar absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-xl max-h-60 overflow-y-auto animate-scale-in"
+              >
+                <div
+                  *ngFor="let cat of categories()"
+                  (click)="selectCategory(cat)"
+                  class="p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors border-b border-gray-100 dark:border-white/5 last:border-0"
+                >
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                    [style.background-color]="cat.color + '20'"
+                  >
+                    <span class="material-icons-outlined text-lg" [style.color]="cat.color">
+                      {{ cat.icons }}
+                    </span>
+                  </div>
+                  <span class="text-gray-700 dark:text-gray-200 font-medium">
+                    {{ cat.name }}
+                  </span>
+                </div>
+                <div
+                  *ngIf="categories().length === 0"
+                  class="p-4 text-center text-gray-500 text-sm"
+                >
+                  {{ ts.t()('trans.loading_cat') }}
+                </div>
+              </div>
+            </div>
           </div>
 
           <button
@@ -245,37 +277,40 @@ import { IncomeResponse, ExpenseResponse, Category } from '../../core/models/api
           </button>
         </form>
       </div>
-      <!-- Delete Modal -->
+    </div>
+
+    <!-- Delete Modal -->
+    <div
+      *ngIf="showDeleteModal()"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+    >
       <div
-        *ngIf="showDeleteModal()"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+        class="glass-card w-full max-w-sm p-6 relative animate-scale-in bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl text-center"
       >
         <div
-          class="glass-card w-full max-w-sm p-6 relative animate-scale-in bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl text-center"
+          class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4"
         >
-          <div
-            class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4"
+          <span class="material-icons-outlined text-3xl text-red-500">warning</span>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          {{ ts.t()('trans.delete_title') }}
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+          {{ ts.t()('trans.delete_msg') }}
+        </p>
+        <div class="flex space-x-3 justify-center">
+          <button
+            (click)="cancelDelete()"
+            class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
           >
-            <span class="material-icons-outlined text-3xl text-red-500">warning</span>
-          </div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Delete Transaction?</h3>
-          <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm">
-            This action cannot be undone. Are you sure you want to remove this item?
-          </p>
-          <div class="flex space-x-3 justify-center">
-            <button
-              (click)="cancelDelete()"
-              class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              (click)="confirmDelete()"
-              class="px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02]"
-            >
-              Delete
-            </button>
-          </div>
+            {{ ts.t()('trans.cancel') }}
+          </button>
+          <button
+            (click)="confirmDelete()"
+            class="px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02]"
+          >
+            {{ ts.t()('trans.delete') }}
+          </button>
         </div>
       </div>
     </div>
@@ -308,26 +343,35 @@ import { IncomeResponse, ExpenseResponse, Category } from '../../core/models/api
           transform: scale(1);
         }
       }
+
+      /* Custom Scrollbar */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+        margin-block: 4px; /* Simulate padding top/bottom to clear rounded corners */
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1; /* slate-300 */
+        border-radius: 20px;
+      }
+      :host-context(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #475569; /* slate-600 */
+      }
     `,
   ],
 })
-export class TransactionsComponent implements OnInit {
-  activeTab = signal<'incomes' | 'expenses'>('expenses');
-  forcedType: 'incomes' | 'expenses' | null = null;
-
-  incomes = signal<IncomeResponse[]>([]);
+export class ExpensesComponent implements OnInit {
   expenses = signal<ExpenseResponse[]>([]);
-
-  // Computed property to handle the union type for the template
-  transactions = computed(() => {
-    return (this.activeTab() === 'incomes' ? this.incomes() : this.expenses()) as any[];
-  });
-
   categories = signal<Category[]>([]);
 
   form: FormGroup;
   showModal = signal(false);
   editingId = signal<number | null>(null);
+
+  // Dropdown state
+  isDropdownOpen = signal(false);
 
   // Delete Modal State
   showDeleteModal = signal(false);
@@ -336,47 +380,20 @@ export class TransactionsComponent implements OnInit {
   constructor(
     private apiService: ApiService,
     private fb: FormBuilder,
-    public ts: TranslationService,
-    private route: ActivatedRoute
+    public ts: TranslationService
   ) {
     this.form = this.fb.group({
       description: ['', Validators.required],
       amount: [0, [Validators.required, Validators.min(0.01)]],
       date: [new Date().toISOString().split('T')[0], Validators.required],
       currency: ['DOP'],
-      categoryId: [1, Validators.required],
-    });
-
-    this.route.data.subscribe((data) => {
-      if (data['type']) {
-        this.forcedType = data['type'];
-        this.activeTab.set(this.forcedType as any);
-      }
+      categoryId: [null, Validators.required],
     });
   }
 
   ngOnInit() {
     this.loadData();
     this.loadCategories();
-
-    // Check for query params to auto-open modal
-    this.route.queryParams.subscribe((params) => {
-      if (params['action'] === 'new') {
-        this.openModal();
-      }
-    });
-  }
-
-  getTitle() {
-    return this.activeTab() === 'incomes'
-      ? this.ts.translate('nav.incomes')
-      : this.ts.translate('nav.expenses');
-  }
-
-  getSubtitle() {
-    return this.activeTab() === 'incomes'
-      ? 'Manage your sources of income'
-      : 'Track your spending habits';
   }
 
   loadCategories() {
@@ -391,22 +408,28 @@ export class TransactionsComponent implements OnInit {
   }
 
   loadData() {
-    if (this.activeTab() === 'expenses' || !this.forcedType) {
-      this.apiService.getExpenses(0, 50).subscribe({
-        next: (res) => this.expenses.set(res.content),
-        error: (err) => console.error('Error loading expenses', err),
-      });
-    }
+    this.apiService.getExpenses(0, 50).subscribe({
+      next: (res) => this.expenses.set(res.content),
+      error: (err) => console.error('Error loading expenses', err),
+    });
+  }
 
-    if (this.activeTab() === 'incomes' || !this.forcedType) {
-      this.apiService.getIncomes(0, 50).subscribe({
-        next: (res) => this.incomes.set(res.content),
-        error: (err) => console.error('Error loading incomes', err),
-      });
-    }
+  toggleDropdown() {
+    this.isDropdownOpen.update((v) => !v);
+  }
+
+  selectCategory(category: Category) {
+    this.form.patchValue({ categoryId: category.id });
+    this.isDropdownOpen.set(false);
+  }
+
+  getSelectedCategory(): Category | undefined {
+    const id = this.form.get('categoryId')?.value;
+    return this.categories().find((c) => c.id === id);
   }
 
   openModal(itemToEdit: any = null) {
+    this.isDropdownOpen.set(false);
     if (itemToEdit) {
       this.editingId.set(itemToEdit.id);
       this.form.patchValue({
@@ -414,14 +437,14 @@ export class TransactionsComponent implements OnInit {
         amount: itemToEdit.amount,
         date: itemToEdit.date,
         currency: 'DOP',
-        categoryId: itemToEdit.categoryId || itemToEdit.category?.id || 1,
+        categoryId: itemToEdit.category?.id || 1,
       });
     } else {
       this.editingId.set(null);
       this.form.reset({
         date: new Date().toISOString().split('T')[0],
         currency: 'DOP',
-        categoryId: this.categories()[0]?.id || 1,
+        categoryId: null,
         amount: 0,
         description: '',
       });
@@ -432,30 +455,19 @@ export class TransactionsComponent implements OnInit {
   closeModal() {
     this.showModal.set(false);
     this.editingId.set(null);
+    this.isDropdownOpen.set(false);
   }
 
   onSubmit() {
     if (this.form.valid) {
       const formData = this.form.value;
-      const isIncome = this.activeTab() === 'incomes';
       const id = this.editingId();
-
       const payload = { ...formData, categoryId: Number(formData.categoryId) };
 
       if (id) {
-        // UPDATE
-        if (isIncome) {
-          this.apiService.updateIncome(id, payload).subscribe(this.handleResponseObserver);
-        } else {
-          this.apiService.updateExpense(id, payload).subscribe(this.handleResponseObserver);
-        }
+        this.apiService.updateExpense(id, payload).subscribe(this.handleResponseObserver);
       } else {
-        // CREATE
-        if (isIncome) {
-          this.apiService.createIncome(payload).subscribe(this.handleResponseObserver);
-        } else {
-          this.apiService.createExpense(payload).subscribe(this.handleResponseObserver);
-        }
+        this.apiService.createExpense(payload).subscribe(this.handleResponseObserver);
       }
     }
   }
@@ -480,12 +492,10 @@ export class TransactionsComponent implements OnInit {
     const item = this.itemToDelete();
     if (!item) return;
 
-    const id = item.id;
-    if (this.activeTab() === 'incomes') {
-      this.apiService.deleteIncome(id).subscribe(() => this.finalizeDelete());
-    } else {
-      this.apiService.deleteExpense(id).subscribe(() => this.finalizeDelete());
-    }
+    this.apiService.deleteExpense(Number(item.id)).subscribe(() => {
+      this.cancelDelete();
+      this.loadData();
+    });
   }
 
   cancelDelete() {
@@ -493,8 +503,17 @@ export class TransactionsComponent implements OnInit {
     this.itemToDelete.set(null);
   }
 
-  private finalizeDelete() {
-    this.cancelDelete();
-    this.loadData();
+  preventNonNumeric(event: KeyboardEvent) {
+    if (
+      ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', '.'].indexOf(
+        event.key
+      ) !== -1 ||
+      (event.ctrlKey === true && ['a', 'c', 'v', 'x'].indexOf(event.key.toLowerCase()) !== -1)
+    ) {
+      return;
+    }
+    if (isNaN(Number(event.key))) {
+      event.preventDefault();
+    }
   }
 }

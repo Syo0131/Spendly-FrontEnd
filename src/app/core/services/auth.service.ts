@@ -4,11 +4,13 @@ import { Observable, tap } from 'rxjs';
 import { LoginRequest, CreateUser, TokenResponse, MessageResponse } from '../models/api.models';
 import { Router } from '@angular/router';
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'https://backend.daybeldiaz.dev/api/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
   private tokenKey = 'spendly_token';
 
   // Signal for auth state

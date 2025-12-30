@@ -18,11 +18,13 @@ import { CacheService } from './cache.service';
 import { of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'https://backend.daybeldiaz.dev/api';
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient, private cache: CacheService) {}
 

@@ -25,13 +25,13 @@ import { forkJoin } from 'rxjs';
             {{ ts.t()('dash.welcome') }}, {{ authService.currentUserStr() }}
           </p>
         </div>
-        <button
+        <!-- <button
           class="hidden md:flex items-center justify-center px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
           title="Download Report"
         >
           <span class="material-icons-outlined text-xl md:hidden">download</span>
           <span class="hidden md:inline text-sm font-medium">Download Report</span>
-        </button>
+        </button> -->
       </div>
 
       <!-- Stats Cards -->

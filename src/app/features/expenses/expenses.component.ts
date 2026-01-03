@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Subscription, interval } from 'rxjs';
 import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -168,6 +169,31 @@ import { RouterModule } from '@angular/router';
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div
+          class="flex items-center justify-between p-4 border-t border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/5"
+        >
+          <button
+            (click)="prevPage()"
+            [disabled]="currentPage() === 0"
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {{ ts.t()('trans.prev') || 'Previous' }}
+          </button>
+
+          <span class="text-sm text-gray-600 dark:text-gray-400">
+            Page {{ currentPage() + 1 }} of {{ totalPages() || 1 }}
+          </span>
+
+          <button
+            (click)="nextPage()"
+            [disabled]="currentPage() >= totalPages() - 1"
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {{ ts.t()('trans.next') || 'Next' }}
+          </button>
         </div>
       </div>
     </div>
@@ -424,9 +450,17 @@ import { RouterModule } from '@angular/router';
     </div>
   `,
 })
-export class ExpensesComponent implements OnInit {
+export class ExpensesComponent implements OnInit, OnDestroy {
   expenses = signal<ExpenseResponse[]>([]);
   categories = signal<Category[]>([]);
+
+  // Pagination
+  currentPage = signal(0);
+  pageSize = signal(10);
+  totalItems = signal(0);
+  totalPages = signal(0);
+
+  private refreshSubscription: Subscription | null = null;
 
   form: FormGroup;
   showModal = signal(false);
@@ -460,6 +494,17 @@ export class ExpensesComponent implements OnInit {
   ngOnInit() {
     this.loadData();
     this.loadCategories();
+
+    // Poll every 30 seconds
+    this.refreshSubscription = interval(30000).subscribe(() => {
+      this.loadData(true);
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
   }
 
   trackById(index: number, item: any): number {
@@ -499,16 +544,33 @@ export class ExpensesComponent implements OnInit {
     });
   }
 
-  loadData() {
-    this.apiService.getExpenses(0, 50).subscribe({
+  loadData(isBackground: boolean = false) {
+    this.apiService.getExpenses(this.currentPage(), this.pageSize()).subscribe({
       next: (res) => {
+        // Backend pagination is 0-indexed
         const sorted = res.content.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
         this.expenses.set(sorted);
+        this.totalItems.set(res.page.totalElements);
+        this.totalPages.set(res.page.totalPages);
       },
       error: (err) => console.error('Error loading expenses', err),
     });
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.currentPage.update((p) => p + 1);
+      this.loadData();
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage() > 0) {
+      this.currentPage.update((p) => p - 1);
+      this.loadData();
+    }
   }
 
   toggleDropdown() {

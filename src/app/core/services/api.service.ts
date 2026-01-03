@@ -47,7 +47,11 @@ export class ApiService {
   // Incomes
   getIncomes(page = 0, size = 20): Observable<PagedResponse<IncomeResponse>> {
     const params = new HttpParams().set('page', page).set('size', size);
-    return this.http.get<PagedResponse<IncomeResponse>>(`${this.baseUrl}/incomes`, { params });
+    return this.getWithCache<PagedResponse<IncomeResponse>>(
+      `incomes_${page}_${size}`,
+      `${this.baseUrl}/incomes`,
+      params
+    );
   }
 
   createIncome(data: CreateIncome): Observable<MessageResponse> {
@@ -65,7 +69,11 @@ export class ApiService {
   // Expenses
   getExpenses(page = 0, size = 20): Observable<PagedResponse<ExpenseResponse>> {
     const params = new HttpParams().set('page', page).set('size', size);
-    return this.http.get<PagedResponse<ExpenseResponse>>(`${this.baseUrl}/expenses`, { params });
+    return this.getWithCache<PagedResponse<ExpenseResponse>>(
+      `expenses_${page}_${size}`,
+      `${this.baseUrl}/expenses`,
+      params
+    );
   }
 
   createExpense(data: CreateExpense): Observable<MessageResponse> {
@@ -81,11 +89,15 @@ export class ApiService {
   }
 
   getExpensesMonthTotal(year: number, month: number): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/expenses/month/${year}/${month}/total`);
+    return this.getWithCache<any>(
+      `expenses_total_${year}_${month}`,
+      `${this.baseUrl}/expenses/month/${year}/${month}/total`
+    );
   }
 
   getExpensesByCategory(year: number, month: number): Observable<MonthlyStats> {
-    return this.http.get<MonthlyStats>(
+    return this.getWithCache<MonthlyStats>(
+      `expenses_category_${year}_${month}`,
       `${this.baseUrl}/expenses/month/${year}/${month}/by-category`
     );
   }

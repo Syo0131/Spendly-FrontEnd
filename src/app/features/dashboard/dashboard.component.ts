@@ -1,6 +1,7 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   signal,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -12,7 +13,7 @@ import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, interval, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 @Component({
@@ -259,8 +260,10 @@ import { catchError } from 'rxjs/operators';
     `,
   ],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   currentDate = signal(new Date());
+
+  private refreshSubscription: Subscription | null = null;
 
   // Date Picker State
   showDatePicker = signal(false);
@@ -333,14 +336,30 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loadData();
+
+    // Poll every 30 seconds to update data (check for automatic expenses)
+    // Cache is 2 mins, so this ensures we see updates reasonably fast after cache expires
+    this.refreshSubscription = interval(30000).subscribe(() => {
+      // Only refresh if we are holding the current view (or whatever logic)
+      // We reload whatever is currently selected.
+      this.loadData(true);
+    });
   }
 
-  loadData() {
+  ngOnDestroy() {
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
+  }
+
+  loadData(isBackground: boolean = false) {
     const targetDate = this.currentDate();
     const year = targetDate.getFullYear();
     const month = targetDate.getMonth() + 1; // API expects 1-12
 
-    this.isLoading.set(true);
+    if (!isBackground) {
+      this.isLoading.set(true);
+    }
 
     // 1. Get Monthly Totals (Keep existing Logic for Cards)
     this.apiService.getExpensesMonthTotal(year, month).subscribe({

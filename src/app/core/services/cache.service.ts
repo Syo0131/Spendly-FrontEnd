@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class CacheService {
-  private readonly TTL = 3600000; // 1 hour
+  private readonly TTL = 120000; // 2 minutes
   private readonly CACHE_PREFIX = 'spendly_cache_';
 
   constructor() {}

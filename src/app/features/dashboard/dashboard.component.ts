@@ -1,18 +1,27 @@
-import { Component, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  signal,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, BaseChartDirective],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="space-y-6">
+    <div class="space-y-6 transition-opacity duration-300" [class.opacity-50]="isLoading()" [class.pointer-events-none]="isLoading()">
       <!-- Header -->
       <div
         class="flex flex-col md:flex-row justify-between md:items-center gap-4 animate-fade-in-up"
@@ -25,6 +34,35 @@ import { forkJoin } from 'rxjs';
             {{ ts.t()('dash.welcome') }}, {{ authService.currentUserStr() }}
           </p>
         </div>
+
+        <!-- Month Selector -->
+        <div
+          class="flex items-center bg-white dark:bg-white/5 rounded-xl p-1 shadow-sm border border-gray-200 dark:border-white/10"
+        >
+          <button
+            (click)="prevMonth()"
+            class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-gray-500 dark:text-gray-400 transition-colors"
+          >
+            <span class="material-icons-outlined">chevron_left</span>
+          </button>
+
+          <button
+            (click)="openDatePicker()"
+            class="px-2 font-semibold text-gray-700 dark:text-gray-200 w-40 shrink-0 text-center whitespace-nowrap hover:bg-gray-50 dark:hover:bg-white/5 py-1 rounded cursor-pointer transition-colors"
+          >
+            {{ currentDate() | date : 'MMMM yyyy' }}
+          </button>
+
+          <button
+            (click)="nextMonth()"
+            [disabled]="isCurrentMonth()"
+            [class.opacity-50]="isCurrentMonth()"
+            [class.cursor-not-allowed]="isCurrentMonth()"
+            class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-gray-500 dark:text-gray-400 transition-colors"
+          >
+            <span class="material-icons-outlined">chevron_right</span>
+          </button>
+        </div>
         <!-- <button
           class="hidden md:flex items-center justify-center px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
           title="Download Report"
@@ -32,6 +70,77 @@ import { forkJoin } from 'rxjs';
           <span class="material-icons-outlined text-xl md:hidden">download</span>
           <span class="hidden md:inline text-sm font-medium">Download Report</span>
         </button> -->
+      </div>
+
+      <!-- Month Picker Modal -->
+      <div
+        *ngIf="showDatePicker()"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+        (click)="closeDatePicker()"
+      >
+        <div
+          class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 p-6 w-full max-w-sm animate-scale-in"
+          (click)="$event.stopPropagation()"
+        >
+          <!-- Year Selector -->
+          <div class="flex items-center justify-between mb-6">
+            <button
+              (click)="changeYear(-1)"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors"
+            >
+              <span class="material-icons-outlined">chevron_left</span>
+            </button>
+            <span class="text-xl font-bold text-gray-900 dark:text-white">
+              {{ tempDate().getFullYear() }}
+            </span>
+            <button
+              (click)="changeYear(1)"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors"
+            >
+              <span class="material-icons-outlined">chevron_right</span>
+            </button>
+          </div>
+
+          <!-- Months Grid -->
+          <div class="grid grid-cols-3 gap-3 mb-6">
+            <button
+              *ngFor="let month of months; let i = index"
+              (click)="selectMonth(i)"
+              [disabled]="isFutureMonth(i)"
+              class="p-3 rounded-xl text-sm font-medium transition-all"
+              [class.bg-primary]="isSelectedMonth(i)"
+              [class.text-white]="isSelectedMonth(i)"
+              [class.shadow-lg]="isSelectedMonth(i)"
+              [class.shadow-primary/30]="isSelectedMonth(i)"
+              [class.bg-gray-50]="!isSelectedMonth(i) && !isFutureMonth(i)"
+              [class.dark:bg-white/5]="!isSelectedMonth(i) && !isFutureMonth(i)"
+              [class.text-gray-700]="!isSelectedMonth(i) && !isFutureMonth(i)"
+              [class.dark:text-gray-300]="!isSelectedMonth(i) && !isFutureMonth(i)"
+              [class.hover:bg-gray-100]="!isSelectedMonth(i) && !isFutureMonth(i)"
+              [class.dark:hover:bg-white/10]="!isSelectedMonth(i) && !isFutureMonth(i)"
+              [class.opacity-30]="isFutureMonth(i)"
+              [class.cursor-not-allowed]="isFutureMonth(i)"
+            >
+              {{ month }}
+            </button>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-3">
+            <button
+              (click)="closeDatePicker()"
+              class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-sidebar-dark transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              (click)="confirmDateSelection()"
+              class="flex-1 py-2.5 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all hover:scale-[1.02]"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Stats Cards -->
@@ -151,6 +260,15 @@ import { forkJoin } from 'rxjs';
   ],
 })
 export class DashboardComponent implements OnInit {
+  currentDate = signal(new Date());
+
+  // Date Picker State
+  showDatePicker = signal(false);
+  tempDate = signal(new Date());
+  months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  isLoading = signal(false);
+
   totalBalance = signal(0);
   totalIncome = signal(0);
   totalExpense = signal(0);
@@ -209,7 +327,8 @@ export class DashboardComponent implements OnInit {
   constructor(
     public authService: AuthService,
     private apiService: ApiService,
-    public ts: TranslationService
+    public ts: TranslationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -217,9 +336,11 @@ export class DashboardComponent implements OnInit {
   }
 
   loadData() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth() + 1; // API expects 1-12
+    const targetDate = this.currentDate();
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth() + 1; // API expects 1-12
+
+    this.isLoading.set(true);
 
     // 1. Get Monthly Totals (Keep existing Logic for Cards)
     this.apiService.getExpensesMonthTotal(year, month).subscribe({
@@ -228,31 +349,41 @@ export class DashboardComponent implements OnInit {
         this.totalExpense.set(expenseTotal);
         this.updateBalance();
       },
+      error: () => this.totalExpense.set(0),
     });
 
     // 2. Fetch DATA for Charts (Incomes & Expenses)
-    // We fetch a decent amount to calculate client-side history since backend endpoint might be missing
-    // or we want dynamic "Last 6 Months".
-
     // Use forkJoin to get both in parallel
+    // Increasing page size to ensure we capture enough history for client-side filtering
+    // Use forkJoin to get both in parallel
+    // Increasing page size to ensure we capture enough history for client-side filtering
     forkJoin({
-      incomes: this.apiService.getIncomes(0, 100),
-      expenses: this.apiService.getExpenses(0, 100),
-      categoryStats: this.apiService.getExpensesByCategory(year, month),
+      incomes: this.apiService.getIncomes(0, 500).pipe(catchError(() => of({ content: [] }))),
+      expenses: this.apiService.getExpenses(0, 500).pipe(catchError(() => of({ content: [] }))),
+      categoryStats: this.apiService
+        .getExpensesByCategory(year, month)
+        .pipe(catchError(() => of({}))),
     }).subscribe({
       next: ({ incomes, expenses, categoryStats }) => {
+        this.isLoading.set(false);
         // A. Update Income Total Card (Current Month)
-        const currentMonthIncomes = incomes.content.filter((i) => {
-          const d = new Date(i.date);
-          return d.getMonth() + 1 === month && d.getFullYear() === year;
-        });
-        const incomeTotal = currentMonthIncomes.reduce((acc, curr) => acc + curr.amount, 0);
+        const currentMonthIncomes = incomes.content
+          ? incomes.content.filter((i: any) => {
+              // Parse YYYY-MM-DD directly to avoid timezone issues
+              const [y, m] = i.date.toString().split('-');
+              return parseInt(m, 10) === month && parseInt(y, 10) === year;
+            })
+          : [];
+        const incomeTotal = currentMonthIncomes.reduce(
+          (acc: number, curr: any) => acc + curr.amount,
+          0
+        );
         this.totalIncome.set(incomeTotal);
         this.updateBalance();
 
         // B. Prepare Doughnut Chart (Categories)
-        const labels = Object.keys(categoryStats);
-        const data = Object.values(categoryStats);
+        const labels = Object.keys(categoryStats || {});
+        const data = Object.values(categoryStats || {}) as number[];
         this.doughnutChartData = {
           labels: labels.length ? labels : ['No Data'],
           datasets: [
@@ -267,9 +398,27 @@ export class DashboardComponent implements OnInit {
         };
 
         // C. Prepare Bar Chart (Last 6 Months History)
-        this.prepareHistoryChart(incomes.content, expenses.content);
+        // Ensure content exists or default to empty array
+        const incomeContent = incomes.content || [];
+        const expenseContent = expenses.content || [];
+        this.prepareHistoryChart(incomeContent, expenseContent);
+        this.cdr.markForCheck();
       },
-      error: (err) => console.error('Error loading dashboard data', err),
+      error: (err) => {
+        this.isLoading.set(false);
+        console.error('Error loading dashboard data', err);
+        // Ensure we don't show stale data on error
+        this.totalIncome.set(0);
+        this.updateBalance();
+        // Reset charts
+        this.doughnutChartData.datasets[0].data = [1];
+        this.doughnutChartData.labels = ['No Data'];
+        this.doughnutChartData.datasets[0].backgroundColor = ['#e2e8f0'];
+
+        // Reset Bar Chart to show correct 6-month labels with 0 data
+        this.prepareHistoryChart([], []);
+        this.cdr.markForCheck();
+      },
     });
   }
 
@@ -279,7 +428,7 @@ export class DashboardComponent implements OnInit {
     const incomeData: number[] = [0, 0, 0, 0, 0, 0];
     const expenseData: number[] = [0, 0, 0, 0, 0, 0];
 
-    const today = new Date();
+    const today = this.currentDate();
 
     for (let i = 5; i >= 0; i--) {
       const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
@@ -292,15 +441,19 @@ export class DashboardComponent implements OnInit {
 
       const monthIncome = incomes
         .filter((t) => {
-          const tDate = new Date(t.date);
-          return tDate.getMonth() === monthToCheck && tDate.getFullYear() === yearToCheck;
+          // Parse YYYY-MM-DD directly
+          const [y, m] = t.date.toString().split('-');
+          // m is 1-indexed string ('01'...'12'), monthToCheck is 0-indexed number
+          return parseInt(m, 10) === monthToCheck + 1 && parseInt(y, 10) === yearToCheck;
         })
         .reduce((sum, t) => sum + t.amount, 0);
 
       const monthExpense = expenses
         .filter((t) => {
-          const tDate = new Date(t.date);
-          return tDate.getMonth() === monthToCheck && tDate.getFullYear() === yearToCheck;
+          // Parse YYYY-MM-DD directly
+          const [y, m] = t.date.toString().split('-');
+          // m is 1-indexed string ('01'...'12'), monthToCheck is 0-indexed number
+          return parseInt(m, 10) === monthToCheck + 1 && parseInt(y, 10) === yearToCheck;
         })
         .reduce((sum, t) => sum + t.amount, 0);
 
@@ -333,5 +486,73 @@ export class DashboardComponent implements OnInit {
 
   updateBalance() {
     this.totalBalance.set(this.totalIncome() - this.totalExpense());
+  }
+
+  prevMonth() {
+    const d = new Date(this.currentDate());
+    d.setMonth(d.getMonth() - 1);
+    this.currentDate.set(d);
+    this.loadData();
+  }
+
+  nextMonth() {
+    if (this.isCurrentMonth()) return;
+    const d = new Date(this.currentDate());
+    d.setMonth(d.getMonth() + 1);
+    this.currentDate.set(d);
+    this.loadData();
+  }
+
+  isCurrentMonth(): boolean {
+    const today = new Date();
+    const current = this.currentDate();
+    return today.getMonth() === current.getMonth() && today.getFullYear() === current.getFullYear();
+  }
+
+  // Date Picker Methods
+  openDatePicker() {
+    // Clone date and set to 1st of month to avoid rollover issues
+    // e.g. If current is Jan 31, setting month to Feb (1) would roll to Mar 3
+    const d = new Date(this.currentDate());
+    d.setDate(1);
+    this.tempDate.set(d);
+    this.showDatePicker.set(true);
+  }
+
+  closeDatePicker() {
+    this.showDatePicker.set(false);
+  }
+
+  changeYear(delta: number) {
+    const d = new Date(this.tempDate());
+    d.setFullYear(d.getFullYear() + delta);
+    this.tempDate.set(d);
+  }
+
+  selectMonth(monthIndex: number) {
+    const d = new Date(this.tempDate());
+    d.setMonth(monthIndex);
+    this.tempDate.set(d);
+  }
+
+  isSelectedMonth(monthIndex: number): boolean {
+    return this.tempDate().getMonth() === monthIndex;
+  }
+
+  isFutureMonth(monthIndex: number): boolean {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    const selectedYear = this.tempDate().getFullYear();
+
+    if (selectedYear > currentYear) return true;
+    if (selectedYear === currentYear && monthIndex > currentMonth) return true;
+    return false;
+  }
+
+  confirmDateSelection() {
+    this.currentDate.set(new Date(this.tempDate()));
+    this.loadData();
+    this.closeDatePicker();
   }
 }

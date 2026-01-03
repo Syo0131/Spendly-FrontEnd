@@ -115,6 +115,7 @@ export class TranslationService {
     'settings.security.btn_update': { es: 'Actualizar Contraseña', en: 'Update Password' },
 
     // Core Features
+    'budgets.title': { es: 'Presupuestos', en: 'Budgets' },
     'budgets.desc': {
       es: '¡Gestión de presupuestos pronto!',
       en: 'Budget management coming soon!',
@@ -163,6 +164,61 @@ export class TranslationService {
       en: 'Permanently delete your account and all data.',
     },
     'settings.danger.btn': { es: 'Eliminar Cuenta', en: 'Delete Account' },
+    // Categories (Normalized keys: cat.{lowercase_name})
+    'cat.food': { es: 'Comida', en: 'Food' },
+    'cat.comida': { es: 'Comida', en: 'Food' },
+
+    'cat.transport': { es: 'Transporte', en: 'Transport' },
+    'cat.transporte': { es: 'Transporte', en: 'Transport' },
+
+    'cat.housing': { es: 'Vivienda', en: 'Housing' },
+    'cat.vivienda': { es: 'Vivienda', en: 'Housing' },
+
+    'cat.utilities': { es: 'Servicios', en: 'Utilities' },
+    'cat.servicios': { es: 'Servicios', en: 'Utilities' },
+
+    'cat.entertainment': { es: 'Entretenimiento', en: 'Entertainment' },
+    'cat.entretenimiento': { es: 'Entretenimiento', en: 'Entertainment' },
+
+    'cat.shopping': { es: 'Compras', en: 'Shopping' },
+    'cat.compras': { es: 'Compras', en: 'Shopping' },
+
+    'cat.health': { es: 'Salud', en: 'Health' },
+    'cat.salud': { es: 'Salud', en: 'Health' },
+
+    'cat.education': { es: 'Educación', en: 'Education' },
+    'cat.educacion': { es: 'Educación', en: 'Education' },
+    'cat.educación': { es: 'Educación', en: 'Education' },
+
+    'cat.groceries': { es: 'Supermercado', en: 'Groceries' },
+    'cat.supermercado': { es: 'Supermercado', en: 'Groceries' },
+
+    'cat.other': { es: 'Otros', en: 'Other' },
+    'cat.otros': { es: 'Otros', en: 'Other' },
+
+    'cat.salary': { es: 'Salario', en: 'Salary' },
+    'cat.salario': { es: 'Salario', en: 'Salary' },
+
+    'cat.investment': { es: 'Inversión', en: 'Investment' },
+    'cat.inversion': { es: 'Inversión', en: 'Investment' },
+    'cat.inversión': { es: 'Inversión', en: 'Investment' },
+    'cat.inversiones': { es: 'Inversiones', en: 'Investments' }, // From SQL
+
+    'cat.freelance': { es: 'Freelance', en: 'Freelance' },
+
+    // New missing categories from SQL
+    // 'cat.servicios' is already mapped above to Utilities
+    'cat.deudas': { es: 'Deudas', en: 'Debts' },
+    'cat.mascotas': { es: 'Mascotas', en: 'Pets' },
+    'cat.regalos': { es: 'Regalos', en: 'Gifts' },
+    'cat.gasolina': { es: 'Gasolina', en: 'Gas' },
+    'cat.cuidado_personal': { es: 'Cuidado Personal', en: 'Personal Care' },
+    'cat.viajes': { es: 'Viajes', en: 'Travel' },
+    'cat.farmacia': { es: 'Farmacia', en: 'Pharmacy' },
+    'cat.mantenimiento': { es: 'Mantenimiento', en: 'Maintenance' },
+    'cat.vida_social': { es: 'Vida Social', en: 'Social Life' },
+
+    'cat.general': { es: 'General', en: 'General' },
   };
 
   /**
@@ -174,6 +230,13 @@ export class TranslationService {
     return term[this.currentLang()];
   }
 
+  translateCategory(categoryName: string): string {
+    if (!categoryName) return '';
+    const key = 'cat.' + categoryName.toLowerCase().replace(/ /g, '_');
+    const term = this.dictionary[key];
+    return term ? term[this.currentLang()] : categoryName;
+  }
+
   /**
    * Helper signal to use in templates efficiently.
    * We explicitly depend on currentLang to ensure reactivity.
@@ -183,6 +246,9 @@ export class TranslationService {
     return (key: string) => {
       const term = this.dictionary[key];
       if (!term) {
+        // Special check for dynamic category keys to avoid spamming warn if not found
+        if (key.startsWith('cat.')) return key.replace('cat.', '');
+
         console.warn(`Missing translation for key: ${key}`);
         return key;
       }

@@ -1,4 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -9,7 +10,8 @@ import { RouterModule } from '@angular/router';
 @Component({
   selector: 'app-incomes',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, CurrencyInputDirective],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6 animate-fade-in-up">
       <!-- Header -->
@@ -62,7 +64,7 @@ import { RouterModule } from '@angular/router';
           </div>
           <div class="divide-y divide-gray-200 dark:divide-white/5">
             <div
-              *ngFor="let item of incomes()"
+              *ngFor="let item of incomes(); trackBy: trackById"
               (click)="openActionMenu(item)"
               class="p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer"
             >
@@ -110,7 +112,7 @@ import { RouterModule } from '@angular/router';
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-white/5">
               <tr
-                *ngFor="let item of incomes()"
+                *ngFor="let item of incomes(); trackBy: trackById"
                 class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
               >
                 <td class="p-4 text-gray-900 dark:text-white font-medium">
@@ -207,10 +209,9 @@ import { RouterModule } from '@angular/router';
                 <span class="absolute left-3 top-3 text-gray-500 dark:text-gray-400">$</span>
                 <input
                   formControlName="amount"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  (keydown)="preventNonNumeric($event)"
+                  type="text"
+                  inputmode="decimal"
+                  appCurrencyInput
                   class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 pl-7 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400 dark:placeholder-gray-600"
                 />
               </div>
@@ -365,6 +366,10 @@ export class IncomesComponent implements OnInit {
     this.loadData();
   }
 
+  trackById(index: number, item: any): number {
+    return item.id;
+  }
+
   openActionMenu(item: any) {
     this.actionMenuItem.set(item);
     this.showActionMenu.set(true);
@@ -389,7 +394,12 @@ export class IncomesComponent implements OnInit {
 
   loadData() {
     this.apiService.getIncomes(0, 50).subscribe({
-      next: (res) => this.incomes.set(res.content),
+      next: (res) => {
+        const sorted = res.content.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        this.incomes.set(sorted);
+      },
       error: (err) => console.error('Error loading incomes', err),
     });
   }
@@ -454,28 +464,17 @@ export class IncomesComponent implements OnInit {
     const item = this.itemToDelete();
     if (!item) return;
 
-    this.apiService.deleteIncome(Number(item.id)).subscribe(() => {
-      this.cancelDelete();
-      this.loadData();
+    this.apiService.deleteIncome(Number(item.id)).subscribe({
+      next: () => {
+        this.cancelDelete();
+        this.loadData();
+      },
+      error: (err) => console.error('Error deleting income', err),
     });
   }
 
   cancelDelete() {
     this.showDeleteModal.set(false);
     this.itemToDelete.set(null);
-  }
-
-  preventNonNumeric(event: KeyboardEvent) {
-    if (
-      ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', '.'].indexOf(
-        event.key
-      ) !== -1 ||
-      (event.ctrlKey === true && ['a', 'c', 'v', 'x'].indexOf(event.key.toLowerCase()) !== -1)
-    ) {
-      return;
-    }
-    if (isNaN(Number(event.key))) {
-      event.preventDefault();
-    }
   }
 }

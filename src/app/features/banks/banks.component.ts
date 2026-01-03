@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, effect } from '@angular/core';
+import { Component, OnInit, signal, inject, effect, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -9,6 +9,7 @@ import { TranslationService } from '../../core/services/translation.service';
   selector: 'app-banks',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="p-8 animate-fade-in space-y-8 relative min-h-[80vh]">
       <!-- Header -->
@@ -35,7 +36,7 @@ import { TranslationService } from '../../core/services/translation.service';
         </ng-container>
 
         <div
-          *ngFor="let bank of banks()"
+          *ngFor="let bank of banks(); trackBy: trackByCode"
           class="glass-card p-6 flex items-center justify-between bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors cursor-pointer group"
         >
           <div class="flex items-center space-x-3">
@@ -213,6 +214,10 @@ export class BanksComponent implements OnInit {
 
   ngOnInit() {
     this.refreshData();
+  }
+
+  trackByCode(index: number, item: any): string {
+    return item.code;
   }
 
   refreshData() {

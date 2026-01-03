@@ -99,22 +99,24 @@ export class OAuthCallbackComponent implements OnInit {
   constructor(private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit() {
-    this.route.queryParams.subscribe((params) => {
-      // Simulate a small delay for better UX so the spinner is seen
-      setTimeout(() => {
-        this.loading.set(false);
-        const isSuccess = params['success'] === 'true';
-        this.success.set(isSuccess);
+    this.route.queryParams.subscribe({
+      next: (params) => {
+        // Simulate a small delay for better UX so the spinner is seen
+        setTimeout(() => {
+          this.loading.set(false);
+          const isSuccess = params['success'] === 'true';
+          this.success.set(isSuccess);
 
-        if (isSuccess) {
-          const banksParam = params['banks'] || '';
-          this.connectedBanks.set(banksParam.split(',').join(', '));
-        } else {
-          this.errorMessage.set(
-            this.getErrorMessage(params['error'], params['bank'], params['message'])
-          );
-        }
-      }, 1000);
+          if (isSuccess) {
+            const banksParam = params['banks'] || '';
+            this.connectedBanks.set(banksParam.split(',').join(', '));
+          } else {
+            this.errorMessage.set(
+              this.getErrorMessage(params['error'], params['bank'], params['message'])
+            );
+          }
+        }, 1000);
+      },
     });
   }
 

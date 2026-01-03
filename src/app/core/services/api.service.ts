@@ -47,57 +47,47 @@ export class ApiService {
   // Incomes
   getIncomes(page = 0, size = 20): Observable<PagedResponse<IncomeResponse>> {
     const params = new HttpParams().set('page', page).set('size', size);
-    const key = `incomes-p${page}-s${size}`;
-    // Using simple approach first: if cache exists, use it. Background update is complex without component changes.
-    // Let's do simple read-through cache for now to solve "offline".
-    return this.getWithCache(key, `${this.baseUrl}/incomes`, params);
+    return this.http.get<PagedResponse<IncomeResponse>>(`${this.baseUrl}/incomes`, { params });
   }
 
   createIncome(data: CreateIncome): Observable<MessageResponse> {
-    this.cache.clear(); // Invalidate cache on mutation
     return this.http.post<MessageResponse>(`${this.baseUrl}/incomes/create`, data);
   }
 
   deleteIncome(id: number): Observable<MessageResponse> {
-    this.cache.clear();
     return this.http.delete<MessageResponse>(`${this.baseUrl}/incomes/${id}/delete`);
   }
 
   updateIncome(id: number, data: UpdateIncome): Observable<MessageResponse> {
-    this.cache.clear();
     return this.http.put<MessageResponse>(`${this.baseUrl}/incomes/${id}/update`, data);
   }
 
   // Expenses
   getExpenses(page = 0, size = 20): Observable<PagedResponse<ExpenseResponse>> {
     const params = new HttpParams().set('page', page).set('size', size);
-    const key = `expenses-p${page}-s${size}`;
-    return this.getWithCache(key, `${this.baseUrl}/expenses`, params);
+    return this.http.get<PagedResponse<ExpenseResponse>>(`${this.baseUrl}/expenses`, { params });
   }
 
   createExpense(data: CreateExpense): Observable<MessageResponse> {
-    this.cache.clear();
     return this.http.post<MessageResponse>(`${this.baseUrl}/expenses`, data);
   }
 
   updateExpense(id: number, data: UpdateExpense): Observable<MessageResponse> {
-    this.cache.clear();
     return this.http.put<MessageResponse>(`${this.baseUrl}/expenses/${id}/update`, data);
   }
 
   deleteExpense(id: number): Observable<MessageResponse> {
-    this.cache.clear();
     return this.http.delete<MessageResponse>(`${this.baseUrl}/expenses/${id}/delete`);
   }
 
   getExpensesMonthTotal(year: number, month: number): Observable<any> {
-    const key = `expenses-total-${year}-${month}`;
-    return this.getWithCache(key, `${this.baseUrl}/expenses/month/${year}/${month}/total`);
+    return this.http.get<any>(`${this.baseUrl}/expenses/month/${year}/${month}/total`);
   }
 
   getExpensesByCategory(year: number, month: number): Observable<MonthlyStats> {
-    const key = `expenses-cat-${year}-${month}`;
-    return this.getWithCache(key, `${this.baseUrl}/expenses/month/${year}/${month}/by-category`);
+    return this.http.get<MonthlyStats>(
+      `${this.baseUrl}/expenses/month/${year}/${month}/by-category`
+    );
   }
 
   // Get Last 6 Months Income vs Expense

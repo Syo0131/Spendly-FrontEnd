@@ -1,4 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -9,7 +10,8 @@ import { RouterModule } from '@angular/router';
 @Component({
   selector: 'app-expenses',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, CurrencyInputDirective],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6 animate-fade-in-up">
       <!-- Header -->
@@ -62,7 +64,7 @@ import { RouterModule } from '@angular/router';
           </div>
           <div class="divide-y divide-gray-200 dark:divide-white/5">
             <div
-              *ngFor="let item of expenses()"
+              *ngFor="let item of expenses(); trackBy: trackById"
               (click)="openActionMenu(item)"
               class="p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer"
             >
@@ -81,7 +83,7 @@ import { RouterModule } from '@angular/router';
                     {{ item.description }}
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ item.category.name || 'General' }}
+                    {{ ts.translateCategory(item.category.name) || 'General' }}
                   </p>
                 </div>
               </div>
@@ -119,7 +121,7 @@ import { RouterModule } from '@angular/router';
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-white/5">
               <tr
-                *ngFor="let item of expenses()"
+                *ngFor="let item of expenses(); trackBy: trackById"
                 class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
               >
                 <td class="p-4 text-gray-900 dark:text-white font-medium">
@@ -129,7 +131,7 @@ import { RouterModule } from '@angular/router';
                   <span
                     class="px-2 py-1 rounded text-xs bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10"
                   >
-                    {{ item.category.name || 'General' }}
+                    {{ ts.translateCategory(item.category.name) || 'General' }}
                   </span>
                 </td>
                 <td class="p-4 text-gray-500 dark:text-gray-400 text-sm">
@@ -223,10 +225,9 @@ import { RouterModule } from '@angular/router';
                 <span class="absolute left-3 top-3 text-gray-500 dark:text-gray-400">$</span>
                 <input
                   formControlName="amount"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  (keydown)="preventNonNumeric($event)"
+                  type="text"
+                  inputmode="decimal"
+                  appCurrencyInput
                   class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 pl-7 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400 dark:placeholder-gray-600"
                 />
               </div>
@@ -272,7 +273,7 @@ import { RouterModule } from '@angular/router';
                       </span>
                     </div>
                     <span class="text-gray-900 dark:text-white font-medium">
-                      {{ selected.name }}
+                      {{ ts.translateCategory(selected.name) }}
                     </span>
                   </ng-container>
                   <ng-template #placeholder>
@@ -295,7 +296,7 @@ import { RouterModule } from '@angular/router';
                 class="custom-scrollbar absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-xl max-h-60 overflow-y-auto animate-scale-in"
               >
                 <div
-                  *ngFor="let cat of categories()"
+                  *ngFor="let cat of categories(); trackBy: trackById"
                   (click)="selectCategory(cat)"
                   class="p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors border-b border-gray-100 dark:border-white/5 last:border-0"
                 >
@@ -308,7 +309,7 @@ import { RouterModule } from '@angular/router';
                     </span>
                   </div>
                   <span class="text-gray-700 dark:text-gray-200 font-medium">
-                    {{ cat.name }}
+                    {{ ts.translateCategory(cat.name) }}
                   </span>
                 </div>
                 <div
@@ -461,6 +462,10 @@ export class ExpensesComponent implements OnInit {
     this.loadCategories();
   }
 
+  trackById(index: number, item: any): number {
+    return item.id;
+  }
+
   openActionMenu(item: any) {
     this.actionMenuItem.set(item);
     this.showActionMenu.set(true);
@@ -496,7 +501,12 @@ export class ExpensesComponent implements OnInit {
 
   loadData() {
     this.apiService.getExpenses(0, 50).subscribe({
-      next: (res) => this.expenses.set(res.content),
+      next: (res) => {
+        const sorted = res.content.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        this.expenses.set(sorted);
+      },
       error: (err) => console.error('Error loading expenses', err),
     });
   }
@@ -579,28 +589,17 @@ export class ExpensesComponent implements OnInit {
     const item = this.itemToDelete();
     if (!item) return;
 
-    this.apiService.deleteExpense(Number(item.id)).subscribe(() => {
-      this.cancelDelete();
-      this.loadData();
+    this.apiService.deleteExpense(Number(item.id)).subscribe({
+      next: () => {
+        this.cancelDelete();
+        this.loadData();
+      },
+      error: (err) => console.error('Error deleting expense', err),
     });
   }
 
   cancelDelete() {
     this.showDeleteModal.set(false);
     this.itemToDelete.set(null);
-  }
-
-  preventNonNumeric(event: KeyboardEvent) {
-    if (
-      ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', '.'].indexOf(
-        event.key
-      ) !== -1 ||
-      (event.ctrlKey === true && ['a', 'c', 'v', 'x'].indexOf(event.key.toLowerCase()) !== -1)
-    ) {
-      return;
-    }
-    if (isNaN(Number(event.key))) {
-      event.preventDefault();
-    }
   }
 }

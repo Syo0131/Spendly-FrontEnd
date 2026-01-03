@@ -17,16 +17,27 @@ export class AuthService {
   // Signal for auth state
   currentUserStr = signal<string | null>(localStorage.getItem('spendly_user'));
   isPremium = signal<boolean>(localStorage.getItem('spendly_premium') === 'true');
-  isAuthenticated = signal<boolean>(!!localStorage.getItem(this.tokenKey));
+  isAuthenticated = signal<boolean>(false);
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-    private apiService: ApiService // Injected to verify premium status
-  ) {
-    console.log('AuthService: Initialized. Token in storage:', localStorage.getItem(this.tokenKey));
-    if (this.isAuthenticated()) {
+  constructor(private http: HttpClient, private router: Router, private apiService: ApiService) {
+    const token = this.getToken();
+    if (token && !this.isTokenExpired(token)) {
+      this.isAuthenticated.set(true);
       this.validatePremiumStatus();
+    } else if (token) {
+      // Token exists but is expired
+      this.logout();
+    }
+    console.log('AuthService: Initialized. Authenticated:', this.isAuthenticated());
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // exp is in seconds, Date.now() in ms
+      return payload.exp * 1000 < Date.now();
+    } catch (e) {
+      return true; // Treat invalid tokens as expired
     }
   }
 

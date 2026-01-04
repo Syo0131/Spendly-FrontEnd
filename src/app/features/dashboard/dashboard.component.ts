@@ -28,17 +28,17 @@ import { catchError } from 'rxjs/operators';
         class="flex flex-col md:flex-row justify-between md:items-center gap-4 animate-fade-in-up"
       >
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             {{ ts.t()('dash.title') }}
           </h1>
-          <p class="text-gray-500 dark:text-gray-400">
+          <p class="text-sm md:text-base text-gray-500 dark:text-gray-400">
             {{ ts.t()('dash.welcome') }}, {{ authService.currentUserStr() }}
           </p>
         </div>
 
         <!-- Month Selector -->
         <div
-          class="flex items-center bg-white dark:bg-white/5 rounded-xl p-1 shadow-sm border border-gray-200 dark:border-white/10"
+          class="flex items-center justify-between w-full md:w-auto bg-white dark:bg-white/5 rounded-xl p-1 shadow-sm border border-gray-200 dark:border-white/10"
         >
           <button
             (click)="prevMonth()"
@@ -49,7 +49,7 @@ import { catchError } from 'rxjs/operators';
 
           <button
             (click)="openDatePicker()"
-            class="px-2 font-semibold text-gray-700 dark:text-gray-200 w-40 shrink-0 text-center whitespace-nowrap hover:bg-gray-50 dark:hover:bg-white/5 py-1 rounded cursor-pointer transition-colors"
+            class="px-2 font-semibold text-gray-700 dark:text-gray-200 flex-1 md:flex-none md:w-40 text-center whitespace-nowrap hover:bg-gray-50 dark:hover:bg-white/5 py-1 rounded cursor-pointer transition-colors"
           >
             {{ currentDate() | date : 'MMMM yyyy' }}
           </button>
@@ -148,20 +148,20 @@ import { catchError } from 'rxjs/operators';
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up delay-100">
         <!-- Balance -->
         <div
-          class="glass-card p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
+          class="glass-card p-5 md:p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
         >
           <div
             class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"
           >
-            <span class="material-icons-outlined text-6xl text-primary"
+            <span class="material-icons-outlined text-5xl md:text-6xl text-primary"
               >account_balance_wallet</span
             >
           </div>
-          <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+          <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
             {{ ts.t()('dash.balance') }}
           </p>
           <h3
-            class="text-3xl font-bold text-gray-900 dark:text-white"
+            class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white"
             [class.text-red-500]="totalBalance() < 0"
           >
             {{ totalBalance() | currency : 'DOP' : 'symbol' : '1.2-2' }}
@@ -170,34 +170,34 @@ import { catchError } from 'rxjs/operators';
 
         <!-- Income -->
         <div
-          class="glass-card p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
+          class="glass-card p-5 md:p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
         >
           <div
             class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"
           >
-            <span class="material-icons-outlined text-6xl text-secondary">arrow_circle_up</span>
+            <span class="material-icons-outlined text-5xl md:text-6xl text-secondary">arrow_circle_up</span>
           </div>
-          <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+          <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
             {{ ts.t()('dash.income') }}
           </p>
-          <h3 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h3 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
             {{ totalIncome() | currency : 'DOP' : 'symbol' : '1.2-2' }}
           </h3>
         </div>
 
         <!-- Expenses -->
         <div
-          class="glass-card p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
+          class="glass-card p-5 md:p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
         >
           <div
             class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"
           >
-            <span class="material-icons-outlined text-6xl text-danger">arrow_circle_down</span>
+            <span class="material-icons-outlined text-5xl md:text-6xl text-danger">arrow_circle_down</span>
           </div>
-          <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+          <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
             {{ ts.t()('dash.expenses') }}
           </p>
-          <h3 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h3 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
             {{ totalExpense() | currency : 'DOP' : 'symbol' : '1.2-2' }}
           </h3>
         </div>
@@ -400,10 +400,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.totalIncome.set(incomeTotal);
         this.updateBalance();
 
-        // B. Prepare Doughnut Chart (Categories)
+        // C. Prepare Doughnut Chart (Categories)
         const labels = Object.keys(categoryStats || {});
         const data = Object.values(categoryStats || {}) as number[];
-        this.doughnutChartData = {
+
+        const newDoughnutData = {
           labels: labels.length ? labels : ['No Data'],
           datasets: [
             {
@@ -415,6 +416,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
             },
           ],
         };
+
+        // Only update if changed to prevent animation replay
+        if (JSON.stringify(this.doughnutChartData) !== JSON.stringify(newDoughnutData)) {
+          this.doughnutChartData = newDoughnutData;
+        }
 
         // C. Prepare Bar Chart (Last 6 Months History)
         // Ensure content exists or default to empty array
@@ -484,7 +490,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       expenseData[index] = monthExpense;
     }
 
-    this.barChartData = {
+    const newBarData = {
       labels: months,
       datasets: [
         {
@@ -501,6 +507,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
       ],
     };
+
+    if (JSON.stringify(this.barChartData) !== JSON.stringify(newBarData)) {
+      this.barChartData = newBarData;
+    }
   }
 
   updateBalance() {

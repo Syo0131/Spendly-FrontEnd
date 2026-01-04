@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { IncomeResponse } from '../../core/models/api.models';
 import { RouterModule } from '@angular/router';
 
@@ -18,7 +19,7 @@ import { RouterModule } from '@angular/router';
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             {{ ts.t()('nav.incomes') }}
           </h1>
           <p class="text-gray-500 dark:text-gray-400">Manage your sources of income</p>
@@ -55,8 +56,36 @@ import { RouterModule } from '@angular/router';
       <div
         class="glass-card overflow-hidden bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
       >
+        <!-- Skeleton Loader -->
+        <div *ngIf="isLoading()" class="animate-pulse">
+          <!-- Mobile Skeleton -->
+          <div class="md:hidden divide-y divide-gray-200 dark:divide-white/5">
+            <div *ngFor="let i of [1, 2, 3, 4, 5]" class="p-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-white/10"></div>
+                <div class="space-y-2">
+                  <div class="h-4 w-24 bg-gray-200 dark:bg-white/10 rounded"></div>
+                  <div class="h-3 w-16 bg-gray-200 dark:bg-white/10 rounded"></div>
+                </div>
+              </div>
+              <div class="h-5 w-20 bg-gray-200 dark:bg-white/10 rounded"></div>
+            </div>
+          </div>
+          <!-- Desktop Skeleton -->
+          <div class="hidden md:block p-4">
+            <div class="space-y-4">
+              <div *ngFor="let i of [1, 2, 3, 4, 5]" class="flex items-center justify-between">
+                <div class="h-4 w-1/4 bg-gray-200 dark:bg-white/10 rounded"></div>
+                <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
+                <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
+                <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Mobile Card View (md:hidden) -->
-        <div class="md:hidden">
+        <div class="md:hidden" *ngIf="!isLoading()">
           <div
             *ngIf="incomes().length === 0"
             class="p-8 text-center text-gray-500 dark:text-gray-400"
@@ -99,7 +128,7 @@ import { RouterModule } from '@angular/router';
         </div>
 
         <!-- Desktop Table View (hidden md:block) -->
-        <div class="hidden md:block overflow-x-auto">
+        <div class="hidden md:block overflow-x-auto" *ngIf="!isLoading()">
           <table class="w-full text-left">
             <thead
               class="bg-gray-50/50 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider"
@@ -163,11 +192,12 @@ import { RouterModule } from '@angular/router';
             [disabled]="currentPage() === 0"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {{ ts.t()('trans.prev') || 'Previous' }}
+            {{ ts.t()('trans.prev') }}
           </button>
 
           <span class="text-sm text-gray-600 dark:text-gray-400">
-            Page {{ currentPage() + 1 }} of {{ totalPages() || 1 }}
+            {{ ts.t()('trans.page') }} {{ currentPage() + 1 }} {{ ts.t()('trans.of') }}
+            {{ totalPages() || 1 }}
           </span>
 
           <button
@@ -175,7 +205,7 @@ import { RouterModule } from '@angular/router';
             [disabled]="currentPage() >= totalPages() - 1"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {{ ts.t()('trans.next') || 'Next' }}
+            {{ ts.t()('trans.next') }}
           </button>
         </div>
       </div>
@@ -362,9 +392,12 @@ import { RouterModule } from '@angular/router';
 export class IncomesComponent implements OnInit, OnDestroy {
   incomes = signal<IncomeResponse[]>([]);
 
+  isLoading = signal(true);
+  isDeleting = signal<number | null>(null);
+
   // Pagination
   currentPage = signal(0);
-  pageSize = signal(10);
+  pageSize = signal(6);
   totalItems = signal(0);
   totalPages = signal(0);
 
@@ -385,7 +418,8 @@ export class IncomesComponent implements OnInit, OnDestroy {
   constructor(
     private apiService: ApiService,
     private fb: FormBuilder,
-    public ts: TranslationService
+    public ts: TranslationService,
+    private ns: NotificationService
   ) {
     this.form = this.fb.group({
       description: ['', Validators.required],
@@ -436,6 +470,8 @@ export class IncomesComponent implements OnInit, OnDestroy {
   }
 
   loadData(isBackground: boolean = false) {
+    if (!isBackground) this.isLoading.set(true);
+
     this.apiService.getIncomes(this.currentPage(), this.pageSize()).subscribe({
       next: (res) => {
         const sorted = res.content.sort(
@@ -444,8 +480,12 @@ export class IncomesComponent implements OnInit, OnDestroy {
         this.incomes.set(sorted);
         this.totalItems.set(res.page.totalElements);
         this.totalPages.set(res.page.totalPages);
+        this.isLoading.set(false);
       },
-      error: (err) => console.error('Error loading incomes', err),
+      error: (err) => {
+        console.error('Error loading incomes', err);
+        this.isLoading.set(false);
+      },
     });
   }
 
@@ -469,7 +509,7 @@ export class IncomesComponent implements OnInit, OnDestroy {
       this.form.patchValue({
         description: itemToEdit.description,
         amount: itemToEdit.amount,
-        date: itemToEdit.date,
+        date: new Date(itemToEdit.date).toISOString().split('T')[0],
         currency: 'DOP',
       });
     } else {
@@ -493,9 +533,15 @@ export class IncomesComponent implements OnInit, OnDestroy {
     if (this.form.valid) {
       const formData = this.form.value;
       const id = this.editingId();
-      const payload = { ...formData }; // No category manipulation
+      let payload = { ...formData };
 
       if (id) {
+        // Preserve original fields like fixedSalary if not in form
+        const originalItem = this.incomes().find((i) => i.id === id);
+        if (originalItem) {
+          payload = { ...originalItem, ...payload };
+        }
+
         this.apiService.updateIncome(id, payload).subscribe(this.handleResponseObserver);
       } else {
         this.apiService.createIncome(payload).subscribe(this.handleResponseObserver);
@@ -505,12 +551,14 @@ export class IncomesComponent implements OnInit, OnDestroy {
 
   private handleResponseObserver = {
     next: () => {
+      const isEdit = !!this.editingId();
       this.closeModal();
       this.loadData();
+      this.ns.show('success', isEdit ? 'Income updated' : 'Income created');
     },
     error: (err: any) => {
       console.error('Operation failed', err);
-      alert('Error: ' + (err.error?.message || 'Check connection'));
+      this.ns.show('error', err.error?.message || 'Operation failed');
     },
   };
 
@@ -523,12 +571,23 @@ export class IncomesComponent implements OnInit, OnDestroy {
     const item = this.itemToDelete();
     if (!item) return;
 
+    // Optimistic Delete
+    const previousList = this.incomes();
+    this.incomes.update((current) => current.filter((i) => i.id !== item.id));
+    this.cancelDelete();
+    this.ns.show('info', 'Income deleted', 3000);
+
     this.apiService.deleteIncome(Number(item.id)).subscribe({
       next: () => {
-        this.cancelDelete();
-        this.loadData();
+        // Success - already updated UI
+        this.loadData(true);
       },
-      error: (err) => console.error('Error deleting income', err),
+      error: (err) => {
+        console.error('Error deleting income', err);
+        // Revert
+        this.incomes.set(previousList);
+        this.ns.show('error', 'Failed to delete income');
+      },
     });
   }
 

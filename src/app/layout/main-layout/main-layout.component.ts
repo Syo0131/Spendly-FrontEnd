@@ -5,11 +5,20 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 import { TranslationService } from '../../core/services/translation.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ToastComponent } from '../../shared/components/toast/toast.component';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, CommonModule, RouterLink, RouterLinkActive],
+  imports: [
+    RouterOutlet,
+    SidebarComponent,
+    CommonModule,
+    RouterLink,
+    RouterLinkActive,
+    ToastComponent,
+  ],
   template: `
     <div
       class="min-h-screen bg-gray-50 dark:bg-slate-900 flex text-slate-900 dark:text-white font-sans relative transition-colors duration-300 overflow-x-hidden"
@@ -21,29 +30,49 @@ import { AuthService } from '../../core/services/auth.service';
       <!-- Main Content Area -->
       <main class="flex-1 lg:ml-64 min-h-screen relative z-0 overflow-y-auto w-full pb-20 lg:pb-0">
         <!-- Desktop Tools (Floating Top-Right) -->
-        <div class="hidden lg:flex absolute top-6 right-8 z-30 space-x-3">
-          <!-- Theme Toggle -->
-          <button
-            (click)="themeService.toggleTheme()"
-            class="flex items-center justify-center w-10 h-10 rounded-full bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 border border-gray-200 dark:border-white/5 backdrop-blur-md transition-all text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white shadow-sm"
-            [title]="themeService.darkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
-          >
-            <span class="material-icons-outlined text-xl">{{
-              themeService.darkMode() ? 'light_mode' : 'dark_mode'
-            }}</span>
-          </button>
-
-          <!-- Lang Switcher -->
-          <button
-            (click)="ts.toggleLang()"
-            class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 border border-gray-200 dark:border-white/5 backdrop-blur-md transition-all text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white group shadow-sm"
-          >
-            <span
-              class="material-icons-outlined text-base group-hover:text-primary transition-colors"
-              >translate</span
+        <div class="hidden lg:flex absolute top-6 right-8 z-30 space-x-3 items-start">
+            
+          <!-- Notifications -->
+          <div class="relative">
+            <button
+                (click)="toggleNotifications()"
+                class="flex items-center justify-center w-10 h-10 rounded-full bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 border border-gray-200 dark:border-white/5 backdrop-blur-md transition-all text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white shadow-sm"
             >
-            <span>{{ ts.currentLang() === 'es' ? 'ES' : 'EN' }}</span>
-          </button>
+                <span class="material-icons-outlined text-xl">notifications</span>
+                <span *ngIf="ns.unreadCount() > 0" class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+            </button>
+
+            <!-- Notification Dropdown -->
+            <div *ngIf="showNotifications" class="absolute right-0 top-12 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-200 dark:border-white/10 py-2 z-50 animate-fade-in-up origin-top-right overflow-hidden">
+                <div class="px-4 py-2 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                    <h3 class="font-bold text-sm text-gray-900 dark:text-white">{{ ts.t()('notif.title') }}</h3>
+                    <button *ngIf="ns.unreadCount() > 0" (click)="ns.markAllAsRead()" class="text-xs text-primary hover:underline">{{ ts.t()('notif.mark_read') }}</button>
+                    <button *ngIf="ns.unreadCount() === 0 && ns.history().length > 0" (click)="ns.clearHistory()" class="text-xs text-red-500 hover:underline">{{ ts.t()('notif.clear') }}</button>
+                </div>
+                
+                <div class="max-h-80 overflow-y-auto">
+                    <div *ngIf="!ns.history().length" class="p-8 text-center text-gray-400 text-sm">
+                        {{ ts.t()('notif.empty') }}
+                    </div>
+                    
+                    <div *ngFor="let item of ns.history()" class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/5 border-b border-gray-100 dark:border-white/5 last:border-0 transition-colors flex gap-3" [class.bg-blue-50]="!item.read && false" [class.dark:bg-blue-900/10]="!item.read && false">
+                         <div class="mt-0.5 shrink-0">
+                            <span class="material-icons-outlined text-lg" [ngClass]="{'text-green-500': item.type === 'success', 'text-red-500': item.type === 'error', 'text-blue-500': item.type === 'info'}">
+                                {{ item.type === 'success' ? 'check_circle' : item.type === 'error' ? 'error' : 'info' }}
+                            </span>
+                         </div>
+                         <div class="flex-1 min-w-0">
+                             <p class="text-sm text-gray-800 dark:text-gray-200 leading-snug">{{ item.message }}</p>
+                             <p class="text-xs text-gray-400 mt-1">{{ formatDate(item.timestamp) }}</p>
+                         </div>
+                         <div *ngIf="!item.read" class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Backdrop for Notifications -->
+            <div *ngIf="showNotifications" class="fixed inset-0 z-40" (click)="showNotifications = false"></div>
+          </div>
         </div>
 
         <!-- Topbar for Mobile -->
@@ -55,22 +84,7 @@ import { AuthService } from '../../core/services/auth.service';
             >Spendly</span
           >
           <div class="flex items-center space-x-2">
-            <button
-              (click)="themeService.toggleTheme()"
-              class="p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors"
-            >
-              <span class="material-icons-outlined text-xl">{{
-                themeService.darkMode() ? 'light_mode' : 'dark_mode'
-              }}</span>
-            </button>
-            <button
-              (click)="ts.toggleLang()"
-              class="p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors"
-            >
-              <span class="text-xs font-bold border border-current rounded px-1">{{
-                ts.currentLang() === 'es' ? 'ES' : 'EN'
-              }}</span>
-            </button>
+            <!-- Mobile Notifications or other tools if needed? -->
           </div>
         </header>
 
@@ -236,6 +250,9 @@ import { AuthService } from '../../core/services/auth.service';
           </nav>
         </div>
       </div>
+      
+      <!-- Global Toast Container -->
+      <app-toast></app-toast>
     </div>
   `,
   styles: [],
@@ -246,8 +263,22 @@ export class MainLayoutComponent {
   constructor(
     public ts: TranslationService,
     public themeService: ThemeService,
-    public authService: AuthService
+    public authService: AuthService,
+    public ns: NotificationService
   ) {}
+
+  showNotifications = false;
+
+  toggleNotifications() {
+    this.showNotifications = !this.showNotifications;
+    if (this.showNotifications) {
+      // Mark as read when opening? Or per item? Let's keep unread until interaction or "Mark all read"
+    }
+  }
+
+  formatDate(date: Date): string {
+    return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
 
   toggleMobileMenu() {
     this.showMobileMenu = !this.showMobileMenu;

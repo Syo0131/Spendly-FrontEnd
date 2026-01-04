@@ -81,6 +81,10 @@ export class TranslationService {
     'trans.edit': { es: 'Editar', en: 'Edit' },
     'trans.select_category': { es: 'Selecciona una categoría', en: 'Select a category' },
     'trans.loading_cat': { es: 'Cargando categorías...', en: 'Loading categories...' },
+    'trans.prev': { es: 'Anterior', en: 'Previous' },
+    'trans.next': { es: 'Siguiente', en: 'Next' },
+    'trans.page': { es: 'Página', en: 'Page' },
+    'trans.of': { es: 'de', en: 'of' },
 
     // Banks
     'banks.title': { es: 'Integración Bancaria', en: 'Bank Integration' },
@@ -135,6 +139,12 @@ export class TranslationService {
       es: '¡Administra suscripciones y facturas recurrentes pronto!',
       en: 'Manage subscriptions and recurring bills soon!',
     },
+
+    // Notifications
+    'notif.title': { es: 'Notificaciones', en: 'Notifications' },
+    'notif.mark_read': { es: 'Marcar todo leído', en: 'Mark all read' },
+    'notif.clear': { es: 'Limpiar historial', en: 'Clear history' },
+    'notif.empty': { es: 'No hay notificaciones', en: 'No notifications yet' },
 
     // Settings
     'settings.tabs.profile': { es: 'Perfil', en: 'Profile' },

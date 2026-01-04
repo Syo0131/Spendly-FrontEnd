@@ -11,6 +11,8 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { ThemeService } from '../../core/services/theme.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { UpdateUserDto } from '../../core/models/api.models';
 
 @Component({
@@ -233,10 +235,19 @@ import { UpdateUserDto } from '../../core/models/api.models';
                   </p>
                 </div>
               </div>
-              <!-- Mock Toggle (Visual only as ThemeService enforces dark for now, but good for UI) -->
-              <div class="w-12 h-6 bg-primary/20 rounded-full relative cursor-not-allowed">
-                <div class="absolute right-1 top-1 w-4 h-4 bg-primary rounded-full shadow-sm"></div>
-              </div>
+              <!-- Theme Toggle -->
+              <button
+                (click)="themeService.toggleTheme()"
+                class="w-14 h-7 rounded-full relative transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                [class.bg-gray-200]="!themeService.darkMode()"
+                [class.bg-primary]="themeService.darkMode()"
+              >
+                <div
+                  class="absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300"
+                  [class.translate-x-7]="themeService.darkMode()"
+                  [class.translate-x-0]="!themeService.darkMode()"
+                ></div>
+              </button>
             </div>
 
             <!-- Language -->
@@ -343,7 +354,9 @@ export class SettingsComponent implements OnInit {
     private fb: FormBuilder,
     public authService: AuthService,
     public ts: TranslationService,
-    private apiService: ApiService
+    public themeService: ThemeService,
+    private apiService: ApiService,
+    private ns: NotificationService
   ) {
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
@@ -394,13 +407,13 @@ export class SettingsComponent implements OnInit {
 
     this.apiService.updateUser(mockId, data).subscribe({
       next: (res) => {
-        alert('Profile updated successfully!');
+        this.ns.show('success', 'Profile updated successfully!', 3000);
         this.isLoading.set(false);
         // Update local state if needed
       },
       error: (err) => {
         console.error(err);
-        alert('Failed to update profile. (Note: Admin ID 1 might be locked or ID missing)');
+        this.ns.show('error', 'Failed to update profile.');
         this.isLoading.set(false);
       },
     });
@@ -418,12 +431,12 @@ export class SettingsComponent implements OnInit {
 
     this.apiService.updateUser(mockId, data).subscribe({
       next: (res) => {
-        alert('Password changed successfully. Please log in again.');
-        this.authService.logout();
+        this.ns.show('success', 'Password changed. Logging out...', 2000);
+        setTimeout(() => this.authService.logout(), 2000);
       },
       error: (err) => {
         console.error(err);
-        alert('Failed to update password');
+        this.ns.show('error', 'Failed to update password');
         this.isLoading.set(false);
       },
     });
@@ -431,7 +444,7 @@ export class SettingsComponent implements OnInit {
 
   todoDelete() {
     if (confirm('Are you sure? This backend feature is pending.')) {
-      alert('Feature pending implementation on server.');
+      this.ns.show('info', 'Feature pending implementation on server.');
     }
   }
 }

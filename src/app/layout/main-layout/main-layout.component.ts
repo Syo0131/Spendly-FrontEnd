@@ -7,6 +7,7 @@ import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastComponent } from '../../shared/components/toast/toast.component';
 import { NotificationService } from '../../core/services/notification.service';
+import { ApiService } from '../../core/services/api.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -264,8 +265,25 @@ export class MainLayoutComponent {
     public ts: TranslationService,
     public themeService: ThemeService,
     public authService: AuthService,
-    public ns: NotificationService
-  ) {}
+    public ns: NotificationService,
+    private apiService: ApiService
+  ) {
+    // Prefetch data for smoother navigation (Cache-First)
+    this.prefetchData();
+  }
+
+  private prefetchData() {
+    // These calls will populate the cache in the background
+    this.apiService.getExpenses(0, 20).subscribe({
+      next: () => console.log('Expenses prefetched'),
+      error: () => console.log('Expenses prefetch failed (silent)'),
+    });
+
+    this.apiService.getIncomes(0, 20).subscribe({
+      next: () => console.log('Incomes prefetched'),
+      error: () => console.log('Incomes prefetch failed (silent)'),
+    });
+  }
 
   showNotifications = false;
 

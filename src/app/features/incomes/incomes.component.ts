@@ -15,7 +15,7 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, ReactiveFormsModule, RouterModule, CurrencyInputDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="space-y-6 animate-fade-in-up">
+    <div class="space-y-6">
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div>
@@ -54,10 +54,10 @@ import { RouterModule } from '@angular/router';
       <!-- List -->
       <!-- List -->
       <div
-        class="glass-card overflow-hidden bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
+        class="glass-card overflow-hidden bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 animate-fade-in"
       >
-        <!-- Skeleton Loader -->
-        <div *ngIf="isLoading()" class="animate-pulse">
+        <!-- Skeleton Loader (Only initial load) -->
+        <div *ngIf="isLoading() && incomes().length === 0" class="animate-pulse">
           <!-- Mobile Skeleton -->
           <div class="md:hidden divide-y divide-gray-200 dark:divide-white/5">
             <div *ngFor="let i of [1, 2, 3, 4, 5]" class="p-4 flex items-center justify-between">
@@ -85,7 +85,12 @@ import { RouterModule } from '@angular/router';
         </div>
 
         <!-- Mobile Card View (md:hidden) -->
-        <div class="md:hidden" *ngIf="!isLoading()">
+        <div
+          class="md:hidden transition-opacity duration-300"
+          *ngIf="incomes().length > 0 || !isLoading()"
+          [class.opacity-50]="isLoading()"
+          [class.pointer-events-none]="isLoading()"
+        >
           <div
             *ngIf="incomes().length === 0"
             class="p-8 text-center text-gray-500 dark:text-gray-400"
@@ -128,7 +133,12 @@ import { RouterModule } from '@angular/router';
         </div>
 
         <!-- Desktop Table View (hidden md:block) -->
-        <div class="hidden md:block overflow-x-auto" *ngIf="!isLoading()">
+        <div
+          class="hidden md:block overflow-x-auto transition-opacity duration-300"
+          *ngIf="incomes().length > 0 || !isLoading()"
+          [class.opacity-50]="isLoading()"
+          [class.pointer-events-none]="isLoading()"
+        >
           <table class="w-full text-left">
             <thead
               class="bg-gray-50/50 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider"

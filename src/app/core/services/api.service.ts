@@ -51,19 +51,34 @@ export class ApiService {
       .set('size', size)
       .append('sort', 'date,desc')
       .append('sort', 'id,desc');
-    return this.http.get<PagedResponse<IncomeResponse>>(`${this.baseUrl}/incomes`, { params });
+
+    const url = `${this.baseUrl}/incomes`;
+    if (page === 0) {
+      return this.getWithCache<PagedResponse<IncomeResponse>>(
+        `incomes_page_0_size_${size}`,
+        url,
+        params
+      );
+    }
+    return this.http.get<PagedResponse<IncomeResponse>>(url, { params });
   }
 
   createIncome(data: CreateIncome): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.baseUrl}/incomes/create`, data);
+    return this.http.post<MessageResponse>(`${this.baseUrl}/incomes/create`, data).pipe(
+      tap(() => this.cache.clear()) // Invalidate all cache to ensure consistency
+    );
   }
 
   deleteIncome(id: number): Observable<MessageResponse> {
-    return this.http.delete<MessageResponse>(`${this.baseUrl}/incomes/${id}/delete`);
+    return this.http
+      .delete<MessageResponse>(`${this.baseUrl}/incomes/${id}/delete`)
+      .pipe(tap(() => this.cache.clear()));
   }
 
   updateIncome(id: number, data: UpdateIncome): Observable<MessageResponse> {
-    return this.http.put<MessageResponse>(`${this.baseUrl}/incomes/${id}/update`, data);
+    return this.http
+      .put<MessageResponse>(`${this.baseUrl}/incomes/${id}/update`, data)
+      .pipe(tap(() => this.cache.clear()));
   }
 
   // Expenses
@@ -73,19 +88,34 @@ export class ApiService {
       .set('size', size)
       .append('sort', 'date,desc')
       .append('sort', 'id,desc');
-    return this.http.get<PagedResponse<ExpenseResponse>>(`${this.baseUrl}/expenses`, { params });
+
+    const url = `${this.baseUrl}/expenses`;
+    if (page === 0) {
+      return this.getWithCache<PagedResponse<ExpenseResponse>>(
+        `expenses_page_0_size_${size}`,
+        url,
+        params
+      );
+    }
+    return this.http.get<PagedResponse<ExpenseResponse>>(url, { params });
   }
 
   createExpense(data: CreateExpense): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.baseUrl}/expenses`, data);
+    return this.http
+      .post<MessageResponse>(`${this.baseUrl}/expenses`, data)
+      .pipe(tap(() => this.cache.clear()));
   }
 
   updateExpense(id: number, data: UpdateExpense): Observable<MessageResponse> {
-    return this.http.put<MessageResponse>(`${this.baseUrl}/expenses/${id}/update`, data);
+    return this.http
+      .put<MessageResponse>(`${this.baseUrl}/expenses/${id}/update`, data)
+      .pipe(tap(() => this.cache.clear()));
   }
 
   deleteExpense(id: number): Observable<MessageResponse> {
-    return this.http.delete<MessageResponse>(`${this.baseUrl}/expenses/${id}/delete`);
+    return this.http
+      .delete<MessageResponse>(`${this.baseUrl}/expenses/${id}/delete`)
+      .pipe(tap(() => this.cache.clear()));
   }
 
   getExpensesMonthTotal(year: number, month: number): Observable<any> {

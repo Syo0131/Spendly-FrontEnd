@@ -11,10 +11,11 @@ import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
+import { PagedResponse } from '../../core/models/api.models';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
-import { forkJoin, of, interval, Subscription } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { forkJoin, of, interval, Subscription, EMPTY, Observable } from 'rxjs';
+import { catchError, expand, reduce, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboard',
@@ -377,8 +378,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Use forkJoin to get both in parallel
     // Increasing page size to ensure we capture enough history for client-side filtering
     forkJoin({
-      incomes: this.apiService.getIncomes(0, 500).pipe(catchError(() => of({ content: [] }))),
-      expenses: this.apiService.getExpenses(0, 500).pipe(catchError(() => of({ content: [] }))),
+      incomes: this.fetchAllHistory((p, s) => this.apiService.getIncomes(p, s)).pipe(
+        catchError(() => of([]))
+      ),
+      expenses: this.fetchAllHistory((p, s) => this.apiService.getExpenses(p, s)).pipe(
+        catchError(() => of([]))
+      ),
       categoryStats: this.apiService
         .getExpensesByCategory(year, month)
         .pipe(catchError(() => of({}))),
@@ -386,8 +391,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       next: ({ incomes, expenses, categoryStats }) => {
         this.isLoading.set(false);
         // A. Update Income Total Card (Current Month)
-        const currentMonthIncomes = incomes.content
-          ? incomes.content.filter((i: any) => {
+        // incomes and expenses are now T[] not PagedResponse
+        const currentMonthIncomes = incomes
+          ? incomes.filter((i: any) => {
               // Parse YYYY-MM-DD directly to avoid timezone issues
               const [y, m] = i.date.toString().split('-');
               return parseInt(m, 10) === month && parseInt(y, 10) === year;
@@ -424,8 +430,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         // C. Prepare Bar Chart (Last 6 Months History)
         // Ensure content exists or default to empty array
-        const incomeContent = incomes.content || [];
-        const expenseContent = expenses.content || [];
+        // C. Prepare Bar Chart (Last 6 Months History)
+        // Ensure content exists or default to empty array
+        const incomeContent = incomes || [];
+        const expenseContent = expenses || [];
         this.prepareHistoryChart(incomeContent, expenseContent);
         this.cdr.markForCheck();
       },
@@ -445,6 +453,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  private fetchAllHistory<T extends { date: string }>(
+    fetchFn: (page: number, size: number) => Observable<PagedResponse<T>>
+  ): Observable<T[]> {
+    const today = new Date();
+    const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 5, 1); // 5 months back + current = 6 months window
+
+    return fetchFn(0, 100).pipe(
+      expand((res: PagedResponse<T>) => {
+        const content = res.content || [];
+        // Stop if empty or last page
+        if (content.length === 0 || res.page.number >= res.page.totalPages - 1) {
+          return EMPTY;
+        }
+
+        // Stop if the last item is already older than our window
+        const lastItem = content[content.length - 1];
+        const lastDate = new Date(lastItem.date);
+
+        // Note: API validation might be needed if dates aren't perfectly sorted,
+        // but assuming desc sort from API:
+        if (lastDate < sixMonthsAgo) {
+          return EMPTY;
+        }
+
+        return fetchFn(res.page.number + 1, 100);
+      }),
+      reduce((acc, res) => acc.concat(res.content || []), [] as T[])
+    );
   }
 
   prepareHistoryChart(incomes: any[], expenses: any[]) {

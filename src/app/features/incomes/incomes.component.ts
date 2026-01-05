@@ -139,15 +139,15 @@ import { RouterModule } from '@angular/router';
           [class.opacity-50]="isLoading()"
           [class.pointer-events-none]="isLoading()"
         >
-          <table class="w-full text-left">
+          <table class="w-full text-left table-fixed">
             <thead
               class="bg-gray-50/50 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider"
             >
               <tr>
-                <th class="p-4 font-medium">{{ ts.t()('trans.desc') }}</th>
-                <th class="p-4 font-medium">{{ ts.t()('trans.date') }}</th>
-                <th class="p-4 font-medium text-right">{{ ts.t()('trans.amount') }}</th>
-                <th class="p-4 font-medium text-center"></th>
+                <th class="p-4 font-medium w-6/12">{{ ts.t()('trans.desc') }}</th>
+                <th class="p-4 font-medium w-2/12">{{ ts.t()('trans.date') }}</th>
+                <th class="p-4 font-medium text-right w-3/12">{{ ts.t()('trans.amount') }}</th>
+                <th class="p-4 font-medium text-center w-1/12"></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-white/5">
@@ -156,7 +156,9 @@ import { RouterModule } from '@angular/router';
                 class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
               >
                 <td class="p-4 text-gray-900 dark:text-white font-medium">
-                  {{ item.description }}
+                  <div class="truncate max-w-full" [title]="item.description">
+                    {{ item.description }}
+                  </div>
                 </td>
                 <td class="p-4 text-gray-500 dark:text-gray-400 text-sm">
                   {{ item.date | date }}

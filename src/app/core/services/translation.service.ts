@@ -219,6 +219,9 @@ export class TranslationService {
     'cat.transport': { es: 'Transporte', en: 'Transport' },
     'cat.transporte': { es: 'Transporte', en: 'Transport' },
 
+    'cat.alimentacion': { es: 'Alimentación', en: 'Food' },
+    'cat.alimentation': { es: 'Alimentación', en: 'Food' },
+
     'cat.housing': { es: 'Vivienda', en: 'Housing' },
     'cat.vivienda': { es: 'Vivienda', en: 'Housing' },
 
@@ -265,7 +268,6 @@ export class TranslationService {
     'cat.farmacia': { es: 'Farmacia', en: 'Pharmacy' },
     'cat.mantenimiento': { es: 'Mantenimiento', en: 'Maintenance' },
     'cat.vida_social': { es: 'Vida Social', en: 'Social Life' },
-    'cat.alimentacion': { es: 'Alimentación', en: 'Food' },
 
     'cat.general': { es: 'General', en: 'General' },
   };
@@ -281,7 +283,14 @@ export class TranslationService {
 
   translateCategory(categoryName: string): string {
     if (!categoryName) return '';
-    const key = 'cat.' + categoryName.toLowerCase().replace(/ /g, '_');
+    // Normalize: lowercase, remove accents, replace spaces with underscore
+    const normalized = categoryName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ /g, '_');
+
+    const key = 'cat.' + normalized;
     const term = this.dictionary[key];
     return term ? term[this.currentLang()] : categoryName;
   }
@@ -317,8 +326,8 @@ export class TranslationService {
       });
       setTimeout(() => {
         this.isTransitioning.set(false);
-      }, 150); // Faster transition
-    }, 150); // Faster transition
+      }, 150);
+    }, 150);
   }
 
   setLang(lang: Language) {

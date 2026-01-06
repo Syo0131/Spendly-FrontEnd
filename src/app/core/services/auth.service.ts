@@ -4,6 +4,7 @@ import { Observable, tap } from 'rxjs';
 import { LoginRequest, CreateUser, TokenResponse, MessageResponse } from '../models/api.models';
 import { Router } from '@angular/router';
 import { ApiService } from './api.service';
+import { NotificationService } from './notification.service';
 
 import { environment } from '../../../environments/environment';
 
@@ -19,7 +20,12 @@ export class AuthService {
   isPremium = signal<boolean>(localStorage.getItem('spendly_premium') === 'true');
   isAuthenticated = signal<boolean>(false);
 
-  constructor(private http: HttpClient, private router: Router, private apiService: ApiService) {
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private apiService: ApiService,
+    private ns: NotificationService
+  ) {
     const token = this.getToken();
     if (token && !this.isTokenExpired(token)) {
       this.isAuthenticated.set(true);
@@ -73,6 +79,7 @@ export class AuthService {
     this.isAuthenticated.set(false);
     this.isPremium.set(false);
     this.currentUserStr.set(null);
+    this.ns.clearHistory();
     this.router.navigate(['/auth/login']);
   }
 

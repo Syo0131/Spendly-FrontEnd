@@ -265,6 +265,7 @@ export class TranslationService {
     'cat.farmacia': { es: 'Farmacia', en: 'Pharmacy' },
     'cat.mantenimiento': { es: 'Mantenimiento', en: 'Maintenance' },
     'cat.vida_social': { es: 'Vida Social', en: 'Social Life' },
+    'cat.alimentacion': { es: 'Alimentación', en: 'Food' },
 
     'cat.general': { es: 'General', en: 'General' },
   };

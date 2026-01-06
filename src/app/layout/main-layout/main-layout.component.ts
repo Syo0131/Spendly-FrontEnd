@@ -255,6 +255,39 @@ import { UpdateService } from '../../core/services/update.service';
       
       <!-- Global Toast Container -->
       <app-toast></app-toast>
+      <!-- Update Modal -->
+      <div
+        *ngIf="updateService.isUpdateAvailable()"
+        class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      >
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 max-w-sm w-full border border-gray-100 dark:border-white/10 relative overflow-hidden">
+             <!-- Decorators -->
+             <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-12 -mt-12"></div>
+
+             <div class="flex flex-col items-center text-center gap-4">
+               <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-full">
+                 <span class="material-icons-outlined text-3xl text-blue-500">system_update</span>
+               </div>
+               
+               <div>
+                  <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                    {{ ts.translate('notif.update_available') }}
+                  </h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                     Latest version is ready to install.
+                  </p>
+               </div>
+
+               <button
+                 (click)="updateService.reloadApp()"
+                 class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-500/20"
+               >
+                 Refresh Now
+               </button>
+             </div>
+        </div>
+      </div>
+
     </div>
   `,
   styles: [],
@@ -267,8 +300,8 @@ export class MainLayoutComponent {
   themeService = inject(ThemeService);
   authService = inject(AuthService);
   ns = inject(NotificationService);
+  updateService = inject(UpdateService); // Made public for template access
   private apiService = inject(ApiService);
-  private updateService = inject(UpdateService);
 
   constructor() {
     // Prefetch data for smoother navigation (Cache-First)

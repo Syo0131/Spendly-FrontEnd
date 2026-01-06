@@ -428,6 +428,9 @@ export class IncomesComponent implements OnInit, OnDestroy {
   totalPages = signal(0);
 
   getEmptyRows() {
+    if (this.totalItems() <= this.pageSize()) {
+      return [];
+    }
     const emptyCount = this.pageSize() - this.incomes().length;
     return emptyCount > 0 ? new Array(emptyCount) : [];
   }

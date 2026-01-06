@@ -410,13 +410,13 @@ export class SettingsComponent implements OnInit {
 
     this.apiService.updateUser(mockId, data).subscribe({
       next: (res) => {
-        this.ns.show('Profile updated successfully!', 'success', 3000);
+        this.ns.show('notif.profile_updated', 'success', 3000);
         this.isLoading.set(false);
         // Update local state if needed
       },
       error: (err) => {
         console.error(err);
-        this.ns.show('Failed to update profile.', 'error');
+        this.ns.show('notif.profile_fail', 'error');
         this.isLoading.set(false);
       },
     });
@@ -434,12 +434,12 @@ export class SettingsComponent implements OnInit {
 
     this.apiService.updateUser(mockId, data).subscribe({
       next: (res) => {
-        this.ns.show('Account disabled. Logging out...', 'success', 2000);
+        this.ns.show('notif.account_disabled', 'success', 2000);
         setTimeout(() => this.authService.logout(), 2000);
       },
       error: (err) => {
         console.error(err);
-        this.ns.show('Failed to update password', 'error');
+        this.ns.show('notif.account_fail', 'error');
         this.isLoading.set(false);
       },
     });
@@ -447,6 +447,7 @@ export class SettingsComponent implements OnInit {
 
   todoDelete() {
     // this.apiService.deleteUser(mockId).subscribe(...)
-    this.ns.show('Feature pending implementation on server.', 'info');
+    // this.apiService.deleteUser(mockId).subscribe(...)
+    this.ns.show('notif.pending', 'info');
   }
 }

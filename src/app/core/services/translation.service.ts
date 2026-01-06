@@ -12,7 +12,14 @@ type Translations = {
   providedIn: 'root',
 })
 export class TranslationService {
-  currentLang = signal<Language>('es');
+  currentLang = signal<Language>('en');
+
+  constructor() {
+    const stored = localStorage.getItem('lang') as Language;
+    if (stored && (stored === 'es' || stored === 'en')) {
+      this.currentLang.set(stored);
+    }
+  }
 
   private dictionary: Translations = {
     // Auth
@@ -145,6 +152,37 @@ export class TranslationService {
     'notif.mark_read': { es: 'Marcar todo leído', en: 'Mark all read' },
     'notif.clear': { es: 'Limpiar historial', en: 'Clear history' },
     'notif.empty': { es: 'No hay notificaciones', en: 'No notifications yet' },
+    'notif.update_available': { es: 'Nueva versión disponible', en: 'New version available' },
+    'notif.expense_created': { es: 'Gasto creado', en: 'Expense created' },
+    'notif.expense_updated': { es: 'Gasto actualizado', en: 'Expense updated' },
+    'notif.expense_deleted': { es: 'Gasto eliminado', en: 'Expense deleted' },
+    'notif.expense_delete_fail': { es: 'Error al eliminar gasto', en: 'Failed to delete expense' },
+    'notif.income_created': { es: 'Ingreso creado', en: 'Income created' },
+    'notif.income_updated': { es: 'Ingreso actualizado', en: 'Income updated' },
+    'notif.income_deleted': { es: 'Ingreso eliminado', en: 'Income deleted' },
+    'notif.income_delete_fail': { es: 'Error al eliminar ingreso', en: 'Failed to delete income' },
+    'notif.profile_updated': {
+      es: 'Perfil actualizado exitosamente!',
+      en: 'Profile updated successfully!',
+    },
+    'notif.profile_fail': { es: 'Error al actualizar perfil', en: 'Failed to update profile' },
+    'notif.password_changed': {
+      es: 'Contraseña cambiada. Cerrando sesión...',
+      en: 'Password changed. Logging out...',
+    },
+    'notif.password_fail': {
+      es: 'Error al actualizar contraseña',
+      en: 'Failed to update password',
+    },
+    'notif.account_disabled': {
+      es: 'Cuenta deshabilitada. Cerrando sesión...',
+      en: 'Account disabled. Logging out...',
+    },
+    'notif.account_fail': { es: 'Error al eliminar cuenta', en: 'Failed to delete account' },
+    'notif.pending': {
+      es: 'Función pendiente de implementación en el servidor.',
+      en: 'Feature pending implementation on server.',
+    },
 
     // Settings
     'settings.tabs.profile': { es: 'Perfil', en: 'Profile' },
@@ -271,7 +309,11 @@ export class TranslationService {
   toggleLang() {
     this.isTransitioning.set(true);
     setTimeout(() => {
-      this.currentLang.update((l) => (l === 'es' ? 'en' : 'es'));
+      this.currentLang.update((l) => {
+        const newLang = l === 'es' ? 'en' : 'es';
+        localStorage.setItem('lang', newLang);
+        return newLang;
+      });
       setTimeout(() => {
         this.isTransitioning.set(false);
       }, 150); // Faster transition
@@ -280,5 +322,6 @@ export class TranslationService {
 
   setLang(lang: Language) {
     this.currentLang.set(lang);
+    localStorage.setItem('lang', lang);
   }
 }

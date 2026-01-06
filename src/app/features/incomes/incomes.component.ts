@@ -8,11 +8,20 @@ import { TranslationService } from '../../core/services/translation.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { IncomeResponse } from '../../core/models/api.models';
 import { RouterModule } from '@angular/router';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-incomes',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule, CurrencyInputDirective],
+  animations: [
+    trigger('fadeOut', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(10px)' }),
+        animate('350ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
+      ]),
+    ]),
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6">
@@ -153,6 +162,7 @@ import { RouterModule } from '@angular/router';
             <tbody class="divide-y divide-gray-200 dark:divide-white/5">
               <tr
                 *ngFor="let item of incomes(); trackBy: trackById"
+                [@fadeOut]
                 class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
               >
                 <td class="p-4 text-gray-900 dark:text-white font-medium">
@@ -190,6 +200,10 @@ import { RouterModule } from '@angular/router';
                 <td colspan="5" class="p-8 text-center text-gray-500 dark:text-gray-400">
                   {{ ts.t()('trans.no_data') }}
                 </td>
+              </tr>
+              <!-- Placeholder Rows to maintain fixed height -->
+              <tr *ngFor="let _ of getEmptyRows()" class="h-[73px]">
+                <td colspan="5"></td>
               </tr>
             </tbody>
           </table>
@@ -413,6 +427,11 @@ export class IncomesComponent implements OnInit, OnDestroy {
   totalItems = signal(0);
   totalPages = signal(0);
 
+  getEmptyRows() {
+    const emptyCount = this.pageSize() - this.incomes().length;
+    return emptyCount > 0 ? new Array(emptyCount) : [];
+  }
+
   private refreshSubscription: Subscription | null = null;
 
   form: FormGroup;
@@ -563,7 +582,7 @@ export class IncomesComponent implements OnInit, OnDestroy {
 
   private handleResponseObserver = {
     next: () => {
-      const msg = this.editingId() ? 'Income updated' : 'Income created';
+      const msg = this.editingId() ? 'notif.income_updated' : 'notif.income_created';
       this.closeModal();
       this.loadData();
       this.ns.show(msg, 'success');
@@ -587,7 +606,7 @@ export class IncomesComponent implements OnInit, OnDestroy {
     const previousList = this.incomes();
     this.incomes.update((current) => current.filter((i) => i.id !== item.id));
     this.cancelDelete();
-    this.ns.show('Income deleted', 'success');
+    this.ns.show('notif.income_deleted', 'success');
 
     this.apiService.deleteIncome(Number(item.id)).subscribe({
       next: () => {
@@ -598,7 +617,7 @@ export class IncomesComponent implements OnInit, OnDestroy {
         console.error('Error deleting income', err);
         // Revert
         this.incomes.set(previousList);
-        this.ns.show('Failed to delete income', 'error');
+        this.ns.show('notif.income_delete_fail', 'error');
       },
     });
   }

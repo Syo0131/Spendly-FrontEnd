@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../../core/services/notification.service';
+import { TranslationService } from '../../../core/services/translation.service';
 import { animate, style, transition, trigger } from '@angular/animations';
 
 @Component({
@@ -46,7 +47,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
 
         <!-- Content -->
         <div class="flex-1">
-          <p class="text-sm font-medium">{{ toast.message }}</p>
+          <p class="text-sm font-medium">{{ ts.translate(toast.message) }}</p>
           <button
             *ngIf="toast.action"
             (click)="toast.action.onClick()"
@@ -68,5 +69,5 @@ import { animate, style, transition, trigger } from '@angular/animations';
   `,
 })
 export class ToastComponent {
-  constructor(public ns: NotificationService) {}
+  constructor(public ns: NotificationService, public ts: TranslationService) {}
 }

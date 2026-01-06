@@ -64,7 +64,7 @@ import { UpdateService } from '../../core/services/update.service';
                             </span>
                          </div>
                          <div class="flex-1 min-w-0">
-                             <p class="text-sm text-gray-800 dark:text-gray-200 leading-snug">{{ item.message }}</p>
+                             <p class="text-sm text-gray-800 dark:text-gray-200 leading-snug">{{ ts.translate(item.message) }}</p>
                              <p class="text-xs text-gray-400 mt-1">{{ formatDate(item.timestamp) }}</p>
                          </div>
                          <div *ngIf="!item.read" class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>

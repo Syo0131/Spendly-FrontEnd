@@ -1,10 +1,14 @@
 import { Injectable, signal } from '@angular/core';
 
 export interface Toast {
-  id: string;
+  id: number;
   message: string;
   type: 'success' | 'error' | 'info';
   duration?: number;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 export interface NotificationLog {
@@ -28,16 +32,19 @@ export class NotificationService {
 
   constructor() {}
 
-  show(type: 'success' | 'error' | 'info', message: string, duration: number = 3000) {
-    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-
-    // 1. Add to active toasts
-    const newToast: Toast = { id, message, type, duration };
-    this.toasts.update((current) => [...current, newToast]);
+  show(
+    message: string,
+    type: 'success' | 'error' | 'info' = 'info',
+    duration: number = 3000,
+    action?: { label: string; onClick: () => void }
+  ) {
+    const id = Date.now();
+    const toast: Toast = { id, message, type, duration, action };
+    this.toasts.update((current) => [...current, toast]);
 
     // 2. Add to history log
     const newLog: NotificationLog = {
-      id,
+      id: id.toString(), // Convert number ID to string for NotificationLog
       message,
       type,
       timestamp: new Date(),
@@ -54,7 +61,7 @@ export class NotificationService {
     }
   }
 
-  dismissToast(id: string) {
+  dismissToast(id: number) {
     this.toasts.update((current) => current.filter((t) => t.id !== id));
   }
 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../sidebar/sidebar.component';
@@ -8,6 +8,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastComponent } from '../../shared/components/toast/toast.component';
 import { NotificationService } from '../../core/services/notification.service';
 import { ApiService } from '../../core/services/api.service';
+import { UpdateService } from '../../core/services/update.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -260,16 +261,34 @@ import { ApiService } from '../../core/services/api.service';
 })
 export class MainLayoutComponent {
   showMobileMenu = false;
+  showNotifications = false;
 
-  constructor(
-    public ts: TranslationService,
-    public themeService: ThemeService,
-    public authService: AuthService,
-    public ns: NotificationService,
-    private apiService: ApiService
-  ) {
+  ts = inject(TranslationService);
+  themeService = inject(ThemeService);
+  authService = inject(AuthService);
+  ns = inject(NotificationService);
+  private apiService = inject(ApiService);
+  private updateService = inject(UpdateService);
+
+  constructor() {
     // Prefetch data for smoother navigation (Cache-First)
     this.prefetchData();
+  }
+
+  toggleNotifications() {
+    this.showNotifications = !this.showNotifications;
+  }
+
+  toggleMobileMenu() {
+    this.showMobileMenu = !this.showMobileMenu;
+  }
+
+  closeMobileMenu() {
+    this.showMobileMenu = false;
+  }
+
+  formatDate(date: Date): string {
+    return new Date(date).toLocaleString();
   }
 
   private prefetchData() {
@@ -283,26 +302,5 @@ export class MainLayoutComponent {
       next: () => console.log('Incomes prefetched'),
       error: () => console.log('Incomes prefetch failed (silent)'),
     });
-  }
-
-  showNotifications = false;
-
-  toggleNotifications() {
-    this.showNotifications = !this.showNotifications;
-    if (this.showNotifications) {
-      // Mark as read when opening? Or per item? Let's keep unread until interaction or "Mark all read"
-    }
-  }
-
-  formatDate(date: Date): string {
-    return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
-
-  toggleMobileMenu() {
-    this.showMobileMenu = !this.showMobileMenu;
-  }
-
-  closeMobileMenu() {
-    this.showMobileMenu = false;
   }
 }

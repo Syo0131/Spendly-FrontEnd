@@ -687,11 +687,12 @@ export class ExpensesComponent implements OnInit, OnDestroy {
       const isEdit = !!this.editingId();
       this.closeModal();
       this.loadData();
-      this.ns.show('success', isEdit ? 'Expense updated' : 'Expense created');
+      const msg = isEdit ? 'Expense updated' : 'Expense created';
+      this.ns.show(msg, 'success');
     },
     error: (err: any) => {
       console.error('Operation failed', err);
-      this.ns.show('error', err.error?.message || 'Operation failed');
+      this.ns.show(err.error?.message || 'Operation failed', 'error');
     },
   };
 
@@ -708,7 +709,7 @@ export class ExpensesComponent implements OnInit, OnDestroy {
     const previousList = this.expenses();
     this.expenses.update((current) => current.filter((e) => e.id !== item.id));
     this.cancelDelete();
-    this.ns.show('info', 'Expense deleted', 3000);
+    this.ns.show('Expense deleted', 'success');
 
     this.apiService.deleteExpense(Number(item.id)).subscribe({
       next: () => {
@@ -720,7 +721,7 @@ export class ExpensesComponent implements OnInit, OnDestroy {
         console.error('Error deleting expense', err);
         // Revert
         this.expenses.set(previousList);
-        this.ns.show('error', 'Failed to delete expense');
+        this.ns.show('Failed to delete expense', 'error');
       },
     });
   }

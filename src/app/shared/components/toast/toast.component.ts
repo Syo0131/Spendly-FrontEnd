@@ -47,6 +47,13 @@ import { animate, style, transition, trigger } from '@angular/animations';
         <!-- Content -->
         <div class="flex-1">
           <p class="text-sm font-medium">{{ toast.message }}</p>
+          <button
+            *ngIf="toast.action"
+            (click)="toast.action.onClick()"
+            class="mt-2 px-3 py-1 text-xs font-semibold rounded shadow-sm transition-colors border text-gray-800 bg-white hover:bg-gray-50 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
+          >
+            {{ toast.action.label }}
+          </button>
         </div>
 
         <!-- Close -->

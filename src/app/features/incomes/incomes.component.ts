@@ -563,10 +563,10 @@ export class IncomesComponent implements OnInit, OnDestroy {
 
   private handleResponseObserver = {
     next: () => {
-      const isEdit = !!this.editingId();
+      const msg = this.editingId() ? 'Income updated' : 'Income created';
       this.closeModal();
       this.loadData();
-      this.ns.show('success', isEdit ? 'Income updated' : 'Income created');
+      this.ns.show(msg, 'success');
     },
     error: (err: any) => {
       console.error('Operation failed', err);
@@ -587,7 +587,7 @@ export class IncomesComponent implements OnInit, OnDestroy {
     const previousList = this.incomes();
     this.incomes.update((current) => current.filter((i) => i.id !== item.id));
     this.cancelDelete();
-    this.ns.show('info', 'Income deleted', 3000);
+    this.ns.show('Income deleted', 'success');
 
     this.apiService.deleteIncome(Number(item.id)).subscribe({
       next: () => {
@@ -598,7 +598,7 @@ export class IncomesComponent implements OnInit, OnDestroy {
         console.error('Error deleting income', err);
         // Revert
         this.incomes.set(previousList);
-        this.ns.show('error', 'Failed to delete income');
+        this.ns.show('Failed to delete income', 'error');
       },
     });
   }

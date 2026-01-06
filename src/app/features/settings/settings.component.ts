@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, Injectable, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -14,6 +14,7 @@ import { TranslationService } from '../../core/services/translation.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { UpdateUserDto } from '../../core/models/api.models';
+import { UpdateService } from '../../core/services/update.service';
 
 @Component({
   selector: 'app-settings',
@@ -350,13 +351,15 @@ export class SettingsComponent implements OnInit {
   profileForm: FormGroup;
   securityForm: FormGroup;
 
+  ns = inject(NotificationService);
+  private updateService = inject(UpdateService);
+
   constructor(
     private fb: FormBuilder,
     public authService: AuthService,
     public ts: TranslationService,
     public themeService: ThemeService,
-    private apiService: ApiService,
-    private ns: NotificationService
+    private apiService: ApiService
   ) {
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
@@ -407,13 +410,13 @@ export class SettingsComponent implements OnInit {
 
     this.apiService.updateUser(mockId, data).subscribe({
       next: (res) => {
-        this.ns.show('success', 'Profile updated successfully!', 3000);
+        this.ns.show('Profile updated successfully!', 'success', 3000);
         this.isLoading.set(false);
         // Update local state if needed
       },
       error: (err) => {
         console.error(err);
-        this.ns.show('error', 'Failed to update profile.');
+        this.ns.show('Failed to update profile.', 'error');
         this.isLoading.set(false);
       },
     });
@@ -431,20 +434,19 @@ export class SettingsComponent implements OnInit {
 
     this.apiService.updateUser(mockId, data).subscribe({
       next: (res) => {
-        this.ns.show('success', 'Password changed. Logging out...', 2000);
+        this.ns.show('Account disabled. Logging out...', 'success', 2000);
         setTimeout(() => this.authService.logout(), 2000);
       },
       error: (err) => {
         console.error(err);
-        this.ns.show('error', 'Failed to update password');
+        this.ns.show('Failed to update password', 'error');
         this.isLoading.set(false);
       },
     });
   }
 
   todoDelete() {
-    if (confirm('Are you sure? This backend feature is pending.')) {
-      this.ns.show('info', 'Feature pending implementation on server.');
-    }
+    // this.apiService.deleteUser(mockId).subscribe(...)
+    this.ns.show('Feature pending implementation on server.', 'info');
   }
 }

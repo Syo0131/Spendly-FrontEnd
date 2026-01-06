@@ -34,7 +34,7 @@ import { UpdateService } from '../../core/services/update.service';
 
       <!-- Navigation Tabs -->
       <div
-        class="flex space-x-1 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl w-fit backdrop-blur-sm border border-gray-200 dark:border-white/5 overflow-x-auto"
+        class="flex space-x-1 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl w-full md:w-fit max-w-full backdrop-blur-sm border border-gray-200 dark:border-white/5 overflow-x-auto no-scrollbar"
       >
         <button
           *ngFor="let tab of tabs"
@@ -44,7 +44,7 @@ import { UpdateService } from '../../core/services/update.service';
               ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           "
-          class="px-6 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2"
+          class="flex-shrink-0 px-6 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2"
         >
           <span class="material-icons-outlined text-lg">{{ tab.icon }}</span>
           {{ ts.t()('settings.tabs.' + tab.id) }}
@@ -323,6 +323,13 @@ import { UpdateService } from '../../core/services/update.service';
         to {
           opacity: 1;
         }
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
       }
       @keyframes fadeInUp {
         from {

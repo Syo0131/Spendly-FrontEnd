@@ -79,7 +79,7 @@ import { UpdateService } from '../../core/services/update.service';
 
         <!-- Topbar for Mobile -->
         <header
-          class="lg:hidden h-14 flex items-center justify-between px-4 border-b border-gray-200 dark:border-white/5 bg-white/80 dark:bg-slate-900/50 backdrop-blur sticky top-0 z-30 transition-colors duration-300"
+          class="lg:hidden flex items-center justify-between px-4 py-2 pt-safe min-h-[3.5rem] border-b border-gray-200 dark:border-white/5 bg-white/80 dark:bg-slate-900/50 backdrop-blur sticky top-0 z-30 transition-colors duration-300"
         >
           <span
             class="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary"
@@ -97,8 +97,9 @@ import { UpdateService } from '../../core/services/update.service';
 
       <!-- Bottom Navigation (Mobile Only) -->
       <div
-        class="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 z-50 grid grid-cols-6 items-center px-1 transition-colors duration-300"
+        class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 z-50 pb-safe transition-colors duration-300"
       >
+        <div class="h-16 grid grid-cols-6 items-center px-1">
         <a
           routerLink="/dashboard"
           routerLinkActive="text-primary"
@@ -164,6 +165,7 @@ import { UpdateService } from '../../core/services/update.service';
             ts.t()('nav.menu')
           }}</span>
         </button>
+        </div>
       </div>
 
       <!-- Mobile Side Menu Drawer -->
@@ -325,15 +327,36 @@ export class MainLayoutComponent {
   }
 
   private prefetchData() {
-    // These calls will populate the cache in the background
-    this.apiService.getExpenses(0, 20).subscribe({
-      next: () => console.log('Expenses prefetched'),
-      error: () => console.log('Expenses prefetch failed (silent)'),
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+
+    // 1. Prefetch Dashboard specific stats
+    this.apiService.getExpensesMonthTotal(year, month).subscribe({
+      next: () => console.log('Month Total prefetched'),
+      error: () => {},
     });
 
-    this.apiService.getIncomes(0, 20).subscribe({
+    this.apiService.getExpensesByCategory(year, month).subscribe({
+      next: () => console.log('Category Stats prefetched'),
+      error: () => {},
+    });
+
+    // 2. Prefetch first page of Incomes/Expenses matches page size (6)
+    this.apiService.getExpenses(0, 6).subscribe({
+      next: () => console.log('Expenses prefetched'),
+      error: () => {},
+    });
+
+    this.apiService.getIncomes(0, 6).subscribe({
       next: () => console.log('Incomes prefetched'),
-      error: () => console.log('Incomes prefetch failed (silent)'),
+      error: () => {},
+    });
+
+    // 3. Prefetch Chart Data
+    this.apiService.getIncomeVsExpenseStats().subscribe({
+      next: () => console.log('Chart History prefetched'),
+      error: () => {},
     });
   }
 }

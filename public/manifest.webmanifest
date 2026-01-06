@@ -1,6 +1,6 @@
 {
-  "name": "spendly-pwa",
-  "short_name": "spendly-pwa",
+  "name": "Spendly",
+  "short_name": "Spendly",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",

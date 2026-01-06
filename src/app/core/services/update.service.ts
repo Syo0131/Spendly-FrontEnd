@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, NgZone } from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
 import { interval } from 'rxjs';
@@ -12,6 +12,7 @@ export class UpdateService {
   private swUpdate = inject(SwUpdate);
   private ns = inject(NotificationService);
   private ts = inject(TranslationService);
+  private ngZone = inject(NgZone);
 
   isUpdateAvailable = signal(false);
 
@@ -29,9 +30,16 @@ export class UpdateService {
           this.isUpdateAvailable.set(true);
         });
 
-      // Poll every 30 seconds
-      interval(30 * 1000).subscribe(() => {
-        this.checkForUpdate();
+      this.swUpdate.unrecoverable.subscribe((evt) => {
+        console.error('UpdateService: Unrecoverable state', evt.reason);
+        document.location.reload();
+      });
+
+      // Poll every 30 seconds (Outside Zone to avoid blocking app stability)
+      this.ngZone.runOutsideAngular(() => {
+        interval(30 * 1000).subscribe(() => {
+          this.ngZone.run(() => this.checkForUpdate());
+        });
       });
 
       // Check when coming back to the tab/app
@@ -55,8 +63,13 @@ export class UpdateService {
   }
 
   reloadApp() {
-    this.swUpdate.activateUpdate().then(() => {
-      document.location.reload();
+    // Nuclear Option: Unregister SW to force fresh fetch on reload
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const registration of registrations) {
+        registration.unregister();
+      }
+      // Reload with cache busting
+      window.location.reload();
     });
   }
 }

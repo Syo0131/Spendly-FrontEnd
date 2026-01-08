@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, HostListener } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../sidebar/sidebar.component';
@@ -354,9 +354,13 @@ export class MainLayoutComponent {
     });
 
     // 3. Prefetch Chart Data
-    this.apiService.getIncomeVsExpenseStats().subscribe({
-      next: () => console.log('Chart History prefetched'),
-      error: () => {},
-    });
+    // this.apiService.getIncomeVsExpenseStats().subscribe({});
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: any) {
+    if (event.key === 'Enter' && this.updateService.isUpdateAvailable()) {
+      this.updateService.reloadApp();
+    }
   }
 }

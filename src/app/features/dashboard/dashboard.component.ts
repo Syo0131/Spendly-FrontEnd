@@ -6,6 +6,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   ViewChild,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
@@ -328,12 +329,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
     },
   };
 
+  // Cache for translation updates
+  private lastIncomes: any[] = [];
+  private lastExpenses: any[] = [];
+
   constructor(
     public authService: AuthService,
     private apiService: ApiService,
     public ts: TranslationService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    // React to language changes to update chart labels
+    effect(() => {
+      const lang = this.ts.currentLang(); // dependency
+      // Update Bar Chart Labels
+      this.prepareHistoryChart(this.lastIncomes, this.lastExpenses);
+
+      // Update Doughnut Chart (Categories) if needed (labels are keys, unlikely to fetch new keys but good to refresh)
+      // Actually doughnut labels come from API 'categoryStats' keys which are usually 'Food', 'Rent' etc.
+      // These keys effectively need translation logic if they are 'Food' in English but API returns localized?
+      // Assuming API returns English keys or keys that need client-side mapping.
+      // For now focusing on the "Financial Summary" (Bar Chart) labels which was the user request.
+      this.cdr.markForCheck();
+    });
+  }
 
   ngOnInit() {
     this.loadData();
@@ -432,9 +451,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         // Ensure content exists or default to empty array
         // C. Prepare Bar Chart (Last 6 Months History)
         // Ensure content exists or default to empty array
-        const incomeContent = incomes || [];
-        const expenseContent = expenses || [];
-        this.prepareHistoryChart(incomeContent, expenseContent);
+        this.lastIncomes = incomes || [];
+        this.lastExpenses = expenses || [];
+        this.prepareHistoryChart(this.lastIncomes, this.lastExpenses);
         this.cdr.markForCheck();
       },
       error: (err) => {
@@ -449,6 +468,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.doughnutChartData.datasets[0].backgroundColor = ['#e2e8f0'];
 
         // Reset Bar Chart to show correct 6-month labels with 0 data
+        this.lastIncomes = [];
+        this.lastExpenses = [];
         this.prepareHistoryChart([], []);
         this.cdr.markForCheck();
       },
@@ -495,7 +516,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     for (let i = 5; i >= 0; i--) {
       const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-      const monthName = d.toLocaleString('default', { month: 'short' });
+      const monthName = d.toLocaleString(this.ts.currentLang() === 'es' ? 'es-ES' : 'en-US', {
+        month: 'short',
+      });
       months.push(monthName);
 
       // Filter and sum for this specific month/year
@@ -533,13 +556,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       datasets: [
         {
           data: incomeData,
-          label: 'Income',
+          label: this.ts.t()('dash.income'),
           backgroundColor: '#06b6d4',
           borderRadius: 4,
         },
         {
           data: expenseData,
-          label: 'Expense',
+          label: this.ts.t()('dash.expenses'),
           backgroundColor: '#fb7185',
           borderRadius: 4,
         },

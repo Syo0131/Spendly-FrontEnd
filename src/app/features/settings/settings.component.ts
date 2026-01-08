@@ -34,7 +34,7 @@ import { UpdateService } from '../../core/services/update.service';
 
       <!-- Navigation Tabs -->
       <div
-        class="flex space-x-1 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl w-full md:w-fit max-w-full backdrop-blur-sm border border-gray-200 dark:border-white/5 overflow-x-auto no-scrollbar"
+        class="grid grid-cols-3 gap-1 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl w-full md:w-fit backdrop-blur-sm border border-gray-200 dark:border-white/5"
       >
         <button
           *ngFor="let tab of tabs"
@@ -44,10 +44,10 @@ import { UpdateService } from '../../core/services/update.service';
               ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           "
-          class="flex-shrink-0 px-6 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2"
+          class="flex items-center justify-center px-2 md:px-6 py-2.5 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap gap-1 md:gap-2"
         >
           <span class="material-icons-outlined text-lg">{{ tab.icon }}</span>
-          {{ ts.t()('settings.tabs.' + tab.id) }}
+          <span class="truncate">{{ ts.t()('settings.tabs.' + tab.id) }}</span>
         </button>
       </div>
 

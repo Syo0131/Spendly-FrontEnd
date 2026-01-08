@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  signal,
+  ChangeDetectionStrategy,
+  HostListener,
+} from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
 import { CommonModule } from '@angular/common';
@@ -752,5 +759,40 @@ export class ExpensesComponent implements OnInit, OnDestroy {
   cancelDelete() {
     this.showDeleteModal.set(false);
     this.itemToDelete.set(null);
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: any) {
+    if (event.key === 'Escape') {
+      if (this.showActionMenu()) {
+        this.closeActionMenu();
+        return;
+      }
+      if (this.showDeleteModal()) {
+        this.cancelDelete();
+        return;
+      }
+      if (this.showModal()) {
+        this.closeModal();
+      }
+    } else if (event.key === 'Enter') {
+      if (this.showDeleteModal()) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.confirmDelete();
+        return;
+      }
+      // Ctrl+Enter to save form
+      if (this.showModal() && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        this.onSubmit();
+      }
+    } else if ((event.altKey && event.key === 'n') || (event.altKey && event.key === 'N')) {
+      // Alt + N to open Add Modal
+      if (!this.showModal() && !this.showDeleteModal()) {
+        event.preventDefault();
+        this.openModal();
+      }
+    }
   }
 }

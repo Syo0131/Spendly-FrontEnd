@@ -132,10 +132,33 @@ export class TranslationService {
       en: 'Budget management coming soon!',
     },
     'goals.title': { es: 'Metas de Ahorro', en: 'Savings Goals' },
-    'goals.desc': {
-      es: '¡Establece y sigue tus metas de ahorro pronto!',
-      en: 'Set and track your savings goals soon!',
+    'goals.subtitle': {
+      es: 'Define, sigue y alcanza tus objetivos financieros',
+      en: 'Define, track, and achieve your financial goals',
     },
+    'goals.add': { es: 'Nueva Meta', en: 'New Goal' },
+    'goals.empty_title': { es: 'No hay metas aún', en: 'No goals yet' },
+    'goals.empty_desc': {
+      es: 'Comienza creando tu primera meta de ahorro para visualizar tu progreso.',
+      en: 'Start by creating your first saving goal to visualize your progress.',
+    },
+    'goals.target': { es: 'Meta', en: 'Target' },
+    'goals.add_funds': { es: 'Agregar Fondos', en: 'Add Funds' },
+    'goals.confirm_delete': {
+      es: '¿Estás seguro de eliminar esta meta?',
+      en: 'Are you sure you want to delete this goal?',
+    },
+    'goals.edit_title': { es: 'Editar Meta', en: 'Edit Goal' },
+    'goals.new_title': { es: 'Nueva Meta', en: 'New Goal' },
+    'goals.field_name': { es: 'Nombre de la Meta', en: 'Goal Name' },
+    'goals.field_target': { es: 'Monto Objetivo', en: 'Target Amount' },
+    'goals.field_current': { es: 'Monto Actual', en: 'Current Amount' },
+    'goals.field_date': { es: 'Fecha Objetivo', en: 'Target Date' },
+    'goals.delete_title': { es: '¿Eliminar Meta?', en: 'Delete Goal?' },
+
+    // General Actions
+    'action.save': { es: 'Guardar', en: 'Save' },
+    'action.cancel': { es: 'Cancelar', en: 'Cancel' },
     'reminders.title': { es: 'Recordatorios', en: 'Reminders' },
     'reminders.desc': {
       es: '¡Recordatorios de facturas y alertas pronto!',
@@ -145,6 +168,12 @@ export class TranslationService {
     'recurring.desc': {
       es: '¡Administra suscripciones y facturas recurrentes pronto!',
       en: 'Manage subscriptions and recurring bills soon!',
+    },
+
+    // Forms
+    'forms.description_optional': {
+      es: 'Descripción (Opcional)',
+      en: 'Description (Optional)',
     },
 
     // Notifications

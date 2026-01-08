@@ -14,6 +14,11 @@ import {
   BankOption,
   UpdateUserDto,
   PremiumStatusDto,
+  CreateSavingGoalsDto,
+  UpdateSavingGoals,
+  SavingGoalsResponse,
+  PagedModelSavingGoalsResponse,
+  ContributionResponse,
 } from '../models/api.models';
 import { CacheService } from './cache.service';
 import { of } from 'rxjs';
@@ -102,7 +107,7 @@ export class ApiService {
 
   createExpense(data: CreateExpense): Observable<MessageResponse> {
     return this.http
-      .post<MessageResponse>(`${this.baseUrl}/expenses`, data)
+      .post<MessageResponse>(`${this.baseUrl}/expenses/create`, data)
       .pipe(tap(() => this.cache.clear()));
   }
 
@@ -128,10 +133,68 @@ export class ApiService {
     );
   }
 
-  // Get Last 6 Months Income vs Expense
-  getIncomeVsExpenseStats(): Observable<any[]> {
-    // This one was failing/mocked anyway, but let's cache it if it works
-    return this.http.get<any[]>(`${this.baseUrl}/stats/income-expense-history`);
+  // Saving Goals
+  getSavingGoals(page = 0, size = 20): Observable<PagedModelSavingGoalsResponse> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    const url = `${this.baseUrl}/saving-goals`;
+
+    if (page === 0) {
+      return this.getWithCache<PagedModelSavingGoalsResponse>(
+        `saving_goals_page_0_size_${size}`,
+        url,
+        params
+      );
+    }
+    return this.http.get<PagedModelSavingGoalsResponse>(url, { params });
+  }
+
+  getSavingGoalById(id: number): Observable<SavingGoalsResponse> {
+    return this.http.get<SavingGoalsResponse>(`${this.baseUrl}/saving-goals/${id}`);
+  }
+
+  createSavingGoal(data: CreateSavingGoalsDto): Observable<MessageResponse> {
+    return this.http
+      .post<MessageResponse>(`${this.baseUrl}/saving-goals/create`, data)
+      .pipe(tap(() => this.cache.clear()));
+  }
+
+  addContribution(
+    id: number,
+    amount: number,
+    description?: string
+  ): Observable<SavingGoalsResponse> {
+    return this.http
+      .patch<SavingGoalsResponse>(`${this.baseUrl}/saving-goals/${id}/add-contribution`, {
+        amount,
+        description,
+      })
+      .pipe(tap(() => this.cache.clear()));
+  }
+
+  updateSavingGoal(id: number, data: UpdateSavingGoals): Observable<MessageResponse> {
+    return this.http
+      .put<MessageResponse>(`${this.baseUrl}/saving-goals/${id}/update`, data)
+      .pipe(tap(() => this.cache.clear()));
+  }
+
+  deleteSavingGoal(id: number): Observable<MessageResponse> {
+    return this.http
+      .delete<MessageResponse>(`${this.baseUrl}/saving-goals/${id}/delete`)
+      .pipe(tap(() => this.cache.clear()));
+  }
+
+  getGoalContributions(goalId: number): Observable<PagedResponse<ContributionResponse>> {
+    return this.http.get<PagedResponse<ContributionResponse>>(
+      `${this.baseUrl}/saving-goals/${goalId}/contributions`
+    );
+  }
+
+  deleteContribution(goalId: number, contributionId: number): Observable<MessageResponse> {
+    return this.http
+      .delete<MessageResponse>(
+        `${this.baseUrl}/saving-goals/${goalId}/contributions/${contributionId}`
+      )
+      .pipe(tap(() => this.cache.clear()));
   }
 
   // Banks

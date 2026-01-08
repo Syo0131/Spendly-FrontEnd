@@ -116,6 +116,50 @@ export interface PremiumStatusDto {
   message: string;
 }
 
+// Saving Goals
+export interface SavingGoalsResponse {
+  id: number;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  targetDate: string; // date
+  enable: boolean;
+  achieved: boolean;
+  createdAt: string; // date-time
+  updatedAt: string; // date-time
+}
+
+export interface CreateSavingGoalsDto {
+  name: string;
+  targetAmount: number;
+  targetDate: string; // date
+}
+
+export interface AddContributionDto {
+  amount: number;
+  description?: string;
+}
+
+export interface UpdateSavingGoals {
+  name?: string;
+  targetAmount?: number;
+  currentAmount?: number;
+  targetDate?: string;
+  enable?: boolean;
+}
+
+export interface PagedModelSavingGoalsResponse {
+  content: SavingGoalsResponse[];
+  page: PageMetadata;
+}
+
 export interface MonthlyStats {
   [categoryName: string]: number;
+}
+
+export interface ContributionResponse {
+  id: number;
+  amount: number;
+  description?: string;
+  createdAt: string; // date-time
 }

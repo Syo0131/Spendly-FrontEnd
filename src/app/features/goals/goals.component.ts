@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -12,6 +12,7 @@ import { GoalStateService } from '../../core/services/goal-state.service';
   selector: 'app-goals',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, DatePickerComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="p-6 pb-24 md:pb-6 animate-fade-in-up">
       <!-- Header -->

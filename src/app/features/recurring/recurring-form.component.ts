@@ -125,7 +125,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl shadow-xl max-h-52 overflow-y-auto custom-scrollbar animate-scale-in"
               >
                 <div
-                  *ngFor="let cat of categories()"
+                  *ngFor="let cat of categories"
                   (click)="selectCategory(cat)"
                   class="p-2.5 flex items-center gap-2.5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors border-b border-gray-50 dark:border-white/5 last:border-0"
                 >
@@ -306,6 +306,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
   ],
 })
 export class RecurringFormComponent {
+  @Input() categories: Category[] = [];
   @Input() set expense(value: RecurringExpense | null) {
     if (value) {
       this.isEdit = true;
@@ -334,7 +335,7 @@ export class RecurringFormComponent {
   api = inject(ApiService);
   ts = inject(TranslationService);
 
-  categories = signal<Category[]>([]);
+  // categories = signal<Category[]>([]); // REMOVED
   showCategoryDropdown = false;
   isEdit = false;
   durationMode: 'indefinite' | 'fixed' = 'indefinite';
@@ -349,15 +350,13 @@ export class RecurringFormComponent {
   };
 
   constructor() {
-    this.loadCategories();
+    // this.loadCategories(); // REMOVED
   }
 
-  loadCategories() {
-    this.api.getCategories().subscribe((res) => this.categories.set(res));
-  }
+  // loadCategories() {} // REMOVED
 
   getSelectedCategory() {
-    return this.categories().find((c) => c.id === this.formData.categoryId);
+    return this.categories.find((c) => c.id === this.formData.categoryId);
   }
 
   selectCategory(cat: Category) {

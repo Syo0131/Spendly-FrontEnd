@@ -77,6 +77,10 @@ export class BudgetStateService {
     );
   }
 
+  updateBudget(id: number, dto: any) {
+    return this.api.updateBudget(id, dto).pipe(tap(() => this.refresh()));
+  }
+
   removeBudget(id: number) {
     // Optimistic
     const prev = this._budgets();

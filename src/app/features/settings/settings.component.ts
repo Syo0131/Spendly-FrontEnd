@@ -1,4 +1,11 @@
-import { Component, Injectable, inject, signal, OnInit } from '@angular/core';
+import {
+  Component,
+  Injectable,
+  inject,
+  signal,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -20,6 +27,7 @@ import { UpdateService } from '../../core/services/update.service';
   selector: 'app-settings',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="p-8 animate-fade-in max-w-4xl mx-auto space-y-6">
       <!-- Header -->

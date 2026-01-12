@@ -111,6 +111,29 @@ import { UpdateService } from '../../core/services/update.service';
           }}</span>
         </a>
 
+        
+        <a
+        routerLink="/incomes"
+        routerLinkActive="text-teal-500 dark:text-teal-400"
+        class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-teal-500 dark:hover:text-gray-300 transition-colors"
+        >
+        <span class="material-icons-outlined text-2xl mb-0.5">trending_up</span>
+        <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
+          ts.t()('nav.incomes')
+        }}</span>
+        </a>
+        
+        <a
+        routerLink="/expenses"
+        routerLinkActive="text-rose-500 dark:text-rose-400"
+        class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-rose-500 dark:hover:text-gray-300 transition-colors"
+        >
+        <span class="material-icons-outlined text-2xl mb-0.5">trending_down</span>
+        <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
+          ts.t()('nav.expenses')
+        }}</span>
+        </a>
+        
         <a
           routerLink="/banks"
           routerLinkActive="text-primary"
@@ -121,40 +144,17 @@ import { UpdateService } from '../../core/services/update.service';
             ts.t()('nav.banks')
           }}</span>
         </a>
-
         <a
-          routerLink="/incomes"
-          routerLinkActive="text-teal-500 dark:text-teal-400"
-          class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-teal-500 dark:hover:text-gray-300 transition-colors"
+        routerLink="/budgets"
+        routerLinkActive="text-primary"
+        class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-gray-300 transition-colors"
         >
-          <span class="material-icons-outlined text-2xl mb-0.5">trending_up</span>
-          <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
-            ts.t()('nav.incomes')
-          }}</span>
+        <span class="material-icons-outlined text-2xl mb-0.5">pie_chart</span>
+        <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
+          ts.t()('nav.budgets')
+        }}</span>
         </a>
-
-        <a
-          routerLink="/expenses"
-          routerLinkActive="text-rose-500 dark:text-rose-400"
-          class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-rose-500 dark:hover:text-gray-300 transition-colors"
-        >
-          <span class="material-icons-outlined text-2xl mb-0.5">trending_down</span>
-          <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
-            ts.t()('nav.expenses')
-          }}</span>
-        </a>
-
-        <a
-          routerLink="/budgets"
-          routerLinkActive="text-primary"
-          class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-gray-300 transition-colors"
-        >
-          <span class="material-icons-outlined text-2xl mb-0.5">pie_chart</span>
-          <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
-            ts.t()('nav.budgets')
-          }}</span>
-        </a>
-
+        
         <!-- Menu Button (Replaces Settings) -->
         <button
           (click)="toggleMobileMenu()"

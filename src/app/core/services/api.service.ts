@@ -79,21 +79,21 @@ export class ApiService {
   }
 
   createIncome(data: CreateIncome): Observable<MessageResponse> {
-    return this.http.post<MessageResponse>(`${this.baseUrl}/incomes/create`, data).pipe(
-      tap(() => this.cache.clear()) // Invalidate all cache to ensure consistency
-    );
+    return this.http
+      .post<MessageResponse>(`${this.baseUrl}/incomes/create`, data)
+      .pipe(tap(() => this.cache.invalidate('incomes')));
   }
 
   deleteIncome(id: number): Observable<MessageResponse> {
     return this.http
       .delete<MessageResponse>(`${this.baseUrl}/incomes/${id}/delete`)
-      .pipe(tap(() => this.cache.clear()));
+      .pipe(tap(() => this.cache.invalidate('incomes')));
   }
 
   updateIncome(id: number, data: UpdateIncome): Observable<MessageResponse> {
     return this.http
       .put<MessageResponse>(`${this.baseUrl}/incomes/${id}/update`, data)
-      .pipe(tap(() => this.cache.clear()));
+      .pipe(tap(() => this.cache.invalidate('incomes')));
   }
 
   // Expenses
@@ -118,19 +118,19 @@ export class ApiService {
   createExpense(data: CreateExpense): Observable<MessageResponse> {
     return this.http
       .post<MessageResponse>(`${this.baseUrl}/expenses/create`, data)
-      .pipe(tap(() => this.cache.clear()));
+      .pipe(tap(() => this.cache.invalidate('expenses')));
   }
 
   updateExpense(id: number, data: UpdateExpense): Observable<MessageResponse> {
     return this.http
       .put<MessageResponse>(`${this.baseUrl}/expenses/${id}/update`, data)
-      .pipe(tap(() => this.cache.clear()));
+      .pipe(tap(() => this.cache.invalidate('expenses')));
   }
 
   deleteExpense(id: number): Observable<MessageResponse> {
     return this.http
       .delete<MessageResponse>(`${this.baseUrl}/expenses/${id}/delete`)
-      .pipe(tap(() => this.cache.clear()));
+      .pipe(tap(() => this.cache.invalidate('expenses')));
   }
 
   getExpensesMonthTotal(year: number, month: number): Observable<any> {
@@ -306,13 +306,13 @@ export class ApiService {
 
   updateRecurringExpense(id: number, data: UpdateRecurringExpenseDto): Observable<MessageResponse> {
     return this.http
-      .put<MessageResponse>(`${this.baseUrl}/recurring-expenses/${id}`, data) // Note: Backend uses PUT /{id} directly based on specs
+      .put<MessageResponse>(`${this.baseUrl}/recurring-expenses/${id}/update`, data) // Note: Backend uses PUT /{id} directly based on specs
       .pipe(tap(() => this.cache.clear()));
   }
 
   deleteRecurringExpense(id: number): Observable<MessageResponse> {
     return this.http
-      .delete<MessageResponse>(`${this.baseUrl}/recurring-expenses/${id}`)
+      .delete<MessageResponse>(`${this.baseUrl}/recurring-expenses/${id}/delete`)
       .pipe(tap(() => this.cache.clear()));
   }
 }

@@ -215,6 +215,7 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
             {{ ts.t()('dash.breakdown') }}
           </h3>
           <div class="h-64 flex items-center justify-center">
+            @defer (on viewport) {
             <canvas
               baseChart
               [data]="doughnutChartData"
@@ -222,6 +223,11 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
               [options]="doughnutChartOptions"
             >
             </canvas>
+            } @placeholder {
+            <div class="w-full h-full flex items-center justify-center animate-pulse">
+              <div class="w-40 h-40 rounded-full border-8 border-gray-200 dark:border-white/10"></div>
+            </div>
+            }
           </div>
         </div>
 
@@ -233,8 +239,19 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
             {{ ts.t()('dash.overview') }}
           </h3>
           <div class="h-64">
+            @defer (on viewport) {
             <canvas baseChart [data]="barChartData" [type]="'bar'" [options]="barChartOptions">
             </canvas>
+            } @placeholder {
+            <div class="w-full h-full flex items-end gap-4 animate-pulse px-4">
+               <div class="w-1/6 h-[40%] bg-gray-200 dark:bg-white/10 rounded-t"></div>
+               <div class="w-1/6 h-[70%] bg-gray-200 dark:bg-white/10 rounded-t"></div>
+               <div class="w-1/6 h-[50%] bg-gray-200 dark:bg-white/10 rounded-t"></div>
+               <div class="w-1/6 h-[80%] bg-gray-200 dark:bg-white/10 rounded-t"></div>
+               <div class="w-1/6 h-[60%] bg-gray-200 dark:bg-white/10 rounded-t"></div>
+               <div class="w-1/6 h-[90%] bg-gray-200 dark:bg-white/10 rounded-t"></div>
+            </div>
+            }
           </div>
         </div>
       </div>

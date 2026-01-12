@@ -45,15 +45,21 @@ export class CacheService {
     }
   }
 
-  clear(): void {
+  invalidate(pattern: string): void {
+    const target = this.getFullKey(pattern);
     const keysToRemove: string[] = [];
+
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith(this.CACHE_PREFIX)) {
+      if (key && key.startsWith(target)) {
         keysToRemove.push(key);
       }
     }
+
     keysToRemove.forEach((key) => localStorage.removeItem(key));
-    console.log('CacheService: Cache cleared (safe)');
+  }
+
+  clear(): void {
+    this.invalidate('');
   }
 }

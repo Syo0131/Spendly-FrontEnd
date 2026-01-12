@@ -25,6 +25,10 @@ import {
   PremiumStatusDto,
   CreateSavingGoalsDto,
   ContributionResponse,
+  RecurringExpense,
+  CreateRecurringExpenseDto,
+  UpdateRecurringExpenseDto,
+  PagedModelRecurringExpenseResponse,
 } from '../models/api.models';
 import { CacheService } from './cache.service';
 import { of } from 'rxjs';
@@ -268,5 +272,47 @@ export class ApiService {
 
   deleteBudget(id: number): Observable<MessageResponse> {
     return this.http.delete<MessageResponse>(`${this.baseUrl}/budgets/${id}/delete`);
+  }
+
+  // Recurring Expenses
+  getRecurringExpenses(
+    page = 0,
+    size = 10,
+    sortBy = 'nextExecutionDate'
+  ): Observable<PagedModelRecurringExpenseResponse> {
+    const params = new HttpParams().set('page', page).set('size', size).set('sortBy', sortBy);
+
+    // We can cache the list, but cache key needs to include all params
+    const url = `${this.baseUrl}/recurring-expenses`;
+    if (page === 0) {
+      return this.getWithCache<PagedModelRecurringExpenseResponse>(
+        `recurring_expenses_page_0_size_${size}`,
+        url,
+        params
+      );
+    }
+    return this.http.get<PagedModelRecurringExpenseResponse>(url, { params });
+  }
+
+  getRecurringExpenseById(id: number): Observable<RecurringExpense> {
+    return this.http.get<RecurringExpense>(`${this.baseUrl}/recurring-expenses/${id}`);
+  }
+
+  createRecurringExpense(data: CreateRecurringExpenseDto): Observable<MessageResponse> {
+    return this.http
+      .post<MessageResponse>(`${this.baseUrl}/recurring-expenses`, data)
+      .pipe(tap(() => this.cache.clear()));
+  }
+
+  updateRecurringExpense(id: number, data: UpdateRecurringExpenseDto): Observable<MessageResponse> {
+    return this.http
+      .put<MessageResponse>(`${this.baseUrl}/recurring-expenses/${id}`, data) // Note: Backend uses PUT /{id} directly based on specs
+      .pipe(tap(() => this.cache.clear()));
+  }
+
+  deleteRecurringExpense(id: number): Observable<MessageResponse> {
+    return this.http
+      .delete<MessageResponse>(`${this.baseUrl}/recurring-expenses/${id}`)
+      .pipe(tap(() => this.cache.clear()));
   }
 }

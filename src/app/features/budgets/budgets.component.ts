@@ -24,7 +24,8 @@ import { BudgetStateService } from '../../core/services/budget-state.service';
   template: `
     <div class="p-6 pb-24 md:pb-6 space-y-6 animate-fade-in-up">
       <!-- Header -->
-      <div class="flex flex-col md:flex-row justify-between md:items-end gap-4">
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row justify-between md:items-end gap-6">
         <div>
           <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
             {{ ts.t()('budgets.title') || 'Budgets' }}
@@ -34,10 +35,10 @@ import { BudgetStateService } from '../../core/services/budget-state.service';
           </p>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
           <!-- Month Navigation -->
           <div
-            class="flex items-center bg-white dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10 p-1 shadow-sm"
+            class="flex items-center justify-between bg-white dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10 p-1 shadow-sm flex-1 md:flex-none"
           >
             <button
               (click)="prevMonth()"
@@ -46,7 +47,7 @@ import { BudgetStateService } from '../../core/services/budget-state.service';
               <span class="material-icons-outlined text-lg">chevron_left</span>
             </button>
             <div
-              class="px-3 font-bold text-sm text-gray-900 dark:text-white min-w-[140px] text-center select-none uppercase tracking-wide cursor-default"
+              class="px-3 font-bold text-sm text-gray-900 dark:text-white min-w-[120px] text-center select-none uppercase tracking-wide cursor-default"
             >
               {{ currentDate() | date : 'MMMM yyyy' }}
             </div>
@@ -60,7 +61,7 @@ import { BudgetStateService } from '../../core/services/budget-state.service';
 
           <button
             (click)="openModal()"
-            class="px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm tracking-wide"
+            class="px-4 py-3 sm:py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm tracking-wide md:w-auto"
           >
             <span class="material-icons-outlined mr-2 text-lg">add_circle</span>
             {{ ts.t()('budgets.add') || 'New' }}

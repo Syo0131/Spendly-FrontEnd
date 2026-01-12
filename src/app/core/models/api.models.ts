@@ -204,3 +204,45 @@ export interface PagedModelBudgetResponse {
   content: Budget[];
   page: PageMetadata;
 }
+
+// Recurring Expenses
+export type Frequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+
+export interface RecurringExpense {
+  id: number;
+  description: string;
+  category: Category;
+  amount: number;
+  currency: string;
+  frequency: Frequency;
+  dayOfMonth?: number; // 1-31
+  dayOfWeek?: number; // 1-7 (1=Monday)
+  nextExecutionDate: string; // date
+  totalOccurrences?: number;
+  occurrencesCreated: number;
+  isActive: boolean;
+  createdAt: string; // date-time
+}
+
+export interface CreateRecurringExpenseDto {
+  description: string;
+  categoryId: number;
+  amount: number;
+  currency?: string;
+  frequency: Frequency;
+  dayOfMonth?: number;
+  dayOfWeek?: number;
+  totalOccurrences?: number;
+  startDate?: string;
+}
+
+export interface UpdateRecurringExpenseDto {
+  description?: string;
+  amount?: number;
+  isActive?: boolean;
+}
+
+export interface PagedModelRecurringExpenseResponse {
+  content: RecurringExpense[];
+  page: PageMetadata;
+}

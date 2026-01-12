@@ -131,6 +131,9 @@ export class TranslationService {
       es: '¡Gestión de presupuestos pronto!',
       en: 'Budget management coming soon!',
     },
+    'budgets.add': { es: 'Nuevo Presupuesto', en: 'New Budget' },
+    'budgets.empty': { es: 'No hay presupuestos', en: 'No budgets found' },
+    'budgets.create_first': { es: 'Crea tu primer presupuesto', en: 'Create your first budget' },
     'goals.title': { es: 'Metas de Ahorro', en: 'Savings Goals' },
     'goals.subtitle': {
       es: 'Define, sigue y alcanza tus objetivos financieros',
@@ -175,6 +178,7 @@ export class TranslationService {
       es: 'Descripción (Opcional)',
       en: 'Description (Optional)',
     },
+    'forms.add': { es: 'Agregar', en: 'Add' },
 
     // Notifications
     'notif.title': { es: 'Notificaciones', en: 'Notifications' },
@@ -211,6 +215,14 @@ export class TranslationService {
     'notif.pending': {
       es: 'Función pendiente de implementación en el servidor.',
       en: 'Feature pending implementation on server.',
+    },
+    'notif.budget_warning': {
+      es: '¡Atención! Has usado el {{percent}}% de tu presupuesto de {{category}}.',
+      en: "Heads up! You've used {{percent}}% of your {{category}} budget.",
+    },
+    'notif.budget_exceeded': {
+      es: '¡Oh no! Has excedido tu presupuesto de {{category}} ({{percent}}%).',
+      en: "Uh oh! You've exceeded your {{category}} budget ({{percent}}%).",
     },
 
     // Settings
@@ -304,10 +316,18 @@ export class TranslationService {
   /**
    * Get translation for a key
    */
-  translate(key: string): string {
+  translate(key: string, params?: Record<string, string | number>): string {
     const term = this.dictionary[key];
-    if (!term) return key; // Fallback to key if not found
-    return term[this.currentLang()];
+    if (!term) return key;
+    let str = term[this.currentLang()];
+
+    if (params) {
+      Object.keys(params).forEach((param) => {
+        str = str.replace(new RegExp(`{{${param}}}`, 'g'), String(params[param]));
+      });
+    }
+
+    return str;
   }
 
   translateCategory(categoryName: string): string {
@@ -330,7 +350,7 @@ export class TranslationService {
    */
   t = computed(() => {
     const lang = this.currentLang(); // Dependency
-    return (key: string) => {
+    return (key: string, params?: Record<string, string | number>) => {
       const term = this.dictionary[key];
       if (!term) {
         // Special check for dynamic category keys to avoid spamming warn if not found
@@ -339,7 +359,14 @@ export class TranslationService {
         console.warn(`Missing translation for key: ${key}`);
         return key;
       }
-      return term[lang] || key;
+      let str = term[lang] || key;
+
+      if (params) {
+        Object.keys(params).forEach((param) => {
+          str = str.replace(new RegExp(`{{${param}}}`, 'g'), String(params[param]));
+        });
+      }
+      return str;
     };
   });
 

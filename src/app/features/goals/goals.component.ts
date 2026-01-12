@@ -6,6 +6,7 @@ import { TranslationService } from '../../core/services/translation.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { SavingGoalsResponse, ContributionResponse } from '../../core/models/api.models';
 import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
+import { GoalStateService } from '../../core/services/goal-state.service';
 
 @Component({
   selector: 'app-goals',
@@ -374,8 +375,16 @@ import { DatePickerComponent } from '../../shared/components/date-picker/date-pi
   `,
 })
 export class GoalsComponent implements OnInit {
-  goals = signal<SavingGoalsResponse[]>([]);
-  isLoading = signal(true);
+  state = inject(GoalStateService);
+  apiService = inject(ApiService);
+  ts = inject(TranslationService);
+  ns = inject(NotificationService);
+  fb = inject(FormBuilder);
+
+  // State Signals
+  goals = this.state.goals;
+  isLoading = this.state.isLoading;
+
   showModal = signal(false);
   isSubmitting = signal(false);
   editingId = signal<number | null>(null);
@@ -396,11 +405,6 @@ export class GoalsComponent implements OnInit {
 
   form: FormGroup;
 
-  apiService = inject(ApiService);
-  ts = inject(TranslationService);
-  ns = inject(NotificationService);
-  fb = inject(FormBuilder);
-
   constructor() {
     this.form = this.fb.group({
       name: ['', Validators.required],
@@ -412,7 +416,8 @@ export class GoalsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadData();
+    // Load Goals (Cached)
+    this.state.load(0, 50);
   }
 
   getModalTitle() {
@@ -443,20 +448,6 @@ export class GoalsComponent implements OnInit {
       control.setValue(null, { emitEvent: false });
       control.setValue(num, { emitEvent: false });
     }
-  }
-
-  loadData(silent = false) {
-    if (!silent) this.isLoading.set(true);
-    this.apiService.getSavingGoals(0, 50).subscribe({
-      next: (res) => {
-        this.goals.set(res.content || []);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Error loading goals', err);
-        this.isLoading.set(false);
-      },
-    });
   }
 
   calcProgress(goal: SavingGoalsResponse): number {
@@ -534,8 +525,6 @@ export class GoalsComponent implements OnInit {
     this.showDeleteModal.set(true);
   }
 
-  // Existing methods...
-
   closeDeleteModal() {
     this.showDeleteModal.set(false);
     this.itemToDelete.set(null);
@@ -553,10 +542,9 @@ export class GoalsComponent implements OnInit {
 
     if (this.deleteMode() === 'goal') {
       const goal = item as SavingGoalsResponse;
-      this.apiService.deleteSavingGoal(goal.id).subscribe({
+      this.state.delete(goal.id).subscribe({
         next: () => {
           this.ns.show('Goal deleted', 'success');
-          this.goals.update((current) => current.filter((g) => g.id !== goal.id));
           this.closeDeleteModal();
         },
         error: () => {
@@ -570,13 +558,11 @@ export class GoalsComponent implements OnInit {
       const goalId = this.selectedGoalIdForHistory();
       if (!goalId) return;
 
-      this.apiService.deleteContribution(goalId, contribution.id).subscribe({
+      this.state.deleteContribution(goalId, contribution.id).subscribe({
         next: () => {
           this.ns.show('Contribution deleted', 'success');
           // Remove from history list
           this.contributions.update((c) => c.filter((x) => x.id !== contribution.id));
-          // Reload goals silently to update totals
-          this.loadData(true);
           this.closeDeleteModal();
         },
         error: () => {
@@ -611,32 +597,12 @@ export class GoalsComponent implements OnInit {
     const id = this.editingId()!;
 
     if (this.modalMode() === 'add_funds') {
-      // Add Contribution with correct signature
-      // Assuming apiService.addContribution needs to be updated to accept description if backend supports it
-      // But based on available information, we pass amount directly.
-      // Wait, user asked to add description. I need to update api service call signature.
-      // Let's check api.service.ts source in memory or assume I need to update it.
-      // The openapi spec showed "AddContributionDto" has "description".
-      // But "addContribution" method in api.service.ts currently takes (id, amount).
-      // I should update the method call here passing the description as a second argument if I updated the service?
-      // Wait, I updated ApiService earlier? No, I only updated return types.
-      // I need to update ApiService to accept description.
-      // Use the 'description' from the form.
-
-      // Since I can't edit ApiService in this `replace_file_content` call (it's for goals.component.ts),
-      // I will assume ApiService will be updated to take an object or additional arg.
-      // Actually, looking at `api.service.ts` from previous turns, `addContribution` takes `(id, amount)`.
-      // I need to change `api.service.ts` to `addContribution(id, amount, description?)`.
-
-      // Implementation plan says "Add description field".
-      // Let's pass it here assuming the service will be updated next.
-      this.apiService
+      this.state
         .addContribution(id, data.contributionAmount, data.contributionDescription)
         .subscribe({
           next: () => {
             this.ns.show('Contribution added!', 'success');
             this.closeModal();
-            this.loadData(true); // Silent reload
             this.isSubmitting.set(false);
           },
           error: () => this.isSubmitting.set(false),
@@ -650,26 +616,19 @@ export class GoalsComponent implements OnInit {
       targetDate: new Date(data.targetDate).toISOString().split('T')[0],
     };
 
-    if (this.modalMode() === 'edit') {
-      this.apiService.updateSavingGoal(id, formattedData).subscribe({
-        next: () => {
-          this.ns.show('Goal updated', 'success');
-          this.closeModal();
-          this.loadData(true); // Silent reload
-          this.isSubmitting.set(false);
-        },
-        error: () => this.isSubmitting.set(false),
-      });
-    } else {
-      this.apiService.createSavingGoal(formattedData).subscribe({
-        next: () => {
-          this.ns.show('Goal created', 'success');
-          this.closeModal();
-          this.loadData(true); // Silent reload
-          this.isSubmitting.set(false);
-        },
-        error: () => this.isSubmitting.set(false),
-      });
-    }
+    const action$ =
+      this.modalMode() === 'edit'
+        ? this.state.update(id, formattedData)
+        : this.state.add(formattedData);
+
+    action$.subscribe({
+      next: () => {
+        const msg = this.modalMode() === 'edit' ? 'Goal updated' : 'Goal created';
+        this.ns.show(msg, 'success');
+        this.closeModal();
+        this.isSubmitting.set(false);
+      },
+      error: () => this.isSubmitting.set(false),
+    });
   }
 }

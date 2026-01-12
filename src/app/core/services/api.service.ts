@@ -13,11 +13,17 @@ import {
   MonthlyStats,
   BankOption,
   UpdateUserDto,
+  PagedModelSavingGoalsResponse,
+  SavingGoalsResponse,
+  TokenResponse,
+  UpdateSavingGoals,
+  UserResponse,
+  CreateBudgetDto,
+  PagedModelBudgetResponse,
+  Budget,
+  UpdateBudgetDto,
   PremiumStatusDto,
   CreateSavingGoalsDto,
-  UpdateSavingGoals,
-  SavingGoalsResponse,
-  PagedModelSavingGoalsResponse,
   ContributionResponse,
 } from '../models/api.models';
 import { CacheService } from './cache.service';
@@ -207,14 +213,16 @@ export class ApiService {
     return this.http.get<{ authUrl: string }>(`${this.baseUrl}/banks/authorize`, { params });
   }
 
-  disconnectBank(bankName: string): Observable<MessageResponse> {
-    const params = new HttpParams().set('bank', bankName);
-    return this.http.delete<MessageResponse>(`${this.baseUrl}/banks/disconnect`, { params });
+  getBankStatus(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.baseUrl}/banks/status`);
   }
 
-  getBankStatus(): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/banks/status`);
+  disconnectBank(bankCode: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/banks/disconnect`, {
+      params: { bank: bankCode },
+    });
   }
+
   // Categories
   getCategories(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/categories`);
@@ -229,5 +237,36 @@ export class ApiService {
     // Add timestamp to prevent browser caching
     const params = new HttpParams().set('t', Date.now().toString());
     return this.http.get<PremiumStatusDto>(`${this.baseUrl}/users/premium-status`, { params });
+  }
+
+  // Budgets
+  getBudgets(page = 0, size = 20): Observable<PagedModelBudgetResponse> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<PagedModelBudgetResponse>(`${this.baseUrl}/budgets`, { params });
+  }
+
+  getBudgetById(id: number): Observable<Budget> {
+    return this.http.get<Budget>(`${this.baseUrl}/budgets/${id}`);
+  }
+
+  getMonthlyBudgets(page = 0, size = 20): Observable<PagedModelBudgetResponse> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<PagedModelBudgetResponse>(`${this.baseUrl}/budgets/monthly`, { params });
+  }
+
+  createBudget(data: CreateBudgetDto): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.baseUrl}/budgets/create`, data);
+  }
+
+  updateBudget(id: number, data: UpdateBudgetDto): Observable<MessageResponse> {
+    return this.http.put<MessageResponse>(`${this.baseUrl}/budgets/${id}/update`, data);
+  }
+
+  cloneBudgetToNext(id: number): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.baseUrl}/budgets/${id}/clone-to-next`, {});
+  }
+
+  deleteBudget(id: number): Observable<MessageResponse> {
+    return this.http.delete<MessageResponse>(`${this.baseUrl}/budgets/${id}/delete`);
   }
 }

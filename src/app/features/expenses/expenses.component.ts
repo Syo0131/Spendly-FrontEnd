@@ -5,6 +5,8 @@ import {
   signal,
   ChangeDetectionStrategy,
   HostListener,
+  inject,
+  computed,
 } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
@@ -13,6 +15,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ApiService } from '../../core/services/api.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { ExpenseStateService } from '../../core/services/expense-state.service';
 import { ExpenseResponse, Category } from '../../core/models/api.models';
 import { RouterModule } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -142,7 +145,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
               <!-- Right: Amount & Date -->
               <div class="flex flex-col items-end gap-1 ml-2 shrink-0">
                 <span class="font-bold text-rose-600 dark:text-rose-400">
-                  - {{ item.amount | currency : 'DOP' : 'symbol' : '1.0-0' }}
+                  - {{ item.amount | currency : 'DOP' : 'symbol' : '1.2-2' }}
                 </span>
                 <span class="text-xs text-gray-400">
                   {{ item.date | date : 'MMM d' }}
@@ -513,29 +516,34 @@ import { trigger, transition, style, animate } from '@angular/animations';
   `,
 })
 export class ExpensesComponent implements OnInit, OnDestroy {
-  expenses = signal<ExpenseResponse[]>([]);
-  categories = signal<Category[]>([]);
+  // State Service
+  state = inject(ExpenseStateService);
 
-  isLoading = signal(true);
+  // UI State
+  categories = signal<Category[]>([]);
   isDeleting = signal<number | null>(null);
 
-  // Pagination
-  // Pagination
-  currentPage = signal(0);
+  // Pagination (UI driven)
   pageSize = signal(6);
-  totalItems = signal(0);
-  totalPages = signal(0);
 
+  // Computed Signals from State
+  expenses = this.state.expenses;
+  isLoading = this.state.isLoading;
+  totalItems = this.state.totalElements;
+  totalPages = this.state.totalPages;
+  currentPage = this.state.currentPage;
+
+  // Helpers
   getEmptyRows() {
-    if (this.totalItems() <= this.pageSize()) {
-      return [];
-    }
-    const emptyCount = this.pageSize() - this.expenses().length;
+    if (this.totalItems() <= this.pageSize()) return [];
+    const curLen = this.expenses().length;
+    const emptyCount = this.pageSize() - curLen;
     return emptyCount > 0 ? new Array(emptyCount) : [];
   }
 
   private refreshSubscription: Subscription | null = null;
 
+  // Forms & Modals
   form: FormGroup;
   showModal = signal(false);
   editingId = signal<number | null>(null);
@@ -567,12 +575,12 @@ export class ExpensesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadData();
+    this.state.load(0, this.pageSize());
     this.loadCategories();
 
     // Poll every 30 seconds
     this.refreshSubscription = interval(30000).subscribe(() => {
-      this.loadData(true);
+      this.state.refresh();
     });
   }
 
@@ -586,6 +594,7 @@ export class ExpensesComponent implements OnInit, OnDestroy {
     return item.id;
   }
 
+  // Action Menu
   openActionMenu(item: any) {
     this.actionMenuItem.set(item);
     this.showActionMenu.set(true);
@@ -619,41 +628,20 @@ export class ExpensesComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadData(isBackground: boolean = false) {
-    if (!isBackground) this.isLoading.set(true);
-
-    this.apiService.getExpenses(this.currentPage(), this.pageSize()).subscribe({
-      next: (res) => {
-        // Backend pagination is 0-indexed
-        const sorted = res.content.sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        this.expenses.set(sorted);
-        this.totalItems.set(res.page.totalElements);
-        this.totalPages.set(res.page.totalPages);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Error loading expenses', err);
-        this.isLoading.set(false);
-      },
-    });
-  }
-
+  // Pagination
   nextPage() {
     if (this.currentPage() < this.totalPages() - 1) {
-      this.currentPage.update((p) => p + 1);
-      this.loadData();
+      this.state.load(this.currentPage() + 1, this.pageSize());
     }
   }
 
   prevPage() {
     if (this.currentPage() > 0) {
-      this.currentPage.update((p) => p - 1);
-      this.loadData();
+      this.state.load(this.currentPage() - 1, this.pageSize());
     }
   }
 
+  // Dropdown
   toggleDropdown() {
     this.isDropdownOpen.update((v) => !v);
   }
@@ -668,6 +656,7 @@ export class ExpensesComponent implements OnInit, OnDestroy {
     return this.categories().find((c) => c.id === id);
   }
 
+  // CRUD
   openModal(itemToEdit: any = null) {
     this.isDropdownOpen.set(false);
     if (itemToEdit) {
@@ -704,27 +693,22 @@ export class ExpensesComponent implements OnInit, OnDestroy {
       const id = this.editingId();
       const payload = { ...formData, categoryId: Number(formData.categoryId) };
 
-      if (id) {
-        this.apiService.updateExpense(id, payload).subscribe(this.handleResponseObserver);
-      } else {
-        this.apiService.createExpense(payload).subscribe(this.handleResponseObserver);
-      }
+      const obs$ = id ? this.state.update(id, payload) : this.state.add(payload);
+
+      obs$.subscribe({
+        next: () => {
+          const isEdit = !!this.editingId();
+          this.closeModal();
+          const msg = isEdit ? 'notif.expense_updated' : 'notif.expense_created';
+          this.ns.show(msg, 'success');
+        },
+        error: (err) => {
+          console.error('Operation failed', err);
+          this.ns.show(err.error?.message || 'Operation failed', 'error');
+        },
+      });
     }
   }
-
-  private handleResponseObserver = {
-    next: () => {
-      const isEdit = !!this.editingId();
-      this.closeModal();
-      this.loadData();
-      const msg = isEdit ? 'notif.expense_updated' : 'notif.expense_created';
-      this.ns.show(msg, 'success');
-    },
-    error: (err: any) => {
-      console.error('Operation failed', err);
-      this.ns.show(err.error?.message || 'Operation failed', 'error');
-    },
-  };
 
   deleteItem(item: any) {
     this.itemToDelete.set(item);
@@ -735,22 +719,13 @@ export class ExpensesComponent implements OnInit, OnDestroy {
     const item = this.itemToDelete();
     if (!item) return;
 
-    // Optimistic Delete
-    const previousList = this.expenses();
-    this.expenses.update((current) => current.filter((e) => e.id !== item.id));
-    this.cancelDelete();
-    this.ns.show('notif.expense_deleted', 'success');
-
-    this.apiService.deleteExpense(Number(item.id)).subscribe({
+    this.state.delete(Number(item.id)).subscribe({
       next: () => {
-        // Success - UI already updated
-        // Background refresh to catch side effects like balance update
-        this.loadData(true);
+        this.ns.show('notif.expense_deleted', 'success');
+        this.cancelDelete();
       },
       error: (err) => {
         console.error('Error deleting expense', err);
-        // Revert
-        this.expenses.set(previousList);
         this.ns.show('notif.expense_delete_fail', 'error');
       },
     });

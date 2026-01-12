@@ -5,6 +5,8 @@ import {
   signal,
   ChangeDetectionStrategy,
   HostListener,
+  inject,
+  computed,
 } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
@@ -13,6 +15,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ApiService } from '../../core/services/api.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { IncomeStateService } from '../../core/services/income-state.service';
 import { IncomeResponse } from '../../core/models/api.models';
 import { RouterModule } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -141,7 +144,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
               <!-- Right: Amount -->
               <div class="flex flex-col items-end gap-1 ml-2 shrink-0">
                 <span class="font-bold text-teal-600 dark:text-teal-400">
-                  + {{ item.amount | currency : 'DOP' : 'symbol' : '1.0-0' }}
+                  + {{ item.amount | currency : 'DOP' : 'symbol' : '1.2-2' }}
                 </span>
               </div>
             </div>
@@ -423,41 +426,44 @@ import { trigger, transition, style, animate } from '@angular/animations';
   styles: [],
 })
 export class IncomesComponent implements OnInit, OnDestroy {
-  incomes = signal<IncomeResponse[]>([]);
+  // State Service
+  state = inject(IncomeStateService);
 
-  isLoading = signal(true);
+  // UI State
   isDeleting = signal<number | null>(null);
 
-  // Pagination
-  currentPage = signal(0);
+  // Pagination (UI driven - standard sizing)
   pageSize = signal(6);
-  totalItems = signal(0);
-  totalPages = signal(0);
 
+  // Computed Signals from State
+  incomes = this.state.incomes;
+  isLoading = this.state.isLoading;
+  totalItems = this.state.totalElements;
+  totalPages = this.state.totalPages;
+  currentPage = this.state.currentPage;
+
+  // Helpers
   getEmptyRows() {
-    if (this.totalItems() <= this.pageSize()) {
-      return [];
-    }
-    const emptyCount = this.pageSize() - this.incomes().length;
+    if (this.totalItems() <= this.pageSize()) return [];
+    const curLen = this.incomes().length;
+    const emptyCount = this.pageSize() - curLen;
     return emptyCount > 0 ? new Array(emptyCount) : [];
   }
 
   private refreshSubscription: Subscription | null = null;
 
+  // Forms & Modals
   form: FormGroup;
   showModal = signal(false);
   editingId = signal<number | null>(null);
 
-  // Delete Modal State
   showDeleteModal = signal(false);
   itemToDelete = signal<any>(null);
 
-  // Mobile Action Menu State
   showActionMenu = signal(false);
   actionMenuItem = signal<any>(null);
 
   constructor(
-    private apiService: ApiService,
     private fb: FormBuilder,
     public ts: TranslationService,
     private ns: NotificationService
@@ -471,11 +477,11 @@ export class IncomesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadData();
-    // Poll every 30 seconds
-    this.refreshSubscription = interval(30000).subscribe(() => {
-      this.loadData(true);
-    });
+    // Initial Load
+    this.state.load(0, this.pageSize());
+
+    // Auto-refresh
+    this.refreshSubscription = interval(30000).subscribe(() => this.state.refresh());
   }
 
   ngOnDestroy() {
@@ -488,6 +494,7 @@ export class IncomesComponent implements OnInit, OnDestroy {
     return item.id;
   }
 
+  // Action Menu
   openActionMenu(item: any) {
     this.actionMenuItem.set(item);
     this.showActionMenu.set(true);
@@ -510,40 +517,20 @@ export class IncomesComponent implements OnInit, OnDestroy {
     if (item) this.deleteItem(item);
   }
 
-  loadData(isBackground: boolean = false) {
-    if (!isBackground) this.isLoading.set(true);
-
-    this.apiService.getIncomes(this.currentPage(), this.pageSize()).subscribe({
-      next: (res) => {
-        const sorted = res.content.sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        this.incomes.set(sorted);
-        this.totalItems.set(res.page.totalElements);
-        this.totalPages.set(res.page.totalPages);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Error loading incomes', err);
-        this.isLoading.set(false);
-      },
-    });
-  }
-
+  // Pagination
   nextPage() {
     if (this.currentPage() < this.totalPages() - 1) {
-      this.currentPage.update((p) => p + 1);
-      this.loadData();
+      this.state.load(this.currentPage() + 1, this.pageSize());
     }
   }
 
   prevPage() {
     if (this.currentPage() > 0) {
-      this.currentPage.update((p) => p - 1);
-      this.loadData();
+      this.state.load(this.currentPage() - 1, this.pageSize());
     }
   }
 
+  // CRUD
   openModal(itemToEdit: any = null) {
     if (itemToEdit) {
       this.editingId.set(itemToEdit.id);
@@ -576,32 +563,21 @@ export class IncomesComponent implements OnInit, OnDestroy {
       const id = this.editingId();
       let payload = { ...formData };
 
-      if (id) {
-        // Preserve original fields like fixedSalary if not in form
-        const originalItem = this.incomes().find((i) => i.id === id);
-        if (originalItem) {
-          payload = { ...originalItem, ...payload };
-        }
+      const obs$ = id ? this.state.update(id, payload) : this.state.add(payload);
 
-        this.apiService.updateIncome(id, payload).subscribe(this.handleResponseObserver);
-      } else {
-        this.apiService.createIncome(payload).subscribe(this.handleResponseObserver);
-      }
+      obs$.subscribe({
+        next: () => {
+          const msg = id ? 'notif.income_updated' : 'notif.income_created';
+          this.closeModal();
+          this.ns.show(msg, 'success');
+        },
+        error: (err) => {
+          console.error('Operation failed', err);
+          this.ns.show('error', err.error?.message || 'Operation failed');
+        },
+      });
     }
   }
-
-  private handleResponseObserver = {
-    next: () => {
-      const msg = this.editingId() ? 'notif.income_updated' : 'notif.income_created';
-      this.closeModal();
-      this.loadData();
-      this.ns.show(msg, 'success');
-    },
-    error: (err: any) => {
-      console.error('Operation failed', err);
-      this.ns.show('error', err.error?.message || 'Operation failed');
-    },
-  };
 
   deleteItem(item: any) {
     this.itemToDelete.set(item);
@@ -612,21 +588,12 @@ export class IncomesComponent implements OnInit, OnDestroy {
     const item = this.itemToDelete();
     if (!item) return;
 
-    // Optimistic Delete
-    const previousList = this.incomes();
-    this.incomes.update((current) => current.filter((i) => i.id !== item.id));
-    this.cancelDelete();
-    this.ns.show('notif.income_deleted', 'success');
-
-    this.apiService.deleteIncome(Number(item.id)).subscribe({
+    this.state.delete(Number(item.id)).subscribe({
       next: () => {
-        // Success - already updated UI
-        this.loadData(true);
+        this.ns.show('notif.income_deleted', 'success');
+        this.cancelDelete();
       },
-      error: (err) => {
-        console.error('Error deleting income', err);
-        // Revert
-        this.incomes.set(previousList);
+      error: () => {
         this.ns.show('notif.income_delete_fail', 'error');
       },
     });
@@ -639,6 +606,7 @@ export class IncomesComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: any) {
+    // ... existing keyboard logic ...
     if (event.key === 'Escape') {
       if (this.showActionMenu()) {
         this.closeActionMenu();
@@ -658,15 +626,15 @@ export class IncomesComponent implements OnInit, OnDestroy {
         this.confirmDelete();
         return;
       }
-      // Ctrl+Enter to save form
       if (this.showModal() && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
         this.onSubmit();
       }
-    } else if ((event.altKey && event.key === 'n') || (event.altKey && event.key === 'N')) {
-      // Alt + N to open Add Modal
+    }
+    // Alt+N
+    else if ((event.altKey && event.key === 'n') || (event.altKey && event.key === 'N')) {
       if (!this.showModal() && !this.showDeleteModal()) {
-        event.preventDefault(); // Prevent browser specific Alt+actions if any
+        event.preventDefault();
         this.openModal();
       }
     }

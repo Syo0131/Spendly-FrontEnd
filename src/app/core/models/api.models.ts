@@ -163,3 +163,44 @@ export interface ContributionResponse {
   description?: string;
   createdAt: string; // date-time
 }
+
+// Budgets
+export type BudgetPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+
+export interface Budget {
+  id: number;
+  limit: number;
+  spent: number;
+  percentage: number;
+  period: BudgetPeriod;
+  categoryId: number;
+  category?: Category;
+  startDate: string;
+  endDate: string;
+  month?: number /** 1-12 */;
+  year?: number;
+  warningThreshold?: number;
+  criticalThreshold?: number;
+}
+
+export interface CreateBudgetDto {
+  limit: number;
+  period: BudgetPeriod;
+  categoryId: number;
+  warningThreshold?: number;
+  criticalThreshold?: number;
+  isRecurring?: boolean;
+  numberOfPeriods?: number;
+}
+
+export interface UpdateBudgetDto {
+  limit?: number;
+  period?: BudgetPeriod;
+  warningThreshold?: number;
+  criticalThreshold?: number;
+}
+
+export interface PagedModelBudgetResponse {
+  content: Budget[];
+  page: PageMetadata;
+}

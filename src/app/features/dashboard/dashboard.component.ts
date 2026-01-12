@@ -163,7 +163,7 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
             {{ ts.t()('dash.balance') }}
           </p>
           <h3
-            class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white"
+            class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white"
             [class.text-red-500]="totalBalance() < 0"
           >
             {{ totalBalance() | currency : 'DOP' : 'symbol' : '1.2-2' }}
@@ -182,7 +182,7 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
           <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
             {{ ts.t()('dash.income') }}
           </p>
-          <h3 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+          <h3 class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
             {{ totalIncome() | currency : 'DOP' : 'symbol' : '1.2-2' }}
           </h3>
         </div>
@@ -199,7 +199,7 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
           <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
             {{ ts.t()('dash.expenses') }}
           </p>
-          <h3 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+          <h3 class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
             {{ totalExpense() | currency : 'DOP' : 'symbol' : '1.2-2' }}
           </h3>
         </div>

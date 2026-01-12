@@ -1,0 +1,44 @@
+# Base image with Android SDK & Node.js
+# We use a community image that has both pre-installed to save setup time
+FROM reactivecircus/android-emulator-24:latest AS builder
+# Alternative: reactnativecommunity/react-native-android (often larger)
+
+# Switch to root to install system deps if needed
+USER root
+
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g npm@latest
+
+WORKDIR /app
+
+# 1. Install Dependencies
+COPY package*.json ./
+RUN npm ci
+
+# 2. Copy Source
+COPY . .
+
+# 3. Build Web App
+# Ensure environment variables are passed
+ARG API_URL
+ENV API_URL=$API_URL
+RUN npm run build
+
+# 4. Sync Capacitor
+# Ensure capacitor config is present
+RUN npx cap sync android
+
+# 5. Build Android APK
+WORKDIR /app/android
+RUN chmod +x gradlew
+RUN ./gradlew assembleRelease
+
+# 6. Serve the APK
+# We install a simple file server to keep the container running and allow you to download the APK
+RUN npm install -g serve
+EXPOSE 3000
+
+# Serve the release folder
+CMD ["serve", "-l", "3000", "app/build/outputs/apk/release"]

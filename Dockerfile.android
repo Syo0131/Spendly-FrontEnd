@@ -1,13 +1,12 @@
-# Base image with Android SDK & Node.js
-# We use a community image that has both pre-installed to save setup time
-FROM reactivecircus/android-emulator-24:latest AS builder
-# Alternative: reactnativecommunity/react-native-android (often larger)
+# Base image: MobileDevOps Android SDK (Based on Ubuntu, modern and maintained)
+# Contains Java 17 and Android SDK 33/34
+FROM mobiledevops/android-sdk-image:latest AS builder
 
-# Switch to root to install system deps if needed
+# Switch to root to install system deps
 USER root
 
-# Install Node.js (v18 legacy support for older glibc)
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+# Install Node.js (Standard installation for newer Ubuntu/Debian)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g npm@latest
 

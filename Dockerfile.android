@@ -35,8 +35,10 @@ RUN npx cap sync android
 
 # 5. Build Android APK
 WORKDIR /app/android
+# 5. Build Android APK
+WORKDIR /app/android
 RUN chmod +x gradlew
-RUN ./gradlew assembleRelease
+RUN ./gradlew assembleDebug
 
 # 6. Serve the APK
 # We install a simple file server to keep the container running and allow you to download the APK
@@ -44,4 +46,4 @@ RUN npm install -g serve
 EXPOSE 3000
 
 # Serve the release folder
-CMD ["serve", "-l", "3000", "app/build/outputs/apk/release"]
+CMD ["serve", "-l", "3000", "app/build/outputs/apk/debug"]

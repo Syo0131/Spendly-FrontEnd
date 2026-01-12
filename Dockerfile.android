@@ -6,8 +6,8 @@ FROM reactivecircus/android-emulator-24:latest AS builder
 # Switch to root to install system deps if needed
 USER root
 
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+# Install Node.js (v18 legacy support for older glibc)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g npm@latest
 

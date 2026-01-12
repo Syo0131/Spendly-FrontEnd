@@ -5,8 +5,8 @@ FROM mobiledevops/android-sdk-image:latest AS builder
 # Switch to root to install system deps
 USER root
 
-# Install Node.js (Standard installation for newer Ubuntu/Debian)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+# Install Node.js (v22 required by Capacitor 8+)
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g npm@latest
 

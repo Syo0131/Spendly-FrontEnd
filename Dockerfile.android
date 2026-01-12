@@ -7,8 +7,12 @@ USER root
 
 # Install Node.js (v22 required by Capacitor 8+)
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
-    apt-get install -y nodejs && \
+    apt-get install -y nodejs openjdk-21-jdk && \
     npm install -g npm@latest
+
+# Set JAVA_HOME to Java 21
+ENV JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+ENV PATH="$JAVA_HOME/bin:$PATH"
 
 WORKDIR /app
 

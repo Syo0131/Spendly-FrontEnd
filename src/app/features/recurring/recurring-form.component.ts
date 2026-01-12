@@ -44,7 +44,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
           <p class="text-gray-500 text-xs mt-1">Automate your regular payments</p>
         </div>
 
-        <form (ngSubmit)="onSubmit()" #form="ngForm" class="space-y-4">
+        <form (ngSubmit)="onSubmit()" #form="ngForm" class="space-y-5">
           <!-- Description -->
           <div class="space-y-1.5">
             <label
@@ -94,7 +94,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             <div class="relative">
               <div
                 (click)="showCategoryDropdown = !showCategoryDropdown"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all"
+                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all group"
               >
                 <div class="flex items-center gap-2">
                   <ng-container *ngIf="getSelectedCategory() as cat; else placeholder">
@@ -109,27 +109,31 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                     }}</span>
                   </ng-container>
                   <ng-template #placeholder>
+                    <span class="material-icons-outlined text-gray-400 text-lg">category</span>
                     <span class="text-gray-400 text-sm font-medium">Select Category</span>
                   </ng-template>
                 </div>
-                <span class="material-icons-outlined text-gray-400">expand_more</span>
+                <span
+                  class="material-icons-outlined text-gray-400 group-hover:text-primary transition-colors text-lg"
+                  >expand_more</span
+                >
               </div>
 
               <!-- Dropdown -->
               <div
                 *ngIf="showCategoryDropdown"
-                class="absolute z-10 w-full mt-2 bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/5 rounded-xl shadow-xl max-h-48 overflow-y-auto custom-scrollbar p-1"
+                class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl shadow-xl max-h-52 overflow-y-auto custom-scrollbar animate-scale-in"
               >
                 <div
                   *ngFor="let cat of categories()"
                   (click)="selectCategory(cat)"
-                  class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors"
+                  class="p-2.5 flex items-center gap-2.5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors border-b border-gray-50 dark:border-white/5 last:border-0"
                 >
                   <div
-                    class="w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm"
+                    class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
                     [style.background-color]="cat.color"
                   >
-                    <span class="material-icons-outlined text-sm">{{ cat.icons }}</span>
+                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
                   </div>
                   <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{
                     cat.name
@@ -198,44 +202,74 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             </div>
           </div>
 
-          <!-- Total Occurrences (Optional) -->
-          <div class="space-y-1.5">
-            <div class="flex justify-between">
-              <label
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
-                >End After (Optional)</label
+          <!-- Duration / End After -->
+          <div class="space-y-3 pt-2">
+            <label
+              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              >Duration</label
+            >
+
+            <!-- Toggle -->
+            <div class="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
+              <button
+                type="button"
+                (click)="durationMode = 'indefinite'; formData.totalOccurrences = undefined"
+                class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
+                [ngClass]="
+                  durationMode === 'indefinite'
+                    ? 'bg-white dark:bg-white/10 text-primary shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+                "
               >
-              <span class="text-[10px] text-gray-400">{{
-                formData.totalOccurrences ? formData.totalOccurrences + ' times' : 'Indefinite'
-              }}</span>
+                Indefinite
+              </button>
+              <button
+                type="button"
+                (click)="durationMode = 'fixed'"
+                class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
+                [ngClass]="
+                  durationMode === 'fixed'
+                    ? 'bg-white dark:bg-white/10 text-primary shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+                "
+              >
+                Set End Date
+              </button>
             </div>
-            <input
-              type="number"
-              min="1"
-              [(ngModel)]="formData.totalOccurrences"
-              name="totalOccurrences"
-              placeholder="Leave empty for indefinite"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-            />
+
+            <!-- Input for Fixed -->
+            <div *ngIf="durationMode === 'fixed'" class="animate-fade-in space-y-1.5">
+              <p class="text-[10px] text-gray-400 ml-1">
+                How many times should this expense occur?
+              </p>
+              <div class="relative">
+                <input
+                  type="number"
+                  min="1"
+                  [(ngModel)]="formData.totalOccurrences"
+                  name="totalOccurrences"
+                  placeholder="e.g. 12"
+                  required
+                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                />
+                <span class="absolute right-4 top-3.5 text-xs font-bold text-gray-400">Times</span>
+              </div>
+            </div>
           </div>
 
           <!-- Actions -->
-          <div class="flex gap-3 pt-2">
-            <button
-              type="button"
-              (click)="onCancel()"
-              class="flex-1 px-4 py-3 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-white rounded-xl font-bold transition-all text-sm"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              [disabled]="!form.valid || !formData.categoryId"
-              class="flex-1 px-4 py-3 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 transform hover:-translate-y-0.5 transition-all font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{ isEdit ? 'Update' : 'Create' }}
-            </button>
-          </div>
+          <button
+            type="submit"
+            [disabled]="
+              !form.valid ||
+              !formData.categoryId ||
+              (durationMode === 'fixed' && !formData.totalOccurrences)
+            "
+            class="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm"
+          >
+            <span class="material-icons-outlined text-lg">check</span>
+            {{ isEdit ? 'Update Expense' : 'Create Recurring Expense' }}
+          </button>
         </form>
       </div>
     </div>
@@ -245,6 +279,9 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
       .animate-scale-in {
         animation: scaleIn 0.2s ease-out;
       }
+      .animate-fade-in {
+        animation: fadeIn 0.3s ease-out;
+      }
       @keyframes scaleIn {
         from {
           opacity: 0;
@@ -253,6 +290,16 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
         to {
           opacity: 1;
           transform: scale(1);
+        }
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
       }
     `,
@@ -271,6 +318,13 @@ export class RecurringFormComponent {
         dayOfWeek: value.dayOfWeek,
         totalOccurrences: value.totalOccurrences,
       };
+
+      // Initialize mode logic
+      if (value.totalOccurrences && value.totalOccurrences > 0) {
+        this.durationMode = 'fixed';
+      } else {
+        this.durationMode = 'indefinite';
+      }
     }
   }
 
@@ -283,6 +337,7 @@ export class RecurringFormComponent {
   categories = signal<Category[]>([]);
   showCategoryDropdown = false;
   isEdit = false;
+  durationMode: 'indefinite' | 'fixed' = 'indefinite';
 
   formData: CreateRecurringExpenseDto = {
     description: '',
@@ -315,6 +370,10 @@ export class RecurringFormComponent {
   }
 
   onSubmit() {
+    // Final check to clear totalOccurrences if indefinite
+    if (this.durationMode === 'indefinite') {
+      this.formData.totalOccurrences = undefined;
+    }
     this.save.emit(this.formData);
   }
 }

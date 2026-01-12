@@ -4,6 +4,7 @@ import { RecurringStateService } from '../../core/services/recurring-state.servi
 import { RecurringFormComponent } from './recurring-form.component';
 import { CreateRecurringExpenseDto, RecurringExpense } from '../../core/models/api.models';
 import { TranslationService } from '../../core/services/translation.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-recurring',
@@ -11,7 +12,6 @@ import { TranslationService } from '../../core/services/translation.service';
   imports: [CommonModule, RecurringFormComponent, DatePipe],
   template: `
     <div class="p-6 pb-24 md:pb-6 space-y-6 animate-fade-in-up">
-      <!-- Header -->
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between md:items-end gap-6">
         <div>
@@ -84,7 +84,7 @@ import { TranslationService } from '../../core/services/translation.service';
                   >{{ expense.category.icons }}</span
                 >
               </div>
-              <div>
+              <div (click)="openModal(expense)" class="cursor-pointer">
                 <h3 class="text-base font-bold text-gray-900 dark:text-white leading-tight mb-1">
                   {{ expense.description }}
                 </h3>
@@ -104,7 +104,7 @@ import { TranslationService } from '../../core/services/translation.service';
             </div>
 
             <button
-              (click)="state.delete(expense.id)"
+              (click)="confirmDelete(expense)"
               class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all"
             >
               <span class="material-icons-outlined text-lg">delete</span>
@@ -133,14 +133,74 @@ import { TranslationService } from '../../core/services/translation.service';
       (save)="onSave($event)"
       (cancel)="closeModal()"
     ></app-recurring-form>
+
+    <!-- Delete Confirmation Modal -->
+    <div *ngIf="showDeleteModal" class="fixed inset-0 z-[70] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="cancelDelete()"></div>
+      <div
+        class="glass-card w-full max-w-sm p-6 text-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl rounded-2xl relative animate-scale-in"
+      >
+        <div
+          class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mx-auto mb-3 text-red-500"
+        >
+          <span class="material-icons-outlined text-2xl">delete_forever</span>
+        </div>
+
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Delete Expense?</h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm leading-relaxed">
+          Are you sure you want to delete
+          <span class="font-bold text-gray-900 dark:text-white">{{
+            expenseToDelete?.description
+          }}</span
+          >? This action cannot be undone.
+        </p>
+
+        <div class="flex gap-3">
+          <button
+            (click)="cancelDelete()"
+            class="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors text-sm"
+          >
+            Cancel
+          </button>
+          <button
+            (click)="performDelete()"
+            class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02] text-sm"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
   `,
+  styles: [
+    `
+      .animate-scale-in {
+        animation: scaleIn 0.2s ease-out;
+      }
+      @keyframes scaleIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+    `,
+  ],
 })
 export class RecurringComponent implements OnInit {
   state = inject(RecurringStateService);
   ts = inject(TranslationService);
+  ns = inject(NotificationService);
 
   showModal = false;
   selectedExpense: RecurringExpense | null = null;
+
+  // Delete Modal State
+  showDeleteModal = false;
+  expenseToDelete: RecurringExpense | null = null;
 
   ngOnInit() {
     this.state.load(0, 50); // Load initial data
@@ -158,17 +218,53 @@ export class RecurringComponent implements OnInit {
 
   onSave(dto: CreateRecurringExpenseDto) {
     if (this.selectedExpense) {
-      // Update logic would go here if we implemented full update form support
-      // For now, we mainly support creation as per requirements, but update is easy to add
       this.state
         .update(this.selectedExpense.id, {
           description: dto.description,
           amount: dto.amount,
-          isActive: true,
+          isActive: true, // Assuming reactivating on edit if needed, or keeping status
+          // Note: Full update DTO might need more specific handling of isActive if UI supported it
         })
-        .subscribe(() => this.closeModal());
+        .subscribe({
+          next: () => {
+            this.ns.show('Expense updated successfully', 'success');
+            this.closeModal();
+          },
+          error: () => this.ns.show('Failed to update expense', 'error'),
+        });
     } else {
-      this.state.add(dto).subscribe(() => this.closeModal());
+      this.state.add(dto).subscribe({
+        next: () => {
+          this.ns.show('Recurring expense created', 'success');
+          this.closeModal();
+        },
+        error: () => this.ns.show('Failed to create expense', 'error'),
+      });
     }
+  }
+
+  confirmDelete(expense: RecurringExpense) {
+    this.expenseToDelete = expense;
+    this.showDeleteModal = true;
+  }
+
+  cancelDelete() {
+    this.showDeleteModal = false;
+    this.expenseToDelete = null;
+  }
+
+  performDelete() {
+    if (!this.expenseToDelete) return;
+
+    this.state.delete(this.expenseToDelete.id).subscribe({
+      next: () => {
+        this.ns.show('Expense deleted successfully', 'success');
+        this.cancelDelete();
+      },
+      error: () => {
+        this.ns.show('Failed to delete expense', 'error');
+        // No need to close modal on error, let user try again or cancel
+      },
+    });
   }
 }

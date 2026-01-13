@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
-import { CommonModule } from '@angular/common';
+import { DatePipe, CurrencyPipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { TranslationService } from '../../core/services/translation.service';
@@ -18,20 +18,11 @@ import { NotificationService } from '../../core/services/notification.service';
 import { IncomeStateService } from '../../core/services/income-state.service';
 import { IncomeResponse } from '../../core/models/api.models';
 import { RouterModule } from '@angular/router';
-import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-incomes',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, CurrencyInputDirective],
-  animations: [
-    trigger('fadeOut', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(10px)' }),
-        animate('350ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
-      ]),
-    ]),
-  ],
+  imports: [ReactiveFormsModule, RouterModule, CurrencyInputDirective, DatePipe, CurrencyPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6">
@@ -45,10 +36,10 @@ import { trigger, transition, style, animate } from '@angular/animations';
         </div>
         <button
           (click)="openModal()"
-          class="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
+          class="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
         >
-          <span class="material-icons-outlined mr-2">add</span>
-          {{ ts.t()('trans.add_income') }}
+          <span class="material-icons-outlined mr-1 md:mr-2 text-lg md:text-2xl">add</span>
+          <span class="text-sm md:text-base font-bold">{{ ts.t()('trans.add_income') }}</span>
         </button>
       </div>
 
@@ -76,10 +67,12 @@ import { trigger, transition, style, animate } from '@angular/animations';
         class="glass-card overflow-hidden bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 animate-fade-in"
       >
         <!-- Skeleton Loader (Only initial load) -->
-        <div *ngIf="isLoading() && incomes().length === 0" class="animate-pulse">
+        @if (isLoading() && incomes().length === 0) {
+        <div class="animate-pulse">
           <!-- Mobile Skeleton -->
           <div class="md:hidden divide-y divide-gray-200 dark:divide-white/5">
-            <div *ngFor="let i of [1, 2, 3, 4, 5]" class="p-4 flex items-center justify-between">
+            @for (i of [1, 2, 3, 4, 5]; track $index) {
+            <div class="p-4 flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-white/10"></div>
                 <div class="space-y-2">
@@ -89,36 +82,39 @@ import { trigger, transition, style, animate } from '@angular/animations';
               </div>
               <div class="h-5 w-20 bg-gray-200 dark:bg-white/10 rounded"></div>
             </div>
+            }
           </div>
           <!-- Desktop Skeleton -->
           <div class="hidden md:block p-4">
             <div class="space-y-4">
-              <div *ngFor="let i of [1, 2, 3, 4, 5]" class="flex items-center justify-between">
+              @for (i of [1, 2, 3, 4, 5]; track $index) {
+              <div class="flex items-center justify-between">
                 <div class="h-4 w-1/4 bg-gray-200 dark:bg-white/10 rounded"></div>
                 <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
                 <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
                 <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
               </div>
+              }
             </div>
           </div>
         </div>
+        }
 
         <!-- Mobile Card View (md:hidden) -->
+        @if (incomes().length > 0 || !isLoading()) {
         <div
           class="md:hidden transition-opacity duration-300"
-          *ngIf="incomes().length > 0 || !isLoading()"
           [class.opacity-50]="isLoading()"
           [class.pointer-events-none]="isLoading()"
         >
-          <div
-            *ngIf="incomes().length === 0"
-            class="p-8 text-center text-gray-500 dark:text-gray-400"
-          >
+          @if (incomes().length === 0) {
+          <div class="p-8 text-center text-gray-500 dark:text-gray-400">
             {{ ts.t()('trans.no_data') }}
           </div>
+          }
           <div class="divide-y divide-gray-200 dark:divide-white/5">
+            @for (item of incomes(); track trackById($index, item)) {
             <div
-              *ngFor="let item of incomes(); trackBy: trackById"
               (click)="openActionMenu(item)"
               class="p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer"
             >
@@ -148,13 +144,15 @@ import { trigger, transition, style, animate } from '@angular/animations';
                 </span>
               </div>
             </div>
+            }
           </div>
         </div>
+        }
 
         <!-- Desktop Table View (hidden md:block) -->
+        @if (incomes().length > 0 || !isLoading()) {
         <div
           class="hidden md:block overflow-x-auto transition-opacity duration-300"
-          *ngIf="incomes().length > 0 || !isLoading()"
           [class.opacity-50]="isLoading()"
           [class.pointer-events-none]="isLoading()"
         >
@@ -170,11 +168,8 @@ import { trigger, transition, style, animate } from '@angular/animations';
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-white/5">
-              <tr
-                *ngFor="let item of incomes(); trackBy: trackById"
-                [@fadeOut]
-                class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
-              >
+              @for (item of incomes(); track trackById($index, item)) {
+              <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
                 <td class="p-4 text-gray-900 dark:text-white font-medium">
                   <div class="truncate max-w-full" [title]="item.description">
                     {{ item.description }}
@@ -205,19 +200,25 @@ import { trigger, transition, style, animate } from '@angular/animations';
                   </div>
                 </td>
               </tr>
+              }
               <!-- Empty State -->
-              <tr *ngIf="incomes().length === 0">
+              @if (incomes().length === 0) {
+              <tr>
                 <td colspan="5" class="p-8 text-center text-gray-500 dark:text-gray-400">
                   {{ ts.t()('trans.no_data') }}
                 </td>
               </tr>
+              }
               <!-- Placeholder Rows to maintain fixed height -->
-              <tr *ngFor="let _ of getEmptyRows()" class="h-[73px]">
+              @for (_ of getEmptyRows(); track $index) {
+              <tr class="h-[73px]">
                 <td colspan="5"></td>
               </tr>
+              }
             </tbody>
           </table>
         </div>
+        }
 
         <!-- Pagination Controls -->
         <div
@@ -248,8 +249,8 @@ import { trigger, transition, style, animate } from '@angular/animations';
     </div>
 
     <!-- Edit Modal -->
+    @defer (when showModal()) { @if (showModal()) {
     <div
-      *ngIf="showModal()"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
     >
       <div
@@ -332,10 +333,11 @@ import { trigger, transition, style, animate } from '@angular/animations';
         </form>
       </div>
     </div>
+    } }
 
     <!-- Delete Modal -->
+    @if (showDeleteModal()) {
     <div
-      *ngIf="showDeleteModal()"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
     >
       <div
@@ -368,12 +370,11 @@ import { trigger, transition, style, animate } from '@angular/animations';
         </div>
       </div>
     </div>
+    }
 
     <!-- Mobile Action Menu (Bottom Sheet) -->
-    <div
-      *ngIf="showActionMenu()"
-      class="fixed inset-0 z-[100] flex items-end justify-center md:hidden"
-    >
+    @if (showActionMenu()) {
+    <div class="fixed inset-0 z-[100] flex items-end justify-center md:hidden">
       <!-- Backdrop -->
       <div
         class="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
@@ -422,6 +423,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
         </div>
       </div>
     </div>
+    }
   `,
   styles: [],
 })
@@ -563,12 +565,14 @@ export class IncomesComponent implements OnInit, OnDestroy {
       const id = this.editingId();
       let payload = { ...formData };
 
+      // Optimistic Close
+      this.closeModal();
+
       const obs$ = id ? this.state.update(id, payload) : this.state.add(payload);
 
       obs$.subscribe({
         next: () => {
           const msg = id ? 'notif.income_updated' : 'notif.income_created';
-          this.closeModal();
           this.ns.show(msg, 'success');
         },
         error: (err) => {
@@ -588,10 +592,12 @@ export class IncomesComponent implements OnInit, OnDestroy {
     const item = this.itemToDelete();
     if (!item) return;
 
+    // Optimistic Close
+    this.cancelDelete();
+
     this.state.delete(Number(item.id)).subscribe({
       next: () => {
         this.ns.show('notif.income_deleted', 'success');
-        this.cancelDelete();
       },
       error: () => {
         this.ns.show('notif.income_delete_fail', 'error');

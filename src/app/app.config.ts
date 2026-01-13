@@ -1,5 +1,9 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import {
+  ApplicationConfig,
+  provideBrowserGlobalErrorListeners,
+  isDevMode,
+  provideZonelessChangeDetection,
+} from '@angular/core';
 import { provideRouter, withPreloading, PreloadAllModules } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
@@ -10,10 +14,10 @@ import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZonelessChangeDetection(),
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideRouter(routes, withPreloading(PreloadAllModules)),
-    provideAnimations(),
     provideCharts(withDefaultRegisterables()),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

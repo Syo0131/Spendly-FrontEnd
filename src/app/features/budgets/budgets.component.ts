@@ -1,578 +1,497 @@
 import {
   Component,
-  inject,
+  OnInit,
   signal,
   computed,
   ChangeDetectionStrategy,
-  OnInit,
+  inject,
   effect,
 } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
-import { TranslationService } from '../../core/services/translation.service';
-import { ApiService } from '../../core/services/api.service';
-import { Budget, CreateBudgetDto, Category } from '../../core/models/api.models';
+import { NgClass, DecimalPipe, DatePipe, CurrencyPipe } from '@angular/common';
 import {
-  ReactiveFormsModule,
   FormBuilder,
   FormGroup,
   Validators,
+  ReactiveFormsModule,
   FormsModule,
 } from '@angular/forms';
-import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
+import { ApiService } from '../../core/services/api.service';
+import { TranslationService } from '../../core/services/translation.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { BudgetStateService } from '../../core/services/budget-state.service';
+import { CreateBudgetDto, Budget, Category } from '../../core/models/api.models';
+import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
 
 @Component({
   selector: 'app-budgets',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, CurrencyInputDirective, DatePipe],
+  imports: [
+    ReactiveFormsModule,
+    FormsModule,
+    CurrencyInputDirective,
+    NgClass,
+    DecimalPipe,
+    DatePipe,
+    CurrencyPipe,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="p-6 pb-24 md:pb-6 space-y-6 animate-fade-in-up">
+    <div class="space-y-4 md:space-y-8 animate-fade-in">
       <!-- Header -->
-      <div class="flex flex-col md:flex-row justify-between md:items-end gap-6">
+      <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div>
-          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
-            {{ ts.t()('budgets.title') || 'Budgets' }}
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            {{ ts.t()('budgets.title') }}
           </h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">
-            Control your expenses and save more
+          <p class="text-gray-500 dark:text-gray-400 mt-1">
+            {{ ts.t()('budgets.subtitle') }} {{ currentDate() | date : 'MMMM yyyy' }}
           </p>
         </div>
-
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-          <!-- Month Navigation -->
-          <div
-            class="flex items-center justify-between bg-white dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10 p-1 shadow-sm flex-1 md:flex-none"
-          >
-            <button
-              (click)="prevMonth()"
-              class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-gray-500 dark:text-gray-400 transition-colors active:scale-95"
-            >
-              <span class="material-icons-outlined text-lg">chevron_left</span>
-            </button>
-            <div
-              class="px-3 font-bold text-sm text-gray-900 dark:text-white min-w-[120px] text-center select-none uppercase tracking-wide cursor-default"
-            >
-              {{ currentDate() | date : 'MMMM yyyy' }}
-            </div>
-            <button
-              (click)="nextMonth()"
-              class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-gray-500 dark:text-gray-400 transition-colors active:scale-95"
-            >
-              <span class="material-icons-outlined text-lg">chevron_right</span>
-            </button>
-          </div>
-
-          <button
-            (click)="openModal()"
-            class="px-4 py-3 sm:py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm tracking-wide md:w-auto"
-          >
-            <span class="material-icons-outlined mr-2 text-lg">add_circle</span>
-            {{ ts.t()('budgets.add') || 'New' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Skeleton Loader -->
-      <div
-        *ngIf="isLoading() && budgets().length === 0"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse"
-      >
-        <div
-          *ngFor="let i of [1, 2, 3, 4, 5, 6]"
-          class="p-5 border border-gray-200 dark:border-white/5 rounded-2xl bg-white/5"
-        >
-          <div class="flex justify-between items-start mb-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-gray-200 dark:bg-white/10"></div>
-              <div class="space-y-1.5">
-                <div class="h-4 w-24 bg-gray-200 dark:bg-white/10 rounded"></div>
-                <div class="h-3 w-16 bg-gray-200 dark:bg-white/10 rounded"></div>
-              </div>
-            </div>
-          </div>
-          <div class="space-y-3">
-            <div class="h-8 w-32 bg-gray-200 dark:bg-white/10 rounded"></div>
-            <div class="w-full h-2 bg-gray-200 dark:bg-white/10 rounded-full"></div>
-            <div class="flex justify-between">
-              <div class="h-3 w-10 bg-gray-200 dark:bg-white/10 rounded"></div>
-              <div class="h-3 w-16 bg-gray-200 dark:bg-white/10 rounded"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div
-        *ngIf="!isLoading() && budgets().length === 0"
-        class="glass-card p-12 text-center border border-gray-200 dark:border-white/10 animate-fade-in rounded-2xl"
-      >
-        <div
-          class="w-16 h-16 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center mx-auto mb-4"
-        >
-          <span class="material-icons-outlined text-3xl text-gray-300 dark:text-gray-600"
-            >calendar_today</span
-          >
-        </div>
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
-          No budgets for {{ currentDate() | date : 'MMMM' }}
-        </h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm max-w-sm mx-auto">
-          You haven't created any budgets for this month yet.
-        </p>
         <button
           (click)="openModal()"
-          class="text-primary hover:text-primary-light font-semibold hover:underline text-sm"
+          class="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
         >
-          {{ ts.t()('budgets.add') }}
+          <span class="material-icons-outlined mr-1 md:mr-2 text-lg md:text-2xl">add</span>
+          <span class="text-sm md:text-base font-bold">{{ ts.t()('budgets.create') }}</span>
         </button>
       </div>
 
-      <!-- Budgets Grid -->
-      <div
-        *ngIf="budgets().length > 0"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-      >
+      <!-- Budget Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        @if (isLoading() && budgets().length === 0) { @for (i of [1, 2, 3, 4, 5, 6]; track i) {
         <div
-          *ngFor="let budget of budgets(); trackBy: trackById"
-          class="glass-card p-5 border border-gray-100 dark:border-white/5 relative group hover:shadow-xl hover:border-primary/20 dark:hover:border-primary/20 transition-all duration-300 rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900"
+          class="glass-card p-6 animate-pulse bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 h-64"
         >
-          <!-- Header Card -->
-          <div class="flex justify-between items-start mb-4">
+          <div class="flex items-center justify-between mb-6">
             <div class="flex items-center gap-3">
-              <!-- Category Icon -->
+              <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-white/10"></div>
+              <div class="h-4 w-24 bg-gray-200 dark:bg-white/10 rounded"></div>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10"></div>
+          </div>
+          <div class="space-y-4">
+            <div class="h-3 w-full bg-gray-200 dark:bg-white/10 rounded"></div>
+            <div class="h-3 w-3/4 bg-gray-200 dark:bg-white/10 rounded"></div>
+          </div>
+          <div class="mt-8 h-2 w-full bg-gray-200 dark:bg-white/10 rounded-full"></div>
+          <div class="mt-4 flex justify-between">
+            <div class="h-3 w-16 bg-gray-200 dark:bg-white/10 rounded"></div>
+            <div class="h-3 w-16 bg-gray-200 dark:bg-white/10 rounded"></div>
+          </div>
+        </div>
+        } } @for (budget of budgets(); track trackById($index, budget)) {
+        <div
+          class="glass-card p-6 group hover:shadow-xl transition-all duration-300 relative overflow-hidden bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
+        >
+          <!-- Header -->
+          <div class="flex items-start justify-between mb-6">
+            <div class="flex items-center gap-3">
               <div
-                class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
-                [style.background-color]="(budget.category?.color || '#3b82f6') + '15'"
+                class="w-12 h-12 rounded-full flex items-center justify-center shadow-inner"
+                [style.background-color]="(budget.category?.color || '#3b82f6') + '20'"
               >
                 <span
-                  class="material-icons-outlined text-lg"
+                  class="material-icons-outlined text-2xl"
                   [style.color]="budget.category?.color || '#3b82f6'"
                 >
                   {{ budget.category?.icons || 'category' }}
                 </span>
               </div>
-
-              <!-- Title & Labels -->
               <div>
-                <h3 class="text-base font-bold text-gray-900 dark:text-white leading-tight mb-1">
-                  {{ budget.category?.name || 'Budget' }}
+                <h3 class="font-bold text-gray-900 dark:text-white text-lg">
+                  {{
+                    budget.category ? ts.translateCategory(budget.category.name) : 'Uncategorized'
+                  }}
                 </h3>
-                <div class="flex items-center gap-1.5 leading-none">
-                  <!-- Period Badge -->
-                  <span
-                    class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider bg-gray-100 dark:bg-white/5 px-1.5 py-0.5 rounded border border-gray-200 dark:border-white/5 flex items-center h-5"
-                  >
-                    {{ budget.period }}
-                  </span>
-
-                  <!-- Alert Badge -->
-                  <span
-                    *ngIf="budget.warningThreshold"
-                    class="flex items-center text-[10px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 h-5"
-                    title="Warning Threshold"
-                  >
-                    <span class="material-icons-outlined text-[10px] mr-1"
-                      >notification_important</span
-                    >
-                    {{ budget.warningThreshold }}%
-                  </span>
-                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ budget.period }}
+                </p>
               </div>
             </div>
 
-            <!-- Action Buttons -->
+            <!-- Actions -->
             <div
               class="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <button
                 (click)="openModal(budget)"
-                class="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors"
+                class="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-full transition-all"
+                [title]="ts.t()('trans.edit')"
               >
-                <span class="material-icons-outlined text-base">edit</span>
+                <span class="material-icons-outlined text-xl">edit</span>
               </button>
               <button
                 (click)="confirmDelete(budget)"
-                class="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-gray-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-colors"
+                [title]="ts.t()('trans.delete')"
               >
-                <span class="material-icons-outlined text-base">delete_outline</span>
+                <span class="material-icons-outlined text-xl">delete</span>
               </button>
             </div>
           </div>
 
-          <!-- Progress & Amounts (Goals Style) -->
+          <!-- New Layout: Percentage Left, Amount Right -->
           <div class="mt-4">
-            <div class="flex justify-between items-end mb-2">
-              <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-lg font-bold text-gray-700 dark:text-gray-300">
                 {{ calculateProgress(budget) | number : '1.0-0' }}%
               </span>
-              <span class="text-sm font-bold text-gray-900 dark:text-gray-100">
-                DOP {{ budget.spent | number : '1.2-2' }} /
-                {{ budget.limit | number : '1.2-2' }}
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <span class="text-gray-900 dark:text-white font-bold">
+                  {{ budget.spent | currency : 'DOP' : 'symbol' : '1.2-2' }}
+                </span>
+                / {{ budget.limit | currency : 'DOP' : 'symbol' : '1.2-2' }}
               </span>
             </div>
 
+            <!-- Progress Bar -->
             <div class="w-full bg-gray-200 dark:bg-white/10 rounded-full h-3 overflow-hidden">
               <div
-                class="h-3 rounded-full transition-all duration-1000 ease-out relative"
-                [style.width.%]="calculateProgress(budget)"
+                class="h-full rounded-full transition-all duration-500"
                 [ngClass]="getProgressColor(budget)"
+                [style.width.%]="calculateProgress(budget)"
               ></div>
             </div>
           </div>
         </div>
+        }
       </div>
+
+      @if (!isLoading() && budgets().length === 0) {
+      <div class="text-center py-12">
+        <p class="text-gray-500 dark:text-gray-400 text-lg">{{ ts.t()('budgets.no_budgets') }}</p>
+      </div>
+      }
     </div>
 
     <!-- Create/Edit Modal -->
+    @defer (when showModal()) { @if (showModal()) {
     <div
-      *ngIf="showModal()"
-      class="fixed inset-0 z-[60] flex items-center justify-center p-4 px-4 sm:px-0"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      (click)="closeModal()"
     >
-      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeModal()"></div>
       <div
-        class="glass-card w-full max-w-md p-6 relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-2xl animate-scale-in"
+        class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-md overflow-hidden animate-scale-in"
+        (click)="$event.stopPropagation()"
       >
-        <button
-          (click)="closeModal()"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full"
+        <div
+          class="p-6 border-b border-gray-100 dark:border-white/5 flex justify-between items-center"
         >
-          <span class="material-icons-outlined text-lg">close</span>
-        </button>
-
-        <div class="text-center mb-6">
-          <div
-            class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4"
-          >
-            <span class="material-icons-outlined text-3xl text-primary"
-              >account_balance_wallet</span
-            >
-          </div>
           <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-            {{ selectedBudget() ? 'Edit Budget' : ts.t()('budgets.add') || 'New Budget' }}
+            {{ selectedBudget() ? ts.t()('budgets.edit') : ts.t()('budgets.create') }}
           </h2>
-          <p class="text-gray-500 text-xs mt-1">
-            Set limits to your spending for {{ currentDate() | date : 'MMMM' }}
-          </p>
+          <button
+            (click)="closeModal()"
+            class="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            <span class="material-icons-outlined">close</span>
+          </button>
         </div>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
-          <!-- Limit Input -->
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-5">
+          <!-- Category Select -->
           <div class="space-y-1.5">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
-              >Daily Limit</label
+              class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
             >
-            <div class="relative group">
-              <span
-                class="absolute left-4 top-3.5 text-gray-500 dark:text-gray-400 font-bold text-lg"
+              {{ ts.t()('trans.category') }}
+            </label>
+            <div class="relative">
+              <button
+                type="button"
+                (click)="toggleDropdown('category')"
+                class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 text-left transition-colors hover:border-primary/50"
+              >
+                @if (getSelectedCategory(); as cat) {
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
+                    [style.background-color]="cat.color"
+                  >
+                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
+                  </div>
+                  <span class="text-gray-900 dark:text-white font-medium">
+                    {{ ts.translateCategory(cat.name) }}
+                  </span>
+                </div>
+                } @else {
+                <span class="text-gray-400">{{ ts.t()('trans.select_category') }}</span>
+                }
+                <span class="material-icons-outlined text-gray-400">expand_more</span>
+              </button>
+
+              @if (openDropdown() === 'category') {
+              <div
+                class="absolute z-10 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto no-scrollbar animate-fade-in"
+              >
+                @for (cat of categories(); track cat.id) {
+                <button
+                  type="button"
+                  (click)="selectCategory(cat)"
+                  class="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-b border-gray-100 dark:border-white/5 last:border-0"
+                >
+                  <div
+                    class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
+                    [style.background-color]="cat.color"
+                  >
+                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
+                  </div>
+                  <span class="text-gray-700 dark:text-gray-200">
+                    {{ ts.translateCategory(cat.name) }}
+                  </span>
+                </button>
+                }
+              </div>
+              }
+            </div>
+            @if (form.get('categoryId')?.invalid && form.get('categoryId')?.touched) {
+            <p class="text-xs text-red-500">{{ ts.t()('budgets.error_category') }}</p>
+            }
+          </div>
+
+          <!-- Amount Limit -->
+          <div class="space-y-1.5">
+            <label
+              class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+            >
+              {{ ts.t()('budgets.limit') }}
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-3.5 text-gray-500 dark:text-gray-400 font-bold"
                 >$</span
               >
               <input
+                formControlName="limit"
                 type="text"
                 inputmode="decimal"
                 appCurrencyInput
-                formControlName="limit"
+                class="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400"
                 placeholder="0.00"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-lg font-bold rounded-xl p-3 pl-8 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder-gray-300"
               />
             </div>
+            @if (form.get('limit')?.invalid && form.get('limit')?.touched) {
+            <p class="text-xs text-red-500">{{ ts.t()('budgets.error_amount') }}</p>
+            }
           </div>
 
-          <!-- Category & Period Grid -->
-          <div class="grid grid-cols-2 gap-3">
-            <!-- Category -->
-            <div class="space-y-1.5">
-              <label
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
-                >Category</label
-              >
-
-              <div class="relative">
-                <div
-                  (click)="toggleDropdown('category')"
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all group"
-                >
-                  <div class="flex items-center gap-2 overflow-hidden">
-                    <ng-container *ngIf="getSelectedCategory() as selected; else catPlaceholder">
-                      <div
-                        class="w-5 h-5 rounded-md flex items-center justify-center shrink-0"
-                        [style.background-color]="selected.color + '20'"
-                      >
-                        <span
-                          class="material-icons-outlined text-xs"
-                          [style.color]="selected.color"
-                          >{{ selected.icons }}</span
-                        >
-                      </div>
-                      <span class="text-gray-900 dark:text-white font-semibold text-xs truncate">{{
-                        selected.name
-                      }}</span>
-                    </ng-container>
-                    <ng-template #catPlaceholder>
-                      <span class="material-icons-outlined text-gray-400 text-lg">category</span>
-                      <span class="text-gray-400 text-xs font-medium">Select</span>
-                    </ng-template>
-                  </div>
-                  <span
-                    class="material-icons-outlined text-gray-400 group-hover:text-primary transition-colors text-lg"
-                    >expand_more</span
-                  >
-                </div>
-
-                <div
-                  *ngIf="openDropdown() === 'category'"
-                  class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl shadow-xl max-h-52 overflow-y-auto custom-scrollbar animate-scale-in"
-                >
-                  <div
-                    *ngFor="let cat of categories(); trackBy: trackById"
-                    (click)="selectCategory(cat)"
-                    class="p-2.5 flex items-center gap-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors border-b border-gray-50 dark:border-white/5 last:border-0"
-                  >
-                    <div
-                      class="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-                      [style.background-color]="cat.color + '20'"
-                    >
-                      <span class="material-icons-outlined text-xs" [style.color]="cat.color">{{
-                        cat.icons
-                      }}</span>
-                    </div>
-                    <span class="text-gray-700 dark:text-gray-200 font-medium text-xs">{{
-                      cat.name
-                    }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Period -->
-            <div class="space-y-1.5">
-              <label
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
-                >Period</label
-              >
-              <div class="relative">
-                <div
-                  (click)="toggleDropdown('period')"
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all group"
-                >
-                  <div class="flex items-center gap-2">
-                    <span class="material-icons-outlined text-gray-400 text-lg">date_range</span>
-                    <span class="text-gray-900 dark:text-white font-semibold text-xs">{{
-                      form.get('period')?.value | titlecase
-                    }}</span>
-                  </div>
-                  <span
-                    class="material-icons-outlined text-gray-400 group-hover:text-primary transition-colors text-lg"
-                    >expand_more</span
-                  >
-                </div>
-
-                <div
-                  *ngIf="openDropdown() === 'period'"
-                  class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-xl overflow-hidden animate-scale-in"
-                >
-                  <div
-                    *ngFor="let p of periods"
-                    (click)="selectPeriod(p)"
-                    class="p-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors border-b border-gray-50 dark:border-white/5 last:border-0 font-medium text-xs text-gray-700 dark:text-gray-300"
-                  >
-                    {{ p | titlecase }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Thresholds -->
-          <div class="grid grid-cols-2 gap-3">
-            <div class="space-y-1.5">
-              <label
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
-                >Warning %</label
-              >
-              <div class="relative">
-                <div
-                  (click)="toggleDropdown('alert')"
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all"
-                >
-                  <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-                    <span class="text-gray-900 dark:text-white font-bold text-xs"
-                      >{{ form.get('warningThreshold')?.value }}%</span
-                    >
-                  </div>
-                  <span class="material-icons-outlined text-gray-400 text-lg">expand_more</span>
-                </div>
-                <div
-                  *ngIf="openDropdown() === 'alert'"
-                  class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-xl overflow-hidden animate-scale-in"
-                >
-                  <div
-                    *ngFor="let a of alertOptions"
-                    (click)="selectAlert(a.value)"
-                    class="p-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-medium border-b border-gray-50 dark:border-white/5 last:border-0 text-gray-700 dark:text-gray-300"
-                  >
-                    {{ a.label }}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="space-y-1.5">
-              <label
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
-                >Critical %</label
-              >
-              <div class="relative">
-                <div
-                  (click)="toggleDropdown('critical')"
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all"
-                >
-                  <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                    <span class="text-gray-900 dark:text-white font-bold text-xs"
-                      >{{ form.get('criticalThreshold')?.value }}%</span
-                    >
-                  </div>
-                  <span class="material-icons-outlined text-gray-400 text-lg">expand_more</span>
-                </div>
-                <div
-                  *ngIf="openDropdown() === 'critical'"
-                  class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-xl overflow-hidden animate-scale-in"
-                >
-                  <div
-                    *ngFor="let a of criticalOptions"
-                    (click)="selectCritical(a.value)"
-                    class="p-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-medium border-b border-gray-50 dark:border-white/5 last:border-0 text-gray-700 dark:text-gray-300"
-                  >
-                    {{ a.label }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recurring -->
+          <!-- Recurring Toggle -->
           <div
-            class="bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-100 dark:border-white/5"
+            class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700"
           >
-            <div
-              class="flex items-center justify-between cursor-pointer"
+            <div>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ ts.t()('budgets.recurring_title') }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ ts.t()('budgets.recurring_desc') }}
+              </p>
+            </div>
+            <button
+              type="button"
               (click)="toggleRecurring()"
+              class="w-12 h-6 rounded-full transition-colors relative"
+              [ngClass]="
+                form.get('isRecurring')?.value ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+              "
             >
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-8 h-8 rounded-full bg-white dark:bg-white/10 flex items-center justify-center text-primary shadow-sm border border-gray-100 dark:border-white/5"
-                >
-                  <span class="material-icons-outlined text-lg">loop</span>
-                </div>
-              </div>
-              <!-- Recurring Toggle -->
-              <div class="flex items-center justify-between py-2">
-                <span class="text-sm font-bold text-gray-700 dark:text-gray-200 mr-2"
-                  >Recurring Budget</span
-                >
+              <div
+                class="w-4 h-4 bg-white rounded-full absolute top-1 transition-transform"
+                [ngClass]="form.get('isRecurring')?.value ? 'translate-x-7' : 'translate-x-1'"
+              ></div>
+            </button>
+          </div>
+
+          <!-- Advanced Options Reveal -->
+          <div>
+            <button
+              type="button"
+              (click)="toggleAdvanced()"
+              class="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
+            >
+              <span class="material-icons-outlined text-lg">
+                {{ showAdvanced() ? 'expand_less' : 'expand_more' }}
+              </span>
+              {{ ts.t()('budgets.advanced_options') }}
+            </button>
+          </div>
+
+          @if (showAdvanced()) {
+          <div
+            class="space-y-4 pt-2 border-t border-gray-100 dark:border-white/5 animate-slide-down"
+          >
+            <!-- Warning Threshold -->
+            <div class="space-y-1.5">
+              <label
+                class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
+                {{ ts.t()('budgets.warning_threshold') }}
+              </label>
+              <div class="relative">
                 <button
                   type="button"
-                  (click)="toggleRecurring(); $event.stopPropagation()"
-                  class="relative w-11 h-6 transition-colors rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                  [ngClass]="
-                    form.get('isRecurring')?.value ? 'bg-primary' : 'bg-gray-200 dark:bg-slate-700'
-                  "
+                  (click)="toggleDropdown('warning')"
+                  class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary/50"
                 >
-                  <span
-                    class="inline-block w-4 h-4 transform transition-transform bg-white rounded-full shadow-sm"
-                    [ngClass]="
-                      form.get('isRecurring')?.value
-                        ? 'translate-x-full border-white'
-                        : 'translate-x-1 border-gray-100'
-                    "
-                  ></span>
+                  <span class="text-gray-900 dark:text-white font-medium">
+                    {{ form.get('warningThreshold')?.value }}%
+                  </span>
+                  <span class="material-icons-outlined text-gray-400">expand_more</span>
                 </button>
+                @if (openDropdown() === 'warning') {
+                <div
+                  class="absolute z-10 bottom-full left-0 right-0 mb-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden"
+                >
+                  @for (val of [50, 60, 70, 75, 80, 85, 90]; track val) {
+                  <button
+                    type="button"
+                    (click)="selectWarning(val)"
+                    class="w-full p-2 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200 text-sm"
+                  >
+                    {{ val }}%
+                  </button>
+                  }
+                </div>
+                }
+              </div>
+              <p class="text-[10px] text-gray-400">{{ ts.t()('budgets.notify_help') }}</p>
+            </div>
+
+            <!-- Critical Threshold -->
+            <div class="space-y-1.5">
+              <label
+                class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
+                {{ ts.t()('budgets.critical_threshold') }}
+              </label>
+              <div class="relative">
+                <button
+                  type="button"
+                  (click)="toggleDropdown('critical')"
+                  class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary/50"
+                >
+                  <span class="text-gray-900 dark:text-white font-medium">
+                    {{ form.get('criticalThreshold')?.value }}%
+                  </span>
+                  <span class="material-icons-outlined text-gray-400">expand_more</span>
+                </button>
+                @if (openDropdown() === 'critical') {
+                <div
+                  class="absolute z-10 bottom-full left-0 right-0 mb-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden"
+                >
+                  @for (val of [80, 85, 90, 95, 100]; track val) {
+                  <button
+                    type="button"
+                    (click)="selectCritical(val)"
+                    class="w-full p-2 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200 text-sm"
+                  >
+                    {{ val }}%
+                  </button>
+                  }
+                </div>
+                }
               </div>
             </div>
 
-            <!-- Recurring Settings -->
-            <div *ngIf="form.get('isRecurring')?.value" class="space-y-3 animate-fade-in pl-1 mt-2">
+            @if (form.get('isRecurring')?.value) {
+            <!-- Repeat For (Months) -->
+            <div class="space-y-1.5">
               <label
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                >Number of Periods</label
+                class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
               >
-              <div class="flex flex-wrap gap-2">
+                {{ ts.t()('budgets.repeat_duration') }}
+              </label>
+              <div class="flex gap-2 flex-wrap">
+                @for (r of [3, 6, 12, 24]; track r) {
                 <button
                   type="button"
-                  *ngFor="let r of repeatOptions"
                   (click)="selectRepeat(r)"
-                  class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border"
+                  class="flex-1 py-2 rounded-lg border text-sm font-medium transition-all"
                   [ngClass]="
                     form.get('numberOfPeriods')?.value === r
-                      ? 'bg-primary text-white border-primary shadow-sm'
-                      : 'bg-white dark:bg-white/5 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:border-primary/50'
+                      ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                      : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
                   "
                 >
-                  {{ r }} Months
+                  {{ r }} Mo
                 </button>
+                }
               </div>
             </div>
+            }
           </div>
+          }
 
           <!-- Submit Button -->
           <button
             type="submit"
             [disabled]="form.invalid || isSubmitting()"
-            class="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm"
+            class="w-full py-3.5 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            <span
-              *ngIf="isSubmitting()"
-              class="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full"
-            ></span>
-            {{ isSubmitting() ? 'Saving...' : ts.t()('trans.save') || 'Save Budget' }}
+            @if (isSubmitting()) {
+            <svg
+              class="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            }
+            {{ selectedBudget() ? ts.t()('budgets.update') : ts.t()('budgets.create_btn') }}
           </button>
         </form>
       </div>
     </div>
+    } }
 
-    <!-- Delete Confirmation Modal -->
+    <!-- Delete Modal -->
+    @if (showDeleteModal()) {
     <div
-      *ngIf="showDeleteModal()"
-      class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
     >
       <div
-        class="glass-card w-full max-w-sm p-6 text-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl rounded-2xl animate-scale-in"
+        class="glass-card w-full max-w-sm p-6 relative animate-scale-in bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl text-center"
       >
         <div
-          class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mx-auto mb-3 text-red-500"
+          class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4"
         >
-          <span class="material-icons-outlined text-2xl">delete_forever</span>
+          <span class="material-icons-outlined text-3xl text-red-500">warning</span>
         </div>
-
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Delete Budget?</h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm leading-relaxed">
-          Are you sure you want to delete the
-          <span class="font-bold text-gray-900 dark:text-white">{{
-            budgetToDelete()?.category?.name
-          }}</span>
-          budget? This action cannot be undone.
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          {{ ts.t()('trans.delete_title') }}
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+          {{ ts.t()('trans.delete_msg') }}
         </p>
-
-        <div class="flex gap-3">
+        <div class="flex space-x-3 justify-center">
           <button
             (click)="cancelDelete()"
-            class="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors text-sm"
+            class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
           >
-            Cancel
+            {{ ts.t()('trans.cancel') }}
           </button>
           <button
             (click)="performDelete()"
-            class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02] text-sm"
+            class="px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02]"
           >
-            Delete
+            {{ ts.t()('trans.delete') }}
           </button>
         </div>
       </div>
     </div>
+    }
   `,
   styles: [
     `
@@ -631,12 +550,23 @@ export class BudgetsComponent implements OnInit {
   // Data
   categories = signal<Category[]>([]);
 
+  // Computed
+  totalBudgeted = computed(() => {
+    return this.budgets().reduce((acc: number, b: Budget) => acc + b.limit, 0);
+  });
+
+  totalSpent = computed(() => {
+    return this.budgets().reduce((acc: number, b: Budget) => acc + b.spent, 0);
+  });
+
   // UI State
   showModal = signal(false);
   isSubmitting = signal(false);
+  showAdvanced = signal(false);
   showDeleteModal = signal(false);
   budgetToDelete = signal<Budget | null>(null);
   selectedBudget = signal<Budget | null>(null);
+  openMenuId = signal<number | null>(null); // Added this
 
   // Custom Dropdowns
   openDropdown = signal<string | null>(null);
@@ -672,7 +602,7 @@ export class BudgetsComponent implements OnInit {
 
     effect(() => {
       const list = this.budgets();
-      list.forEach((b) => {
+      list.forEach((b: Budget) => {
         if (b.limit > 0 && b.warningThreshold) {
           const pct = (b.spent / b.limit) * 100;
           if (pct >= b.warningThreshold && !this.state.hasNotified(b.id)) {
@@ -720,6 +650,12 @@ export class BudgetsComponent implements OnInit {
 
   trackById(index: number, item: any): number {
     return item.id;
+  }
+
+  toggleMenu(id: number, event: Event) {
+    // Added this
+    event.stopPropagation();
+    this.openMenuId.update((current) => (current === id ? null : id));
   }
 
   // --- Display Helpers ---
@@ -777,6 +713,11 @@ export class BudgetsComponent implements OnInit {
     this.openDropdown.update((current) => (current === name ? null : name));
   }
 
+  toggleAdvanced() {
+    // Added this
+    this.showAdvanced.update((v) => !v);
+  }
+
   // --- Form Helper Logic ---
 
   selectCategory(cat: Category) {
@@ -794,7 +735,7 @@ export class BudgetsComponent implements OnInit {
     this.openDropdown.set(null);
   }
 
-  selectAlert(val: number) {
+  selectWarning(val: number) {
     this.form.patchValue({ warningThreshold: val });
     this.openDropdown.set(null);
   }
@@ -840,10 +781,12 @@ export class BudgetsComponent implements OnInit {
       // but API might allow it. DTO usually forbids changing immutable props if strict.
       // But adhering to the form:
 
+      // Optimistic Close
+      this.closeModal();
+
       this.state.updateBudget(this.selectedBudget()!.id, payload).subscribe({
         next: () => {
           this.isSubmitting.set(false);
-          this.closeModal();
           this.ns.show('Budget updated successfully', 'success');
         },
         error: (err: any) => {
@@ -852,10 +795,12 @@ export class BudgetsComponent implements OnInit {
         },
       });
     } else {
+      // Optimistic Close
+      this.closeModal();
+
       this.state.addBudget(payload).subscribe({
         next: () => {
           this.isSubmitting.set(false);
-          this.closeModal();
           this.ns.show('Budget created successfully', 'success');
         },
         error: (err) => {
@@ -882,10 +827,12 @@ export class BudgetsComponent implements OnInit {
     const budget = this.budgetToDelete();
     if (!budget) return;
 
+    // Optimistic Close
+    this.cancelDelete();
+
     this.state.removeBudget(budget.id).subscribe({
       next: () => {
         this.ns.show('Budget deleted', 'success');
-        this.cancelDelete();
       },
       error: () => this.ns.show('Failed to delete budget', 'error'),
     });

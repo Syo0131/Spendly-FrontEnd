@@ -8,7 +8,7 @@ import {
   ViewChild,
   effect,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DatePipe, CurrencyPipe } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
@@ -21,7 +21,7 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective],
+  imports: [BaseChartDirective, DatePipe, CurrencyPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6 transition-opacity duration-300" [class.opacity-50]="isLoading()" [class.pointer-events-none]="isLoading()">
@@ -76,8 +76,9 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
       </div>
 
       <!-- Month Picker Modal -->
+      @defer (when showDatePicker()) {
+      @if (showDatePicker()) {
       <div
-        *ngIf="showDatePicker()"
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
         (click)="closeDatePicker()"
       >
@@ -106,8 +107,8 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
 
           <!-- Months Grid -->
           <div class="grid grid-cols-3 gap-3 mb-6">
+            @for (month of months; track $index; let i = $index) {
             <button
-              *ngFor="let month of months; let i = index"
               (click)="selectMonth(i)"
               [disabled]="isFutureMonth(i)"
               class="p-3 rounded-xl text-sm font-medium transition-all"
@@ -126,6 +127,7 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
             >
               {{ month }}
             </button>
+            }
           </div>
 
           <!-- Actions -->
@@ -145,6 +147,8 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
           </div>
         </div>
       </div>
+      }
+      }
 
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up delay-100">

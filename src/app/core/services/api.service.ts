@@ -229,7 +229,7 @@ export class ApiService {
 
   // Categories
   getCategories(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/categories`);
+    return this.getWithCache<any[]>('categories', `${this.baseUrl}/categories`);
   }
 
   // Users

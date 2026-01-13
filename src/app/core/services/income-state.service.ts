@@ -1,87 +1,141 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
+import { CacheService } from './cache.service';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ApiService } from './api.service';
 import { IncomeResponse, CreateIncome, UpdateIncome } from '../models/api.models';
-import { tap, finalize } from 'rxjs/operators';
+import { Subject, combineLatest, of, forkJoin } from 'rxjs';
+import { tap, finalize, switchMap, startWith, catchError, shareReplay, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class IncomeStateService {
   private api = inject(ApiService);
+  private cache = inject(CacheService);
 
-  // State Signals
-  private _incomes = signal<IncomeResponse[]>([]);
-  private _totalElements = signal<number>(0);
-  private _totalPages = signal<number>(0);
-  private _currentPage = signal<number>(0);
-  private _pageSize = signal<number>(20);
+  // State Signals (Params)
+  currentPage = signal(0);
+  pageSize = signal(6);
 
+  // Triggers
+  private refresh$ = new Subject<void>();
+
+  // Loading State
   private _isLoading = signal<boolean>(false);
-  private _loaded = signal<boolean>(false); // If we have loaded at least once
 
-  // Public Read-only Signals
-  incomes = this._incomes.asReadonly();
-  totalElements = this._totalElements.asReadonly();
-  totalPages = this._totalPages.asReadonly();
-  currentPage = this._currentPage.asReadonly();
-  pageSize = this._pageSize.asReadonly();
+  // Data Source (Robust Fetch ALL - ForkJoin)
+  private resource$ = combineLatest([this.refresh$.pipe(startWith(undefined))]).pipe(
+    tap(() => this._isLoading.set(true)),
+    switchMap(() => {
+      const key = `incomes_all_forkjoin_v1`;
+      const cached = this.cache.get(key);
+      if (cached) {
+        return of(cached).pipe(finalize(() => this._isLoading.set(false)));
+      }
+
+      // Initial fetch to get metadata
+      return this.api.getIncomes(0, 100).pipe(
+        switchMap((firstPage) => {
+          const totalPages = firstPage.page.totalPages;
+          if (totalPages <= 1) {
+            return of({ content: firstPage.content, page: firstPage.page });
+          }
+
+          // Generate requests for remaining pages
+          const requests = [];
+          for (let i = 1; i < totalPages; i++) {
+            requests.push(this.api.getIncomes(i, 100));
+          }
+
+          return forkJoin(requests).pipe(
+            map((responses) => {
+              // Combine first page with rest
+              const allContent = firstPage.content.concat(...responses.map((r) => r.content));
+              return {
+                content: allContent,
+                page: {
+                  ...firstPage.page,
+                  totalElements: allContent.length,
+                  totalPages: Math.ceil(allContent.length / 100),
+                },
+              };
+            })
+          );
+        }),
+        tap((data) => {
+          console.log('[IncomeService] Loaded all items:', data.content.length);
+          this.cache.set(key, data);
+        }),
+        catchError((err) => {
+          console.error('Failed to load incomes', err);
+          return of({ content: [], page: { totalElements: 0, totalPages: 0 } });
+        }),
+        finalize(() => this._isLoading.set(false))
+      );
+    }),
+    shareReplay(1)
+  );
+
+  private resourceState = toSignal(this.resource$, { initialValue: null });
+
+  // Public Read-only Signals (Client-Side Slicing)
+  incomes = computed(() => {
+    const all = this.resourceState()?.content || [];
+    const p = this.currentPage();
+    const s = this.pageSize();
+    return all.slice(p * s, (p + 1) * s);
+  });
+
+  totalElements = computed(() => this.resourceState()?.content?.length || 0);
+
+  totalPages = computed(() => {
+    const total = this.totalElements();
+    const size = this.pageSize();
+    return size > 0 ? Math.ceil(total / size) : 0;
+  });
+
   isLoading = this._isLoading.asReadonly();
-  loaded = this._loaded.asReadonly();
+  loaded = computed(() => !!this.resourceState());
 
   constructor() {}
 
   // Actions
-  load(page = 0, size = 20, force = false) {
-    // If already loaded same page and not force, skip
-    if (this._loaded() && this._currentPage() === page && this._pageSize() === size && !force)
-      return;
+  load(page = 0, size = 6, force = false) {
+    const isSame = page === this.currentPage() && size === this.pageSize();
+    if (isSame && !force) return;
 
-    this._isLoading.set(true);
-    this.api
-      .getIncomes(page, size)
-      .pipe(
-        tap((res) => {
-          this._incomes.set(res.content);
-          this._totalElements.set(res.page.totalElements);
-          this._totalPages.set(res.page.totalPages);
-          this._currentPage.set(res.page.number);
-          this._pageSize.set(size);
-          this._loaded.set(true);
-        }),
-        finalize(() => this._isLoading.set(false))
-      )
-      .subscribe();
+    this.currentPage.set(page);
+    this.pageSize.set(size);
+    if (force) this.refresh();
   }
 
   refresh() {
-    // Refresh current page
-    this.load(this._currentPage(), this._pageSize(), true);
+    this.refresh$.next();
   }
 
   add(dto: CreateIncome) {
-    return this.api.createIncome(dto).pipe(tap(() => this.refresh()));
+    return this.api.createIncome(dto).pipe(
+      tap(() => {
+        this.cache.invalidate('incomes');
+        this.refresh();
+      })
+    );
   }
 
   update(id: number, dto: UpdateIncome) {
-    return this.api.updateIncome(id, dto).pipe(tap(() => this.refresh()));
+    return this.api.updateIncome(id, dto).pipe(
+      tap(() => {
+        this.cache.invalidate('incomes');
+        this.refresh();
+      })
+    );
   }
 
   delete(id: number) {
-    // Optimistic delete could be complex with pagination (might leave empty page).
-    // For now, simpler to refresh. A true optimistic approach would update _incomes array.
-
-    // Low-risk optimistic update: remove from current view
-    const prev = this._incomes();
-    this._incomes.update((list) => list.filter((i) => i.id !== id));
-
     return this.api.deleteIncome(id).pipe(
-      tap({
-        error: () => {
-          this._incomes.set(prev); // Revert
-        },
-        next: () => {
-          this.refresh(); // Sync properly to get new page data if needed
-        },
+      tap(() => {
+        this.cache.invalidate('incomes');
+        this.refresh();
       })
     );
   }

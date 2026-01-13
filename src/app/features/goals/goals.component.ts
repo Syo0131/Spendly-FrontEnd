@@ -130,6 +130,7 @@ import { GoalStateService } from '../../core/services/goal-state.service';
     </div>
 
     <!-- History Modal -->
+    @defer (when showHistoryModal()) {
     <div
       *ngIf="showHistoryModal()"
       class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
@@ -154,7 +155,7 @@ import { GoalStateService } from '../../core/services/goal-state.service';
           </button>
         </div>
 
-        <div class="p-6 overflow-y-auto custom-scrollbar">
+        <div class="p-6 overflow-y-auto no-scrollbar">
           <div
             *ngIf="contributions().length === 0"
             class="text-center py-8 text-gray-500 dark:text-gray-400"
@@ -200,8 +201,10 @@ import { GoalStateService } from '../../core/services/goal-state.service';
         </div>
       </div>
     </div>
+    }
 
     <!-- Create/Edit Modal -->
+    @defer (when showModal()) {
     <div
       *ngIf="showModal()"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
@@ -329,8 +332,10 @@ import { GoalStateService } from '../../core/services/goal-state.service';
         </form>
       </div>
     </div>
+    }
 
     <!-- Delete Confirmation Modal (Common) -->
+    @defer (when showDeleteModal()) {
     <div
       *ngIf="showDeleteModal()"
       class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
@@ -373,6 +378,7 @@ import { GoalStateService } from '../../core/services/goal-state.service';
         </div>
       </div>
     </div>
+    }
   `,
 })
 export class GoalsComponent implements OnInit {
@@ -541,16 +547,24 @@ export class GoalsComponent implements OnInit {
     const item = this.itemToDelete();
     if (!item) return;
 
+    // Optimistic Logic: Close modal first
+    if (this.deleteMode() === 'goal') {
+      this.closeDeleteModal();
+    } else {
+      this.closeDeleteModal();
+    }
+    // We can simplify this:
+    // this.closeDeleteModal();
+    // But we need to keep the logic branching for the API call.
+
     if (this.deleteMode() === 'goal') {
       const goal = item as SavingGoalsResponse;
       this.state.delete(goal.id).subscribe({
         next: () => {
           this.ns.show('Goal deleted', 'success');
-          this.closeDeleteModal();
         },
         error: () => {
           this.ns.show('Failed to delete goal', 'error');
-          this.closeDeleteModal();
         },
       });
     } else {
@@ -564,11 +578,9 @@ export class GoalsComponent implements OnInit {
           this.ns.show('Contribution deleted', 'success');
           // Remove from history list
           this.contributions.update((c) => c.filter((x) => x.id !== contribution.id));
-          this.closeDeleteModal();
         },
         error: () => {
           this.ns.show('Failed to delete contribution', 'error');
-          this.closeDeleteModal();
         },
       });
     }
@@ -597,13 +609,15 @@ export class GoalsComponent implements OnInit {
     const data = this.form.value;
     const id = this.editingId()!;
 
+    // Optimistic Close
+    this.closeModal();
+
     if (this.modalMode() === 'add_funds') {
       this.state
         .addContribution(id, data.contributionAmount, data.contributionDescription)
         .subscribe({
           next: () => {
             this.ns.show('Contribution added!', 'success');
-            this.closeModal();
             this.isSubmitting.set(false);
           },
           error: () => this.isSubmitting.set(false),
@@ -626,7 +640,6 @@ export class GoalsComponent implements OnInit {
       next: () => {
         const msg = this.modalMode() === 'edit' ? 'Goal updated' : 'Goal created';
         this.ns.show(msg, 'success');
-        this.closeModal();
         this.isSubmitting.set(false);
       },
       error: () => this.isSubmitting.set(false),

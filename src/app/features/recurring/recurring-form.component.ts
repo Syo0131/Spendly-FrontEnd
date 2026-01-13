@@ -1,11 +1,9 @@
-import { Component, EventEmitter, Input, Output, inject, effect, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslationService } from '../../core/services/translation.service';
 import {
   CreateRecurringExpenseDto,
   RecurringExpense,
-  Frequency,
   Category,
 } from '../../core/models/api.models';
 import { ApiService } from '../../core/services/api.service';
@@ -14,12 +12,12 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
 @Component({
   selector: 'app-recurring-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyInputDirective],
+  imports: [FormsModule, CurrencyInputDirective],
   template: `
     <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 px-4 sm:px-0">
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="onCancel()"></div>
       <div
-        class="glass-card w-full max-w-md p-6 relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-2xl animate-scale-in"
+        class="glass-card w-full max-w-md p-6 relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl animate-scale-in"
       >
         <!-- Close Button -->
         <button
@@ -92,42 +90,37 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
               >Category</label
             >
             <div class="relative">
-              <div
+              <button
+                type="button"
                 (click)="showCategoryDropdown = !showCategoryDropdown"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all group"
+                class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 text-left transition-colors hover:border-primary/50"
               >
                 <div class="flex items-center gap-2">
-                  <ng-container *ngIf="getSelectedCategory() as cat; else placeholder">
-                    <div
-                      class="w-6 h-6 rounded-md flex items-center justify-center text-white"
-                      [style.background-color]="cat.color"
-                    >
-                      <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
-                    </div>
-                    <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{
-                      cat.name
-                    }}</span>
-                  </ng-container>
-                  <ng-template #placeholder>
-                    <span class="material-icons-outlined text-gray-400 text-lg">category</span>
-                    <span class="text-gray-400 text-sm font-medium">Select Category</span>
-                  </ng-template>
+                  @if (getSelectedCategory(); as cat) {
+                  <div
+                    class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
+                    [style.background-color]="cat.color"
+                  >
+                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
+                  </div>
+                  <span class="text-gray-900 dark:text-white font-medium">{{ cat.name }}</span>
+                  } @else {
+                  <span class="text-gray-400 text-sm font-medium">Select Category</span>
+                  }
                 </div>
-                <span
-                  class="material-icons-outlined text-gray-400 group-hover:text-primary transition-colors text-lg"
-                  >expand_more</span
-                >
-              </div>
+                <span class="material-icons-outlined text-gray-400">expand_more</span>
+              </button>
 
               <!-- Dropdown -->
+              @if (showCategoryDropdown) {
               <div
-                *ngIf="showCategoryDropdown"
-                class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl shadow-xl max-h-52 overflow-y-auto custom-scrollbar animate-scale-in"
+                class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-52 overflow-y-auto no-scrollbar animate-scale-in"
               >
-                <div
-                  *ngFor="let cat of categories"
+                @for (cat of categories; track cat.id) {
+                <button
+                  type="button"
                   (click)="selectCategory(cat)"
-                  class="p-2.5 flex items-center gap-2.5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors border-b border-gray-50 dark:border-white/5 last:border-0"
+                  class="w-full flex items-center gap-2.5 p-2.5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-b border-gray-100 dark:border-white/5 last:border-0"
                 >
                   <div
                     class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
@@ -138,8 +131,10 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                   <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{
                     cat.name
                   }}</span>
-                </div>
+                </button>
+                }
               </div>
+              }
             </div>
           </div>
 
@@ -163,7 +158,8 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             </div>
 
             <!-- Day of Month (for Monthly) -->
-            <div class="space-y-1.5" *ngIf="formData.frequency === 'MONTHLY'">
+            @if (formData.frequency === 'MONTHLY') {
+            <div class="space-y-1.5">
               <label
                 class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
                 >Day of Month</label
@@ -178,9 +174,11 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
             </div>
+            }
 
             <!-- Day of Week (for Weekly) -->
-            <div class="space-y-1.5" *ngIf="formData.frequency === 'WEEKLY'">
+            @if (formData.frequency === 'WEEKLY') {
+            <div class="space-y-1.5">
               <label
                 class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
                 >Day of Week</label
@@ -200,6 +198,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 <option [ngValue]="7">Sunday</option>
               </select>
             </div>
+            }
           </div>
 
           <!-- Duration / End After -->
@@ -215,7 +214,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 type="button"
                 (click)="durationMode = 'indefinite'; formData.totalOccurrences = undefined"
                 class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
-                [ngClass]="
+                [class]="
                   durationMode === 'indefinite'
                     ? 'bg-white dark:bg-white/10 text-primary shadow-sm'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
@@ -227,7 +226,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 type="button"
                 (click)="durationMode = 'fixed'"
                 class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
-                [ngClass]="
+                [class]="
                   durationMode === 'fixed'
                     ? 'bg-white dark:bg-white/10 text-primary shadow-sm'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
@@ -238,7 +237,8 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             </div>
 
             <!-- Input for Fixed -->
-            <div *ngIf="durationMode === 'fixed'" class="animate-fade-in space-y-1.5">
+            @if (durationMode === 'fixed') {
+            <div class="animate-fade-in space-y-1.5">
               <p class="text-[10px] text-gray-400 ml-1">
                 How many times should this expense occur?
               </p>
@@ -255,6 +255,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 <span class="absolute right-4 top-3.5 text-xs font-bold text-gray-400">Times</span>
               </div>
             </div>
+            }
           </div>
 
           <!-- Actions -->
@@ -335,7 +336,6 @@ export class RecurringFormComponent {
   api = inject(ApiService);
   ts = inject(TranslationService);
 
-  // categories = signal<Category[]>([]); // REMOVED
   showCategoryDropdown = false;
   isEdit = false;
   durationMode: 'indefinite' | 'fixed' = 'indefinite';
@@ -349,11 +349,7 @@ export class RecurringFormComponent {
     currency: 'DOP',
   };
 
-  constructor() {
-    // this.loadCategories(); // REMOVED
-  }
-
-  // loadCategories() {} // REMOVED
+  constructor() {}
 
   getSelectedCategory() {
     return this.categories.find((c) => c.id === this.formData.categoryId);

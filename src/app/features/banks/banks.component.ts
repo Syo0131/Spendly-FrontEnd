@@ -11,7 +11,9 @@ import { TranslationService } from '../../core/services/translation.service';
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="p-8 animate-fade-in space-y-8 relative min-h-[80vh]">
+    <div
+      class="p-4 md:p-8 animate-fade-in space-y-4 md:space-y-8 relative min-h-[60vh] md:min-h-[80vh]"
+    >
       <!-- Header -->
       <div class="text-center">
         <span class="material-icons-outlined text-6xl text-primary mb-4">account_balance</span>
@@ -316,15 +318,18 @@ export class BanksComponent implements OnInit {
     const bank = this.bankToDisconnect();
     if (!bank) return;
 
+    // Optimistic Logic
+    this.cancelDisconnect();
+
     this.apiService.disconnectBank(bank.code).subscribe({
       next: () => {
         // alert(`Disconnected ${bank.displayName}`); // Optional: replaced by UI refresh
-        this.cancelDisconnect();
         this.refreshData();
       },
       error: () => {
-        alert('Failed to disconnect');
-        this.cancelDisconnect();
+        alert('Failed to disconnect'); // In optimistic UI, we might accept this or re-open
+        // But for consistency with others:
+        // this.cancelDisconnect(); // Already closed
       },
     });
   }

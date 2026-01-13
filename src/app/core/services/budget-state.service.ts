@@ -1,21 +1,53 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
+import { CacheService } from './cache.service';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ApiService } from './api.service';
 import { Budget, CreateBudgetDto } from '../models/api.models';
-import { tap, finalize } from 'rxjs/operators';
+import { firstValueFrom, Subject, combineLatest, of } from 'rxjs';
+import { switchMap, tap, finalize, startWith, catchError, shareReplay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BudgetStateService {
   private api = inject(ApiService);
+  private cache = inject(CacheService);
 
   // State Signals
-  private _budgets = signal<Budget[]>([]);
   private _isLoading = signal<boolean>(false);
-  private _loaded = signal<boolean>(false); // Track if we've fetched initially
   private _currentDate = signal<Date>(new Date());
 
-  // Session-scoped notification tracking (resets on app reload)
+  // Triggers
+  private refresh$ = new Subject<void>();
+
+  // Data Source
+  private resource$ = combineLatest([this.refresh$.pipe(startWith(undefined))]).pipe(
+    tap(() => this._isLoading.set(true)),
+    switchMap(() => {
+      const key = 'budgets_all';
+      const cached = this.cache.get(key);
+      if (cached) {
+        return of(cached).pipe(finalize(() => this._isLoading.set(false)));
+      }
+
+      return this.api.getBudgets(0, 300).pipe(
+        tap((data) => this.cache.set(key, data)),
+        catchError((err) => {
+          console.error('Failed to load budgets', err);
+          return of({ content: [] as Budget[] });
+        }),
+        finalize(() => this._isLoading.set(false))
+      );
+    }),
+    shareReplay(1)
+  );
+
+  private resourceState = toSignal(this.resource$, { initialValue: null });
+
+  // Helper to maintain compatibility
+  private _budgets = computed(() => this.resourceState()?.content || []);
+
+  // Session-scoped notification tracking
   private notifiedBudgetIds = new Set<number>();
 
   hasNotified(id: number): boolean {
@@ -27,9 +59,10 @@ export class BudgetStateService {
   }
 
   // Public Read-only Signals
-  budgets = this._budgets.asReadonly();
+  budgets = this._budgets;
   isLoading = this._isLoading.asReadonly();
   currentDate = this._currentDate.asReadonly();
+  loaded = computed(() => !!this.resourceState());
 
   // Computed: Filter budgets by current date
   filteredBudgets = computed(() => {
@@ -38,7 +71,9 @@ export class BudgetStateService {
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
 
-    return all.filter((b) => (b.month === month && b.year === year) || (!b.month && !b.year));
+    return all.filter(
+      (b: Budget) => (b.month === month && b.year === year) || (!b.month && !b.year)
+    );
   });
 
   constructor() {}
@@ -49,46 +84,38 @@ export class BudgetStateService {
   }
 
   load(force = false) {
-    if (this._loaded() && !force) return;
-
-    this._isLoading.set(true);
-    // Fetch a large page to get "all" for client-side filtering
-    // In a real large-scale app, we would fetch by month from backend.
-    this.api
-      .getBudgets(0, 300)
-      .pipe(
-        tap((res) => {
-          this._budgets.set(res.content);
-          this._loaded.set(true);
-        }),
-        finalize(() => this._isLoading.set(false))
-      )
-      .subscribe();
+    if (force) {
+      this.refresh();
+    }
   }
 
   refresh() {
-    this.load(true);
+    this.refresh$.next();
   }
 
-  // Optimistic Updates
   addBudget(dto: CreateBudgetDto) {
     return this.api.createBudget(dto).pipe(
-      tap(() => this.refresh()) // Simplest strategy: refresh all to get generated fields/IDs
+      tap(() => {
+        this.cache.invalidate('budgets');
+        this.refresh();
+      })
     );
   }
 
   updateBudget(id: number, dto: any) {
-    return this.api.updateBudget(id, dto).pipe(tap(() => this.refresh()));
+    return this.api.updateBudget(id, dto).pipe(
+      tap(() => {
+        this.cache.invalidate('budgets');
+        this.refresh();
+      })
+    );
   }
 
   removeBudget(id: number) {
-    // Optimistic
-    const prev = this._budgets();
-    this._budgets.update((list) => list.filter((b) => b.id !== id));
-
     return this.api.deleteBudget(id).pipe(
-      tap({
-        error: () => this._budgets.set(prev), // Revert on failure
+      tap(() => {
+        this.cache.invalidate('budgets');
+        this.refresh();
       })
     );
   }

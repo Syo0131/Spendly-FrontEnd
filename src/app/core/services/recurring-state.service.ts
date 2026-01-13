@@ -1,11 +1,14 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ApiService } from './api.service';
 import {
   RecurringExpense,
   CreateRecurringExpenseDto,
   UpdateRecurringExpenseDto,
+  PagedModelRecurringExpenseResponse,
 } from '../models/api.models';
-import { tap, finalize } from 'rxjs/operators';
+import { firstValueFrom, Subject, combineLatest, of } from 'rxjs';
+import { switchMap, tap, finalize, startWith, map, catchError, shareReplay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -13,88 +16,103 @@ import { tap, finalize } from 'rxjs/operators';
 export class RecurringStateService {
   private api = inject(ApiService);
 
-  // State Signals
-  private _recurringExpenses = signal<RecurringExpense[]>([]);
-  private _totalElements = signal<number>(0);
-  private _totalPages = signal<number>(0);
-  private _currentPage = signal<number>(0);
-  private _pageSize = signal<number>(10);
+  // Pagination Signals
+  currentPage = signal(0);
+  pageSize = signal(10);
 
-  private _isLoading = signal<boolean>(false);
-  private _loaded = signal<boolean>(false);
+  // Triggers
+  private refresh$ = new Subject<void>();
 
-  // Public Read-only Signals
-  recurringExpenses = this._recurringExpenses.asReadonly();
-  totalElements = this._totalElements.asReadonly();
-  totalPages = this._totalPages.asReadonly();
-  currentPage = this._currentPage.asReadonly();
-  pageSize = this._pageSize.asReadonly();
+  // Loading State (Managed manually since we use observables)
+  private _isLoading = signal(false);
   isLoading = this._isLoading.asReadonly();
-  loaded = this._loaded.asReadonly();
 
-  constructor() {}
+  error = signal<any>(null);
 
-  // Actions
-  load(page = 0, size = 10, force = false) {
-    if (this._loaded() && this._currentPage() === page && this._pageSize() === size && !force)
-      return;
-
-    this._isLoading.set(true);
-    this.api
-      .getRecurringExpenses(page, size)
-      .pipe(
-        tap((res: any) => {
-          this._recurringExpenses.set(res.content);
-          // Handle both nested page object (Project Standard) and flat structure (Spec)
-          if (res.page) {
-            this._totalElements.set(res.page.totalElements);
-            this._totalPages.set(res.page.totalPages);
-            this._currentPage.set(res.page.number);
-          } else {
-            this._totalElements.set(res.totalElements || 0);
-            this._totalPages.set(res.totalPages || 0);
-            this._currentPage.set(page);
-          }
-          this._pageSize.set(size);
-          this._loaded.set(true);
+  // Data Source
+  private resource$ = combineLatest([
+    toObservable(this.currentPage),
+    toObservable(this.pageSize),
+    this.refresh$.pipe(startWith(undefined)),
+  ]).pipe(
+    tap(() => {
+      this._isLoading.set(true);
+      this.error.set(null);
+    }),
+    switchMap(([page, size]) =>
+      this.api.getRecurringExpenses(page, size).pipe(
+        catchError((err) => {
+          this.error.set(err);
+          return of(null);
         }),
         finalize(() => this._isLoading.set(false))
       )
-      .subscribe();
-  }
+    ),
+    shareReplay(1)
+  );
+
+  // State Signals
+  private resourceState = toSignal(this.resource$, { initialValue: null });
+
+  // Public Signals
+  recurringExpenses = computed(() => this.resourceState()?.content || []);
+
+  totalElements = computed(() => {
+    const res = this.resourceState();
+    if (!res) return 0;
+    return res.page?.totalElements ?? (res as any).totalElements ?? 0;
+  });
+
+  totalPages = computed(() => {
+    const res = this.resourceState();
+    if (!res) return 0;
+    return res.page?.totalPages ?? (res as any).totalPages ?? 0;
+  });
+
+  constructor() {}
 
   refresh() {
-    this.load(this._currentPage(), this._pageSize(), true);
+    this.refresh$.next();
   }
 
-  add(dto: CreateRecurringExpenseDto) {
-    return this.api.createRecurringExpense(dto).pipe(
-      tap(() => {
-        this.refresh();
-      })
-    );
+  // Mutations
+  async add(dto: CreateRecurringExpenseDto) {
+    try {
+      await firstValueFrom(this.api.createRecurringExpense(dto));
+      this.refresh();
+      return true;
+    } catch (err) {
+      throw err;
+    }
   }
 
-  update(id: number, dto: UpdateRecurringExpenseDto) {
-    return this.api.updateRecurringExpense(id, dto).pipe(
-      tap(() => {
-        this.refresh();
-      })
-    );
+  async update(id: number, dto: UpdateRecurringExpenseDto) {
+    try {
+      await firstValueFrom(this.api.updateRecurringExpense(id, dto));
+      this.refresh();
+      return true;
+    } catch (err) {
+      throw err;
+    }
   }
 
-  delete(id: number) {
-    const prev = this._recurringExpenses();
-    // Optimistic update
-    this._recurringExpenses.update((list) => list.filter((i) => i.id !== id));
+  async delete(id: number) {
+    try {
+      await firstValueFrom(this.api.deleteRecurringExpense(id));
+      this.refresh();
+      return true;
+    } catch (err) {
+      this.refresh();
+      throw err;
+    }
+  }
 
-    return this.api.deleteRecurringExpense(id).pipe(
-      tap({
-        error: () => this._recurringExpenses.set(prev),
-        next: () => {
-          this.refresh();
-        },
-      })
-    );
+  // Pagination Actions
+  setPage(page: number) {
+    this.currentPage.set(page);
+  }
+
+  setPageSize(size: number) {
+    this.pageSize.set(size);
   }
 }

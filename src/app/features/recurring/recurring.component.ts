@@ -1,5 +1,5 @@
-import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { Component, inject, signal, OnInit, ChangeDetectionStrategy, effect } from '@angular/core';
+import { DatePipe, DecimalPipe, NgClass } from '@angular/common'; // Explicit imports
 import { RecurringStateService } from '../../core/services/recurring-state.service';
 import {
   FormBuilder,
@@ -21,7 +21,14 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
 @Component({
   selector: 'app-recurring',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, CurrencyInputDirective, DatePipe],
+  imports: [
+    ReactiveFormsModule,
+    FormsModule,
+    CurrencyInputDirective,
+    DatePipe,
+    DecimalPipe,
+    NgClass,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="p-6 pb-24 md:pb-6 space-y-6 animate-fade-in-up">
@@ -37,22 +44,18 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
         </div>
         <button
           (click)="openModal()"
-          class="w-full md:w-auto px-4 py-3 md:py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm tracking-wide"
+          class="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm md:text-base tracking-wide"
         >
-          <span class="material-icons-outlined mr-2 text-lg">add_circle</span>
+          <span class="material-icons-outlined mr-2 text-lg md:text-xl">add_circle</span>
           New
         </button>
       </div>
 
       <!-- Loading State -->
-      <div
-        *ngIf="state.isLoading() && state.recurringExpenses().length === 0"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse"
-      >
-        <div
-          *ngFor="let i of [1, 2, 3, 4, 5, 6]"
-          class="p-5 border border-gray-200 dark:border-white/5 rounded-2xl bg-white/5"
-        >
+      @if (state.isLoading() && state.recurringExpenses().length === 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
+        @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+        <div class="p-5 border border-gray-200 dark:border-white/5 rounded-2xl bg-white/5">
           <div class="flex justify-between items-start mb-4">
             <div class="flex items-center gap-3">
               <div class="w-12 h-12 rounded-xl bg-gray-200 dark:bg-white/10"></div>
@@ -66,11 +69,13 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             <div class="h-6 w-24 bg-gray-200 dark:bg-white/10 rounded"></div>
           </div>
         </div>
+        }
       </div>
+      }
 
       <!-- Empty State -->
+      @if (!state.isLoading() && state.recurringExpenses().length === 0) {
       <div
-        *ngIf="!state.isLoading() && state.recurringExpenses().length === 0"
         class="glass-card p-12 text-center border border-gray-200 dark:border-white/10 rounded-2xl"
       >
         <div
@@ -88,14 +93,13 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
           Create one now
         </button>
       </div>
+      }
 
       <!-- Grid -->
-      <div
-        *ngIf="state.recurringExpenses().length > 0"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-      >
+      @if (state.recurringExpenses().length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        @for (expense of state.recurringExpenses(); track expense.id) {
         <div
-          *ngFor="let expense of state.recurringExpenses()"
           class="glass-card p-5 border border-gray-100 dark:border-white/5 hover:shadow-xl hover:border-primary/20 transition-all duration-300 rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 group"
         >
           <div class="flex justify-between items-start mb-4">
@@ -120,11 +124,12 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                   >
                     {{ expense.frequency }}
                   </span>
+                  @if (!expense.isActive) {
                   <span
-                    *ngIf="!expense.isActive"
                     class="text-[10px] font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded"
                     >INACTIVE</span
                   >
+                  }
                 </div>
               </div>
             </div>
@@ -159,12 +164,14 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             >
           </div>
         </div>
+        }
       </div>
+      }
     </div>
 
     <!-- Edit/Create Modal (Inline) -->
+    @defer (when showModal()) { @if (showModal()) {
     <div
-      *ngIf="showModal()"
       class="fixed inset-0 z-[60] flex items-center justify-center p-4 px-4 sm:px-0 animate-fade-in"
     >
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeModal()"></div>
@@ -244,21 +251,20 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all group"
               >
                 <div class="flex items-center gap-2">
-                  <ng-container *ngIf="getSelectedCategory() as cat; else catPlaceholder">
-                    <div
-                      class="w-6 h-6 rounded-md flex items-center justify-center text-white"
-                      [style.background-color]="cat.color"
-                    >
-                      <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
-                    </div>
-                    <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{
-                      cat.name
-                    }}</span>
-                  </ng-container>
-                  <ng-template #catPlaceholder>
-                    <span class="material-icons-outlined text-gray-400 text-lg">category</span>
-                    <span class="text-gray-400 text-sm font-medium">Select Category</span>
-                  </ng-template>
+                  @if (getSelectedCategory(); as cat) {
+                  <div
+                    class="w-6 h-6 rounded-md flex items-center justify-center text-white"
+                    [style.background-color]="cat.color"
+                  >
+                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
+                  </div>
+                  <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{
+                    cat.name
+                  }}</span>
+                  } @else {
+                  <span class="material-icons-outlined text-gray-400 text-lg">category</span>
+                  <span class="text-gray-400 text-sm font-medium">Select Category</span>
+                  }
                 </div>
                 <span
                   class="material-icons-outlined text-gray-400 group-hover:text-primary transition-colors text-lg"
@@ -268,12 +274,12 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
               </div>
 
               <!-- Category Dropdown -->
+              @if (showCategoryDropdown()) {
               <div
-                *ngIf="showCategoryDropdown()"
                 class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl shadow-xl max-h-52 overflow-y-auto custom-scrollbar animate-scale-in"
               >
+                @for (cat of categories(); track cat.id) {
                 <div
-                  *ngFor="let cat of categories()"
                   (click)="selectCategory(cat)"
                   class="p-2.5 flex items-center gap-2.5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors border-b border-gray-50 dark:border-white/5 last:border-0"
                 >
@@ -287,7 +293,9 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                     cat.name
                   }}</span>
                 </div>
+                }
               </div>
+              }
             </div>
           </div>
 
@@ -311,7 +319,8 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             </div>
 
             <!-- Day of Month -->
-            <div class="space-y-1.5" *ngIf="form.get('frequency')?.value === 'MONTHLY'">
+            @if (form.get('frequency')?.value === 'MONTHLY') {
+            <div class="space-y-1.5">
               <label
                 class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
               >
@@ -325,9 +334,11 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
             </div>
+            }
 
             <!-- Day of Week -->
-            <div class="space-y-1.5" *ngIf="form.get('frequency')?.value === 'WEEKLY'">
+            @if (form.get('frequency')?.value === 'WEEKLY') {
+            <div class="space-y-1.5">
               <label
                 class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
               >
@@ -346,6 +357,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 <option [ngValue]="7">Sunday</option>
               </select>
             </div>
+            }
           </div>
 
           <!-- Duration -->
@@ -382,7 +394,8 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
               </button>
             </div>
 
-            <div *ngIf="durationMode() === 'fixed'" class="animate-fade-in space-y-1.5">
+            @if (durationMode() === 'fixed') {
+            <div class="animate-fade-in space-y-1.5">
               <p class="text-[10px] text-gray-400 ml-1">
                 How many times should this expense occur?
               </p>
@@ -397,6 +410,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 <span class="absolute right-4 top-3.5 text-xs font-bold text-gray-400">Times</span>
               </div>
             </div>
+            }
           </div>
 
           <button
@@ -412,12 +426,11 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
         </form>
       </div>
     </div>
+    } }
 
     <!-- Delete Modal -->
-    <div
-      *ngIf="showDeleteModal()"
-      class="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in"
-    >
+    @if (showDeleteModal()) {
+    <div class="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in">
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="cancelDelete()"></div>
       <div
         class="glass-card w-full max-w-sm p-6 text-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl rounded-2xl relative animate-scale-in"
@@ -451,6 +464,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
         </div>
       </div>
     </div>
+    }
   `,
   styles: [
     `
@@ -530,7 +544,12 @@ export class RecurringComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.state.load();
+    // Resource loads automatically on read, or we can trigger fetch if not lazy
+    // With rxResource, reading state.recurringExpenses() in template triggers load.
+    // But we might want initial load or prefetch.
+    // However, the service logic might not expose refresh() as public without a parameter if we changed it.
+    // Let's check service again. Service exposes refresh().
+    // Also, we need to load categories.
     this.api.getCategories().subscribe((cats) => this.categories.set(cats));
   }
 
@@ -597,7 +616,7 @@ export class RecurringComponent implements OnInit {
     }
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.form.invalid) return;
 
     const formData = this.form.value;
@@ -605,7 +624,6 @@ export class RecurringComponent implements OnInit {
       formData.totalOccurrences = undefined;
     }
 
-    // Convert keys if needed? The form keys match DTO
     const payload: CreateRecurringExpenseDto = {
       description: formData.description,
       amount: formData.amount,
@@ -617,24 +635,21 @@ export class RecurringComponent implements OnInit {
       currency: 'DOP',
     };
 
-    if (this.editingId()) {
-      // UPDATE
-      this.state.update(this.editingId()!, payload).subscribe({
-        next: () => {
-          this.ns.show('Recurring expense updated', 'success');
-          this.closeModal();
-        },
-        error: (err) => this.ns.show(err.error?.message || 'Update failed', 'error'),
-      });
-    } else {
-      // CREATE
-      this.state.add(payload).subscribe({
-        next: () => {
-          this.ns.show('Recurring expense created', 'success');
-          this.closeModal();
-        },
-        error: (err) => this.ns.show(err.error?.message || 'Create failed', 'error'),
-      });
+    // Optimistic Close
+    this.closeModal();
+
+    try {
+      if (this.editingId()) {
+        // UPDATE (Promise)
+        await this.state.update(this.editingId()!, payload);
+        this.ns.show('Recurring expense updated', 'success');
+      } else {
+        // CREATE (Promise)
+        await this.state.add(payload);
+        this.ns.show('Recurring expense created', 'success');
+      }
+    } catch (err: any) {
+      this.ns.show(err.error?.message || 'Operation failed', 'error');
     }
   }
 
@@ -650,16 +665,18 @@ export class RecurringComponent implements OnInit {
     this.expenseToDelete.set(null);
   }
 
-  performDelete() {
+  async performDelete() {
     const expense = this.expenseToDelete();
     if (!expense) return;
 
-    this.state.delete(expense.id).subscribe({
-      next: () => {
-        this.ns.show('Expense deleted', 'success');
-        this.cancelDelete();
-      },
-      error: () => this.ns.show('Failed to delete', 'error'),
-    });
+    // Optimistic Close
+    this.cancelDelete();
+
+    try {
+      await this.state.delete(expense.id);
+      this.ns.show('Expense deleted', 'success');
+    } catch (err) {
+      this.ns.show('Failed to delete', 'error');
+    }
   }
 }

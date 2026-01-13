@@ -127,9 +127,47 @@ export class TranslationService {
 
     // Core Features
     'budgets.title': { es: 'Presupuestos', en: 'Budgets' },
+    'budgets.subtitle': {
+      es: 'Administra tus límites de gasto -',
+      en: 'Manage your spending limits -',
+    },
+    'budgets.create': { es: 'Crear Presupuesto', en: 'Create Budget' },
+    'budgets.total_budgeted': { es: 'Total Presupuestado', en: 'Total Budgeted' },
+    'budgets.total_spent': { es: 'Total Gastado', en: 'Total Spent' },
+    'budgets.remaining': { es: 'Restante', en: 'Remaining' },
+    'budgets.left': { es: 'disponible', en: 'left' },
+    'budgets.spent': { es: 'Gastado', en: 'Spent' },
+    'budgets.limit': { es: 'Límite', en: 'Limit' },
+    'budgets.create_new': { es: 'Crear Nuevo', en: 'Create New' },
+    'budgets.edit': { es: 'Editar Presupuesto', en: 'Edit Budget' },
     'budgets.desc': {
       es: '¡Gestión de presupuestos pronto!',
       en: 'Budget management coming soon!',
+    },
+    'budgets.advanced_options': { es: 'Opciones Avanzadas', en: 'Advanced Options' },
+    'budgets.recurring_title': { es: 'Presupuesto Recurrente', en: 'Recurring Budget' },
+    'budgets.recurring_desc': {
+      es: 'Renovar automáticamente cada mes',
+      en: 'Automatically renew every month',
+    },
+    'budgets.warning_threshold': { es: 'Umbral de Advertencia (%)', en: 'Warning Threshold (%)' },
+    'budgets.critical_threshold': { es: 'Umbral Crítico (%)', en: 'Critical Threshold (%)' },
+    'budgets.repeat_duration': { es: 'Duración (Meses)', en: 'Repeat Duration (Months)' },
+    'budgets.notify_help': {
+      es: 'Notificar cuando el gasto supere este %',
+      en: 'Notify when spent exceeds this %',
+    },
+    'budgets.error_category': { es: 'La categoría es requerida', en: 'Category is required' },
+    'budgets.error_amount': { es: 'Monto válido requerido', en: 'Valid amount required' },
+    'budgets.update': { es: 'Actualizar Presupuesto', en: 'Update Budget' },
+    'budgets.create_btn': { es: 'Crear Presupuesto', en: 'Create Budget' },
+    'budgets.create_new_desc': {
+      es: 'Establecer límites para otra categoría',
+      en: 'Set limits for another category',
+    },
+    'budgets.no_budgets': {
+      es: 'No hay presupuestos para este mes.',
+      en: 'No budgets set for this month.',
     },
     'budgets.add': { es: 'Nuevo Presupuesto', en: 'New Budget' },
     'budgets.empty': { es: 'No hay presupuestos', en: 'No budgets found' },

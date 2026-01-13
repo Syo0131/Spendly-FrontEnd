@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
-import { CommonModule } from '@angular/common';
+import { DatePipe, CurrencyPipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { TranslationService } from '../../core/services/translation.service';
@@ -18,20 +18,11 @@ import { NotificationService } from '../../core/services/notification.service';
 import { ExpenseStateService } from '../../core/services/expense-state.service';
 import { ExpenseResponse, Category } from '../../core/models/api.models';
 import { RouterModule } from '@angular/router';
-import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-expenses',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, CurrencyInputDirective],
-  animations: [
-    trigger('fadeOut', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(10px)' }),
-        animate('350ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
-      ]),
-    ]),
-  ],
+  imports: [ReactiveFormsModule, RouterModule, CurrencyInputDirective, DatePipe, CurrencyPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6">
@@ -43,13 +34,64 @@ import { trigger, transition, style, animate } from '@angular/animations';
           </h1>
           <p class="text-gray-500 dark:text-gray-400">Track your spending habits</p>
         </div>
-        <button
-          (click)="openModal()"
-          class="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
-        >
-          <span class="material-icons-outlined mr-2">add</span>
-          {{ ts.t()('trans.add_expense') }}
-        </button>
+
+        <!-- Right Actions: Filter & Add -->
+        <div class="flex items-center gap-3">
+          <!-- Filter Dropdown -->
+          <div class="relative">
+            <button
+              (click)="toggleFilterDropdown()"
+              class="px-3 py-2 md:px-4 md:py-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2"
+            >
+              <span class="material-icons-outlined text-gray-500 dark:text-gray-400"
+                >filter_list</span
+              >
+              <span>{{ getFilterLabel() }}</span>
+              <span class="material-icons-outlined text-sm">expand_more</span>
+            </button>
+
+            @if (showFilterDropdown()) {
+            <div
+              class="absolute z-40 top-full right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl shadow-xl overflow-hidden animate-scale-in"
+            >
+              <div class="max-h-80 overflow-y-auto no-scrollbar">
+                <button
+                  (click)="applyFilter(null)"
+                  class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center gap-2"
+                  [class.text-primary]="!currentFilter()"
+                  [class.bg-primary-light]="!currentFilter()"
+                >
+                  <span class="material-icons-outlined text-lg">apps</span>
+                  All Categories
+                </button>
+                @for (cat of categories(); track cat.id) {
+                <button
+                  (click)="applyFilter(cat)"
+                  class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center gap-3"
+                  [class.text-primary]="currentFilter() === cat.id"
+                >
+                  <div
+                    class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
+                    [style.background-color]="cat.color"
+                  >
+                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
+                  </div>
+                  {{ cat.name }}
+                </button>
+                }
+              </div>
+            </div>
+            }
+          </div>
+
+          <button
+            (click)="openModal()"
+            class="px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
+          >
+            <span class="material-icons-outlined mr-1 md:mr-2 text-lg md:text-2xl">add</span>
+            <span class="text-xs md:text-base font-bold">{{ ts.t()('trans.add_expense') }}</span>
+          </button>
+        </div>
       </div>
 
       <!-- Tabs -->
@@ -76,10 +118,12 @@ import { trigger, transition, style, animate } from '@angular/animations';
         class="glass-card overflow-hidden bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 animate-fade-in"
       >
         <!-- Skeleton Loader (Only initial load) -->
-        <div *ngIf="isLoading() && expenses().length === 0" class="animate-pulse">
+        @if (isLoading() && expenses().length === 0) {
+        <div class="animate-pulse">
           <!-- Mobile Skeleton -->
           <div class="md:hidden divide-y divide-gray-200 dark:divide-white/5">
-            <div *ngFor="let i of [1, 2, 3, 4, 5]" class="p-4 flex items-center justify-between">
+            @for (i of [1, 2, 3, 4, 5]; track $index) {
+            <div class="p-4 flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-white/10"></div>
                 <div class="space-y-2">
@@ -89,38 +133,41 @@ import { trigger, transition, style, animate } from '@angular/animations';
               </div>
               <div class="h-5 w-20 bg-gray-200 dark:bg-white/10 rounded"></div>
             </div>
+            }
           </div>
           <!-- Desktop Skeleton -->
           <div class="hidden md:block p-4">
             <div class="space-y-4">
-              <div *ngFor="let i of [1, 2, 3, 4, 5]" class="flex items-center justify-between">
+              @for (i of [1, 2, 3, 4, 5]; track $index) {
+              <div class="flex items-center justify-between">
                 <div class="h-4 w-1/4 bg-gray-200 dark:bg-white/10 rounded"></div>
                 <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
                 <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
                 <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
               </div>
+              }
             </div>
           </div>
         </div>
+        }
 
         <!-- Mobile Card View (md:hidden) -->
+        @if (expenses().length > 0 || !isLoading()) {
         <div
           class="md:hidden transition-opacity duration-300"
-          *ngIf="expenses().length > 0 || !isLoading()"
           [class.opacity-50]="isLoading()"
           [class.pointer-events-none]="isLoading()"
         >
-          <div
-            *ngIf="expenses().length === 0"
-            class="p-8 text-center text-gray-500 dark:text-gray-400"
-          >
+          @if (expenses().length === 0) {
+          <div class="p-8 text-center text-gray-500 dark:text-gray-400">
             {{ ts.t()('trans.no_data') }}
           </div>
+          }
           <div class="divide-y divide-gray-200 dark:divide-white/5">
+            @for (item of expenses(); track trackById($index, item)) {
             <div
-              *ngFor="let item of expenses(); trackBy: trackById"
               (click)="openActionMenu(item)"
-              class="p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer"
+              class="animate-fade-in p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer"
             >
               <!-- Left: Icon & Desc -->
               <div class="flex items-center gap-3 overflow-hidden">
@@ -155,13 +202,15 @@ import { trigger, transition, style, animate } from '@angular/animations';
               <!-- Action Menu (Optional: could be a long press or slide, for now just simple click to edit?) -->
               <!-- Let's keep it simple: Clicking the row opens Edit. We can add specific buttons if needed but row click is standard mobile pattern -->
             </div>
+            }
           </div>
         </div>
+        }
 
         <!-- Desktop Table View (hidden md:block) -->
+        @if (expenses().length > 0 || !isLoading()) {
         <div
           class="hidden md:block overflow-x-auto transition-opacity duration-300"
-          *ngIf="expenses().length > 0 || !isLoading()"
           [class.opacity-50]="isLoading()"
           [class.pointer-events-none]="isLoading()"
         >
@@ -178,10 +227,9 @@ import { trigger, transition, style, animate } from '@angular/animations';
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-white/5">
+              @for (item of expenses(); track trackById($index, item)) {
               <tr
-                *ngFor="let item of expenses(); trackBy: trackById"
-                [@fadeOut]
-                class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
+                class="animate-fade-in hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
               >
                 <td class="p-4 text-gray-900 dark:text-white font-medium">
                   <div class="truncate max-w-full" [title]="item.description">
@@ -202,7 +250,9 @@ import { trigger, transition, style, animate } from '@angular/animations';
                   - {{ item.amount | currency : 'DOP' : 'symbol' : '1.2-2' }}
                 </td>
                 <td class="p-4 text-center">
-                  <div class="flex items-center justify-end gap-1 opacity-100">
+                  <div
+                    class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
                     <button
                       (click)="openModal(item)"
                       class="p-2 text-gray-400 hover:text-primary transition-colors"
@@ -220,20 +270,26 @@ import { trigger, transition, style, animate } from '@angular/animations';
                   </div>
                 </td>
               </tr>
+              }
 
               <!-- Empty State -->
-              <tr *ngIf="expenses().length === 0">
+              @if (expenses().length === 0) {
+              <tr>
                 <td colspan="5" class="p-8 text-center text-gray-500 dark:text-gray-400">
                   {{ ts.t()('trans.no_data') }}
                 </td>
               </tr>
+              }
               <!-- Placeholder Rows to maintain fixed height -->
-              <tr *ngFor="let _ of getEmptyRows()" class="h-[73px]">
+              @for (_ of getEmptyRows(); track $index) {
+              <tr class="h-[73px]">
                 <td colspan="5"></td>
               </tr>
+              }
             </tbody>
           </table>
         </div>
+        }
 
         <!-- Pagination Controls -->
         <div
@@ -264,8 +320,8 @@ import { trigger, transition, style, animate } from '@angular/animations';
     </div>
 
     <!-- Edit Modal -->
+    @defer (when showModal()) { @if (showModal()) {
     <div
-      *ngIf="showModal()"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
     >
       <div
@@ -346,70 +402,67 @@ import { trigger, transition, style, animate } from '@angular/animations';
             >
             <div class="relative">
               <!-- Custom Trigger -->
-              <div
+              <button
+                type="button"
                 (click)="toggleDropdown()"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all group"
+                class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 text-left transition-colors hover:border-primary/50"
                 [class.border-red-500]="
                   form.get('categoryId')?.invalid && form.get('categoryId')?.touched
                 "
               >
                 <div class="flex items-center gap-2">
-                  <ng-container *ngIf="getSelectedCategory() as selected; else placeholder">
-                    <div
-                      class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                      [style.background-color]="selected.color + '20'"
-                    >
-                      <span class="material-icons-outlined text-lg" [style.color]="selected.color">
-                        {{ selected.icons }}
-                      </span>
-                    </div>
-                    <span class="text-gray-900 dark:text-white font-medium">
-                      {{ ts.translateCategory(selected.name) }}
-                    </span>
-                  </ng-container>
-                  <ng-template #placeholder>
-                    <span class="text-gray-400">
-                      {{ ts.t()('trans.select_category') }}
-                    </span>
-                  </ng-template>
+                  @if (getSelectedCategory(); as selected) {
+                  <div
+                    class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
+                    [style.background-color]="selected.color"
+                  >
+                    <span class="material-icons-outlined text-xs">{{ selected.icons }}</span>
+                  </div>
+                  <span class="text-gray-900 dark:text-white font-medium">
+                    {{ ts.translateCategory(selected.name) }}
+                  </span>
+                  } @else {
+                  <span class="text-gray-400">
+                    {{ ts.t()('trans.select_category') }}
+                  </span>
+                  }
                 </div>
                 <span
-                  class="material-icons-outlined text-gray-400 group-hover:text-primary transition-colors"
+                  class="material-icons-outlined text-gray-400"
                   [class.rotate-180]="isDropdownOpen()"
                 >
                   expand_more
                 </span>
-              </div>
+              </button>
 
               <!-- Dropdown Menu -->
+              @if (isDropdownOpen()) {
               <div
-                *ngIf="isDropdownOpen()"
-                class="custom-scrollbar absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-xl max-h-60 overflow-y-auto animate-scale-in"
+                class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto no-scrollbar animate-scale-in"
               >
-                <div
-                  *ngFor="let cat of categories(); trackBy: trackById"
+                @for (cat of categories(); track trackById($index, cat)) {
+                <button
+                  type="button"
                   (click)="selectCategory(cat)"
-                  class="p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors border-b border-gray-100 dark:border-white/5 last:border-0"
+                  class="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors border-b border-gray-100 dark:border-white/5 last:border-0"
                 >
                   <div
-                    class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                    [style.background-color]="cat.color + '20'"
+                    class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
+                    [style.background-color]="cat.color"
                   >
-                    <span class="material-icons-outlined text-lg" [style.color]="cat.color">
-                      {{ cat.icons }}
-                    </span>
+                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
                   </div>
                   <span class="text-gray-700 dark:text-gray-200 font-medium">
                     {{ ts.translateCategory(cat.name) }}
                   </span>
-                </div>
-                <div
-                  *ngIf="categories().length === 0"
-                  class="p-4 text-center text-gray-500 text-sm"
-                >
+                </button>
+                } @if (categories().length === 0) {
+                <div class="p-4 text-center text-gray-500 text-sm">
                   {{ ts.t()('trans.loading_cat') }}
                 </div>
+                }
               </div>
+              }
             </div>
           </div>
 
@@ -423,10 +476,11 @@ import { trigger, transition, style, animate } from '@angular/animations';
         </form>
       </div>
     </div>
+    } }
 
     <!-- Delete Modal -->
+    @if (showDeleteModal()) {
     <div
-      *ngIf="showDeleteModal()"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
     >
       <div
@@ -459,12 +513,11 @@ import { trigger, transition, style, animate } from '@angular/animations';
         </div>
       </div>
     </div>
+    }
 
     <!-- Mobile Action Menu (Bottom Sheet) -->
-    <div
-      *ngIf="showActionMenu()"
-      class="fixed inset-0 z-[100] flex items-end justify-center md:hidden"
-    >
+    @if (showActionMenu()) {
+    <div class="fixed inset-0 z-[100] flex items-end justify-center md:hidden">
       <!-- Backdrop -->
       <div
         class="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
@@ -513,6 +566,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
         </div>
       </div>
     </div>
+    }
   `,
 })
 export class ExpensesComponent implements OnInit, OnDestroy {
@@ -590,8 +644,8 @@ export class ExpensesComponent implements OnInit, OnDestroy {
     }
   }
 
-  trackById(index: number, item: any): number {
-    return item.id;
+  trackById(index: number, item: any): string {
+    return `${item.id}-${this.state.categoryFilter() || 'all'}`;
   }
 
   // Action Menu
@@ -603,6 +657,26 @@ export class ExpensesComponent implements OnInit, OnDestroy {
   closeActionMenu() {
     this.showActionMenu.set(false);
     this.actionMenuItem.set(null);
+  }
+
+  // Filter Logic
+  showFilterDropdown = signal(false);
+  currentFilter = this.state.categoryFilter; // Read from service
+
+  toggleFilterDropdown() {
+    this.showFilterDropdown.update((v) => !v);
+  }
+
+  applyFilter(category: Category | null) {
+    this.state.setFilter(category ? category.id : null);
+    this.showFilterDropdown.set(false);
+  }
+
+  getFilterLabel(): string {
+    const id = this.currentFilter();
+    if (!id) return 'All Categories';
+    const cat = this.categories().find((c) => c.id === id);
+    return cat ? cat.name : 'Category';
   }
 
   onEditFromMenu() {
@@ -693,12 +767,14 @@ export class ExpensesComponent implements OnInit, OnDestroy {
       const id = this.editingId();
       const payload = { ...formData, categoryId: Number(formData.categoryId) };
 
+      // Optimistic Close
+      this.closeModal();
+
       const obs$ = id ? this.state.update(id, payload) : this.state.add(payload);
 
       obs$.subscribe({
         next: () => {
-          const isEdit = !!this.editingId();
-          this.closeModal();
+          const isEdit = !!id;
           const msg = isEdit ? 'notif.expense_updated' : 'notif.expense_created';
           this.ns.show(msg, 'success');
         },
@@ -719,10 +795,12 @@ export class ExpensesComponent implements OnInit, OnDestroy {
     const item = this.itemToDelete();
     if (!item) return;
 
+    // Optimistic Close
+    this.cancelDelete();
+
     this.state.delete(Number(item.id)).subscribe({
       next: () => {
         this.ns.show('notif.expense_deleted', 'success');
-        this.cancelDelete();
       },
       error: (err) => {
         console.error('Error deleting expense', err);

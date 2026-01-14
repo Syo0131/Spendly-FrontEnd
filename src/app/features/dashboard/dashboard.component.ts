@@ -396,42 +396,39 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadData(isBackground: boolean = false) {
     const targetDate = this.currentDate();
     const year = targetDate.getFullYear();
-    const month = targetDate.getMonth() + 1; // API expects 1-12
+    const month = targetDate.getMonth() + 1;
 
     if (!isBackground) {
       this.isLoading.set(true);
-      // Force refresh of expenses to avoid stale cache issues
       this.apiService.clearCache('expenses');
     }
 
-    // 1. Get Monthly Totals (Keep existing Logic for Cards)
-    // 1. Get Monthly Totals (Optimized: Calculate from fetched history to ensure consistency)
-    // We will calculate this inside the forkJoin subscription
-    // this.apiService.getExpensesMonthTotal(year, month).subscribe({...});
+    // 1. FAST PATH: Quick Stats (Expense Total, Category Breakdown)
+    this.loadQuickStats(year, month);
 
-    // 2. Fetch DATA for Charts (Incomes & Expenses)
-    // Use forkJoin to get both in parallel
-    // Increasing page size to ensure we capture enough history for client-side filtering
-    // Use forkJoin to get both in parallel
-    // Increasing page size to ensure we capture enough history for client-side filtering
+    // 2. SLOW PATH: Full History for Charts & Income Total
+    this.loadHistoricalData(year, month);
+  }
+
+  loadQuickStats(year: number, month: number) {
     forkJoin({
-      incomes: this.fetchAllHistory((p, s) => this.apiService.getIncomes(p, s)).pipe(
-        catchError(() => of([]))
-      ),
-      expenses: this.fetchAllHistory((p, s) => this.apiService.getExpenses(p, s)).pipe(
-        catchError(() => of([]))
-      ),
+      expenseTotal: this.apiService
+        .getExpensesMonthTotal(year, month)
+        .pipe(catchError(() => of({ total: 0 }))),
       categoryStats: this.apiService
         .getExpensesByCategory(year, month)
         .pipe(catchError(() => of({}))),
+      incomePage: this.apiService
+        .getIncomes(0, 100)
+        .pipe(catchError(() => of({ content: [] } as any))),
     }).subscribe({
-      next: ({ incomes, expenses, categoryStats }) => {
-        this.isLoading.set(false);
-        // A. Update Income Total Card (Current Month)
-        // incomes and expenses are now T[] not PagedResponse
-        const currentMonthIncomes = incomes
-          ? incomes.filter((i: any) => {
-              // Parse YYYY-MM-DD directly to avoid timezone issues
+      next: ({ expenseTotal, categoryStats, incomePage }) => {
+        // Update Expense Card immediately
+        this.totalExpense.set(expenseTotal.total || 0);
+
+        // Update Income Card immediately (Approximation or Exact if <100)
+        const currentMonthIncomes = incomePage.content
+          ? incomePage.content.filter((i: any) => {
               const [y, m] = i.date.toString().split('-');
               return parseInt(m, 10) === month && parseInt(y, 10) === year;
             })
@@ -442,89 +439,70 @@ export class DashboardComponent implements OnInit, OnDestroy {
         );
         this.totalIncome.set(incomeTotal);
 
-        // B. Update Expense Total Card (Current Month)
-        // Calculated client-side for consistency with Chart and Income
-        const currentMonthExpenses = expenses
-          ? expenses.filter((e: any) => {
-              const [y, m] = e.date.toString().split('-');
-              return parseInt(m, 10) === month && parseInt(y, 10) === year;
-            })
-          : [];
-
-        const expenseTotal = currentMonthExpenses.reduce(
-          (acc: number, curr: any) => acc + curr.amount,
-          0
-        );
-        this.totalExpense.set(expenseTotal);
-
         this.updateBalance();
 
-        // C. Prepare Doughnut Chart (Categories)
-        // C. Prepare Doughnut Chart (Categories) - Client Side
-        const categoryMap = new Map<string, { amount: number; color: string }>();
-        currentMonthExpenses.forEach((e: any) => {
-          const name = this.ts.translateCategory(e.category.name);
-          const current = categoryMap.get(name) || { amount: 0, color: e.category.color };
-          current.amount += e.amount;
-          categoryMap.set(name, current);
-        });
-
-        const labels = Array.from(categoryMap.keys());
-        const data = Array.from(categoryMap.values()).map((v) => v.amount);
-        // Use a curated palette that matches the dark/light theme better
-        const palette = [
-          '#06b6d4', // Cyan
-          '#8b5cf6', // Violet
-          '#fb7185', // Rose
-          '#facc15', // Yellow
-          '#34d399', // Emerald
-          '#60a5fa', // Blue
-          '#c084fc', // Purple
-          '#f472b6', // Pink
-        ];
-        const colors = data.map((_, i) => palette[i % palette.length]);
-
-        const newDoughnutData = {
-          labels: labels.length ? labels : ['No Data'],
+        // Update Doughnut Chart (Categories) immediately
+        this.doughnutChartData = {
+          labels: Object.keys(categoryStats),
           datasets: [
             {
-              data: data.length ? data : [1],
-              backgroundColor: labels.length ? colors : ['#e2e8f0'],
-              hoverBackgroundColor: labels.length ? colors : ['#e2e8f0'],
+              data: Object.values(categoryStats),
+              backgroundColor: ['#8b5cf6', '#06b6d4', '#fb7185', '#fbbf24', '#10b981', '#f59e0b'],
+              hoverBackgroundColor: [
+                '#7c3aed',
+                '#0891b2',
+                '#f43f5e',
+                '#f59e0b',
+                '#059669',
+                '#d97706',
+              ],
               borderWidth: 0,
             },
           ],
         };
-
-        // Only update if changed to prevent animation replay
-        if (JSON.stringify(this.doughnutChartData) !== JSON.stringify(newDoughnutData)) {
-          this.doughnutChartData = newDoughnutData;
-        }
-        // Ensure content exists or default to empty array
-        // C. Prepare Bar Chart (Last 6 Months History)
-        // Ensure content exists or default to empty array
-        this.lastIncomes = incomes || [];
-        this.lastExpenses = expenses || [];
-        this.prepareHistoryChart(this.lastIncomes, this.lastExpenses);
-        this.cdr.markForCheck();
+        // We do NOT set isLoading=false here, we wait for full history
+        // But the user sees numbers!
       },
-      error: (err) => {
+    });
+  }
+
+  loadHistoricalData(year: number, month: number) {
+    forkJoin({
+      incomes: this.fetchAllHistory((p, s) => this.apiService.getIncomes(p, s)).pipe(
+        catchError(() => of([]))
+      ),
+      expenses: this.fetchAllHistory((p, s) => this.apiService.getExpenses(p, s)).pipe(
+        catchError(() => of([]))
+      ),
+    }).subscribe({
+      next: ({ incomes, expenses }) => {
         this.isLoading.set(false);
-        console.error('Error loading dashboard data', err);
-        // Ensure we don't show stale data on error
-        this.totalIncome.set(0);
-        this.updateBalance();
-        // Reset charts
-        this.doughnutChartData.datasets[0].data = [1];
-        this.doughnutChartData.labels = ['No Data'];
-        this.doughnutChartData.datasets[0].backgroundColor = ['#e2e8f0'];
 
-        // Reset Bar Chart to show correct 6-month labels with 0 data
-        this.lastIncomes = [];
-        this.lastExpenses = [];
-        this.prepareHistoryChart([], []);
-        this.cdr.markForCheck();
+        // A. Update Income Total (Must calc from history as we lack endpoint)
+        const currentMonthIncomes = incomes
+          ? incomes.filter((i: any) => {
+              const [y, m] = i.date.toString().split('-');
+              return parseInt(m, 10) === month && parseInt(y, 10) === year;
+            })
+          : [];
+        const incomeTotal = currentMonthIncomes.reduce(
+          (acc: number, curr: any) => acc + curr.amount,
+          0
+        );
+        this.totalIncome.set(incomeTotal);
+
+        // Update Balance with finalized numbers
+        this.updateBalance();
+
+        // B. Prepare Charts
+        this.lastIncomes = incomes;
+        this.lastExpenses = expenses;
+        this.prepareHistoryChart(incomes, expenses);
+
+        // Note: We don't overwrite totalExpense here; we trust the Fast Path.
+        // Unless we find a discrepancy logic, but API total is usually truth.
       },
+      error: () => this.isLoading.set(false),
     });
   }
 

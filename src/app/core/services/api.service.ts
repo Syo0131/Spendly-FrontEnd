@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+
 import {
   PagedResponse,
   IncomeResponse,
@@ -31,8 +31,8 @@ import {
   PagedModelRecurringExpenseResponse,
 } from '../models/api.models';
 import { CacheService } from './cache.service';
-import { of } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { of, Observable } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
 
@@ -44,19 +44,39 @@ export class ApiService {
 
   constructor(private http: HttpClient, private cache: CacheService) {}
 
-  // Helper for Cache-First Strategy
+  // Helper for Cache-First Strategy with Offline Fallback
   private getWithCache<T>(key: string, url: string, params?: HttpParams): Observable<T> {
     const cached = this.cache.get(key);
-    const network$ = this.http
-      .get<T>(url, { params })
-      .pipe(tap((data) => this.cache.set(key, data)));
-    return cached ? of(cached) : network$;
-    // Note: For true "Stale-While-Revalidate" where we show cache THEN update,
-    // we would use concat(of(cached), network$).
-    // However, concat awaits completion.
-    // To emit both, we need merge or startWith.
-    // For simplicity in this step to fix "white screen", returning cached if available is huge win.
-    // Ideally: return cached ? concat(of(cached), network$) : network$;
+    if (cached) {
+      return of(cached);
+    }
+
+    return this.http.get<T>(url, { params }).pipe(
+      tap((data) => this.cache.set(key, data)),
+      catchError((err) => {
+        const stale = this.cache.get(key, true); // true = ignoreTTL
+        if (stale) {
+          console.warn(`[Offline] Returning stale cache for ${key}`, err);
+          return of(stale);
+        }
+        throw err;
+      })
+    );
+  }
+
+  // Helper for Offline-First Strategy (Network -> Cache Fallback)
+  private getWithOfflineSupport<T>(key: string, url: string, params?: HttpParams): Observable<T> {
+    return this.http.get<T>(url, { params }).pipe(
+      tap((data) => this.cache.set(key, data)),
+      catchError((err) => {
+        const stale = this.cache.get(key, true); // true = ignoreTTL
+        if (stale) {
+          console.warn(`[Offline] Returning stale cache for ${key}`, err);
+          return of(stale);
+        }
+        throw err;
+      })
+    );
   }
 
   // Public method to clear cache
@@ -139,13 +159,15 @@ export class ApiService {
   }
 
   getExpensesMonthTotal(year: number, month: number): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/expenses/month/${year}/${month}/total`);
+    const key = `dashboard_total_${year}_${month}`;
+    const url = `${this.baseUrl}/expenses/month/${year}/${month}/total`;
+    return this.getWithOfflineSupport<any>(key, url);
   }
 
   getExpensesByCategory(year: number, month: number): Observable<MonthlyStats> {
-    return this.http.get<MonthlyStats>(
-      `${this.baseUrl}/expenses/month/${year}/${month}/by-category`
-    );
+    const key = `dashboard_category_${year}_${month}`;
+    const url = `${this.baseUrl}/expenses/month/${year}/${month}/by-category`;
+    return this.getWithOfflineSupport<MonthlyStats>(key, url);
   }
 
   // Saving Goals

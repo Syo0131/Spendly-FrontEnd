@@ -25,7 +25,7 @@ export class CacheService {
     }
   }
 
-  get(key: string): any | null {
+  get(key: string, ignoreTTL = false): any | null {
     try {
       const fullKey = this.getFullKey(key);
       const itemStr = localStorage.getItem(fullKey);
@@ -34,7 +34,7 @@ export class CacheService {
       const item = JSON.parse(itemStr);
       const now = Date.now();
 
-      if (now - item.timestamp > this.TTL) {
+      if (!ignoreTTL && now - item.timestamp > this.TTL) {
         localStorage.removeItem(fullKey);
         return null;
       }

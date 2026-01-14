@@ -59,6 +59,11 @@ export class ApiService {
     // Ideally: return cached ? concat(of(cached), network$) : network$;
   }
 
+  // Public method to clear cache
+  clearCache(key: string): void {
+    this.cache.invalidate(key);
+  }
+
   // Incomes
   getIncomes(page = 0, size = 20): Observable<PagedResponse<IncomeResponse>> {
     const params = new HttpParams()

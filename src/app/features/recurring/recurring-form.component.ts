@@ -103,7 +103,9 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                   >
                     <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
                   </div>
-                  <span class="text-gray-900 dark:text-white font-medium">{{ cat.name }}</span>
+                  <span class="text-gray-900 dark:text-white font-medium">{{
+                    ts.translateCategory(cat.name)
+                  }}</span>
                   } @else {
                   <span class="text-gray-400 text-sm font-medium">Select Category</span>
                   }
@@ -129,7 +131,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                     <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
                   </div>
                   <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{
-                    cat.name
+                    ts.translateCategory(cat.name)
                   }}</span>
                 </button>
                 }
@@ -369,6 +371,16 @@ export class RecurringFormComponent {
     if (this.durationMode === 'indefinite') {
       this.formData.totalOccurrences = undefined;
     }
+    // We need to pass the category object for optimistic UI, but 'save' emits DTO.
+    // The parent component handles the service call. We should check parent.
+    // However, DTO doesn't have the category object.
+    // If the parent uses 'formData' directly, it only sees the DTO.
+
+    // Actually, 'save' is an EventEmitter<CreateRecurringExpenseDto>.
+    // To support optimistic UI passing the category, we might need to emit more info
+    // or rely on the parent to look it up.
+    // But since this component KNOWS the selected category, it's best if it could pass it.
+    // Let's see how the parent handles it.
     this.save.emit(this.formData);
   }
 }

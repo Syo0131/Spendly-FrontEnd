@@ -379,7 +379,10 @@ export class TranslationService {
 
     const key = 'cat.' + normalized;
     const term = this.dictionary[key];
-    return term ? term[this.currentLang()] : categoryName;
+    if (term) return term[this.currentLang()];
+
+    // Fallback: Format the raw name (replace underscores with spaces, capitalize)
+    return categoryName.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   }
 
   /**

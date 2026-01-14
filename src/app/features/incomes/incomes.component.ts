@@ -480,7 +480,7 @@ export class IncomesComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Initial Load
-    this.state.load(0, this.pageSize());
+    this.state.refresh();
 
     // Auto-refresh
     this.refreshSubscription = interval(30000).subscribe(() => this.state.refresh());

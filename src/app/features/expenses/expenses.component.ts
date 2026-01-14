@@ -76,7 +76,7 @@ import { RouterModule } from '@angular/router';
                   >
                     <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
                   </div>
-                  {{ cat.name }}
+                  {{ ts.translateCategory(cat.name) }}
                 </button>
                 }
               </div>
@@ -629,7 +629,7 @@ export class ExpensesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.state.load(0, this.pageSize());
+    this.state.refresh();
     this.loadCategories();
 
     // Poll every 30 seconds
@@ -676,7 +676,7 @@ export class ExpensesComponent implements OnInit, OnDestroy {
     const id = this.currentFilter();
     if (!id) return 'All Categories';
     const cat = this.categories().find((c) => c.id === id);
-    return cat ? cat.name : 'Category';
+    return cat ? this.ts.translateCategory(cat.name) : 'Category';
   }
 
   onEditFromMenu() {
@@ -770,7 +770,14 @@ export class ExpensesComponent implements OnInit, OnDestroy {
       // Optimistic Close
       this.closeModal();
 
-      const obs$ = id ? this.state.update(id, payload) : this.state.add(payload);
+      let obs$;
+      if (id) {
+        // Find the category object for optimistic update
+        const selectedCat = this.categories().find((c) => c.id === payload.categoryId);
+        obs$ = this.state.update(id, payload, selectedCat);
+      } else {
+        obs$ = this.state.add(payload);
+      }
 
       obs$.subscribe({
         next: () => {

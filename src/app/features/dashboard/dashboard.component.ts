@@ -400,17 +400,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     if (!isBackground) {
       this.isLoading.set(true);
+      // Force refresh of expenses to avoid stale cache issues
+      this.apiService.clearCache('expenses');
     }
 
     // 1. Get Monthly Totals (Keep existing Logic for Cards)
-    this.apiService.getExpensesMonthTotal(year, month).subscribe({
-      next: (res: any) => {
-        const expenseTotal = typeof res === 'number' ? res : res.total || res.amount || 0;
-        this.totalExpense.set(expenseTotal);
-        this.updateBalance();
-      },
-      error: () => this.totalExpense.set(0),
-    });
+    // 1. Get Monthly Totals (Optimized: Calculate from fetched history to ensure consistency)
+    // We will calculate this inside the forkJoin subscription
+    // this.apiService.getExpensesMonthTotal(year, month).subscribe({...});
 
     // 2. Fetch DATA for Charts (Incomes & Expenses)
     // Use forkJoin to get both in parallel
@@ -444,20 +441,56 @@ export class DashboardComponent implements OnInit, OnDestroy {
           0
         );
         this.totalIncome.set(incomeTotal);
+
+        // B. Update Expense Total Card (Current Month)
+        // Calculated client-side for consistency with Chart and Income
+        const currentMonthExpenses = expenses
+          ? expenses.filter((e: any) => {
+              const [y, m] = e.date.toString().split('-');
+              return parseInt(m, 10) === month && parseInt(y, 10) === year;
+            })
+          : [];
+
+        const expenseTotal = currentMonthExpenses.reduce(
+          (acc: number, curr: any) => acc + curr.amount,
+          0
+        );
+        this.totalExpense.set(expenseTotal);
+
         this.updateBalance();
 
         // C. Prepare Doughnut Chart (Categories)
-        const labels = Object.keys(categoryStats || {});
-        const data = Object.values(categoryStats || {}) as number[];
+        // C. Prepare Doughnut Chart (Categories) - Client Side
+        const categoryMap = new Map<string, { amount: number; color: string }>();
+        currentMonthExpenses.forEach((e: any) => {
+          const name = this.ts.translateCategory(e.category.name);
+          const current = categoryMap.get(name) || { amount: 0, color: e.category.color };
+          current.amount += e.amount;
+          categoryMap.set(name, current);
+        });
+
+        const labels = Array.from(categoryMap.keys());
+        const data = Array.from(categoryMap.values()).map((v) => v.amount);
+        // Use a curated palette that matches the dark/light theme better
+        const palette = [
+          '#06b6d4', // Cyan
+          '#8b5cf6', // Violet
+          '#fb7185', // Rose
+          '#facc15', // Yellow
+          '#34d399', // Emerald
+          '#60a5fa', // Blue
+          '#c084fc', // Purple
+          '#f472b6', // Pink
+        ];
+        const colors = data.map((_, i) => palette[i % palette.length]);
 
         const newDoughnutData = {
           labels: labels.length ? labels : ['No Data'],
           datasets: [
             {
               data: data.length ? data : [1],
-              backgroundColor: labels.length
-                ? ['#8b5cf6', '#06b6d4', '#fb7185', '#fbbf24', '#10b981', '#6366f1']
-                : ['#e2e8f0'],
+              backgroundColor: labels.length ? colors : ['#e2e8f0'],
+              hoverBackgroundColor: labels.length ? colors : ['#e2e8f0'],
               borderWidth: 0,
             },
           ],
@@ -467,8 +500,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (JSON.stringify(this.doughnutChartData) !== JSON.stringify(newDoughnutData)) {
           this.doughnutChartData = newDoughnutData;
         }
-
-        // C. Prepare Bar Chart (Last 6 Months History)
         // Ensure content exists or default to empty array
         // C. Prepare Bar Chart (Last 6 Months History)
         // Ensure content exists or default to empty array

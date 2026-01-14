@@ -12,6 +12,7 @@ import { UpdateService } from '../../core/services/update.service';
 import { BudgetStateService } from '../../core/services/budget-state.service';
 import { ExpenseStateService } from '../../core/services/expense-state.service';
 import { IncomeStateService } from '../../core/services/income-state.service';
+import { DataPreloadService } from '../../core/services/data-preload.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -330,13 +331,14 @@ export class MainLayoutComponent {
   updateService = inject(UpdateService);
 
   // State Services for Preloading
-  private budgetState = inject(BudgetStateService);
-  private expenseState = inject(ExpenseStateService);
-  private incomeState = inject(IncomeStateService);
-  private apiService = inject(ApiService);
+  // private budgetState = inject(BudgetStateService);
+  // private expenseState = inject(ExpenseStateService);
+  // private incomeState = inject(IncomeStateService);
+  // private apiService = inject(ApiService);
+  private preloadService = inject(DataPreloadService);
 
   constructor() {
-    this.prefetchData();
+    this.preloadService.preloadAll();
   }
 
   toggleNotifications() {
@@ -355,29 +357,7 @@ export class MainLayoutComponent {
     return new Date(date).toLocaleString();
   }
 
-  private prefetchData() {
-    // 1. Trigger State Services (Standard Page Size: 20 -> 6 to match UI)
-    // This ensures data is ready when user navigates to these tabs.
-    this.budgetState.load();
-    this.expenseState.load(0, 6);
-    this.incomeState.load(0, 6);
-
-    // 2. Prefetch Dashboard specific stats (still direct API as they might not have state yet)
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-
-    this.apiService.getExpensesMonthTotal(year, month).subscribe({
-      next: () => console.log('Month Total prefetched'),
-      error: () => {},
-    });
-
-    this.apiService.getExpensesByCategory(year, month).subscribe({
-      next: () => console.log('Category Stats prefetched'),
-      error: () => {},
-    });
-  }
-
+  // private prefetchData moved to DataPreloadService
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: any) {
     if (event.key === 'Enter' && this.updateService.isUpdateAvailable()) {

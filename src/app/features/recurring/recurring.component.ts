@@ -258,8 +258,8 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                   >
                     <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
                   </div>
-                  <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{
-                    cat.name
+                  <span class="text-gray-900 dark:text-white font-bold text-sm">{{
+                    ts.translateCategory(cat.name)
                   }}</span>
                   } @else {
                   <span class="material-icons-outlined text-gray-400 text-lg">category</span>
@@ -290,7 +290,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                     <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
                   </div>
                   <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{
-                    cat.name
+                    ts.translateCategory(cat.name)
                   }}</span>
                 </div>
                 }
@@ -513,6 +513,7 @@ export class RecurringComponent implements OnInit {
   ns = inject(NotificationService);
   api = inject(ApiService);
   fb = inject(FormBuilder);
+  ts = inject(TranslationService);
 
   // UI Signals
   showModal = signal(false);
@@ -624,7 +625,7 @@ export class RecurringComponent implements OnInit {
       formData.totalOccurrences = undefined;
     }
 
-    const payload: CreateRecurringExpenseDto = {
+    const dto: CreateRecurringExpenseDto = {
       description: formData.description,
       amount: formData.amount,
       categoryId: formData.categoryId,
@@ -635,18 +636,23 @@ export class RecurringComponent implements OnInit {
       currency: 'DOP',
     };
 
-    // Optimistic Close
-    this.closeModal();
-
     try {
       if (this.editingId()) {
-        // UPDATE (Promise)
-        await this.state.update(this.editingId()!, payload);
-        this.ns.show('Recurring expense updated', 'success');
+        // Update
+        const id = this.editingId()!;
+        this.state.update(id, dto).then(() => {
+          this.ns.show('Recurring expense updated', 'success');
+          this.closeModal();
+        });
       } else {
-        // CREATE (Promise)
-        await this.state.add(payload);
-        this.ns.show('Recurring expense created', 'success');
+        // Create
+        // Optimistic UI: Pass the selected category object
+        const selectedCat = this.getSelectedCategory();
+
+        this.state.add(dto, selectedCat).then(() => {
+          this.ns.show('Recurring expense created', 'success');
+          this.closeModal();
+        });
       }
     } catch (err: any) {
       this.ns.show(err.error?.message || 'Operation failed', 'error');

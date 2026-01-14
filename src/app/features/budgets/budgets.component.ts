@@ -784,7 +784,8 @@ export class BudgetsComponent implements OnInit {
       // Optimistic Close
       this.closeModal();
 
-      this.state.updateBudget(this.selectedBudget()!.id, payload).subscribe({
+      const cat = this.getSelectedCategory();
+      this.state.updateBudget(this.selectedBudget()!.id, payload, cat).subscribe({
         next: () => {
           this.isSubmitting.set(false);
           this.ns.show('Budget updated successfully', 'success');

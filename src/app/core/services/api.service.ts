@@ -29,6 +29,10 @@ import {
   CreateRecurringExpenseDto,
   UpdateRecurringExpenseDto,
   PagedModelRecurringExpenseResponse,
+  CreateRemindersDto,
+  UpdateRemindersDto,
+  RemindersResponseDto,
+  PagedModelRemindersResponseDto,
 } from '../models/api.models';
 import { CacheService } from './cache.service';
 import { of, Observable } from 'rxjs';
@@ -280,9 +284,9 @@ export class ApiService {
     return this.http.get<Budget>(`${this.baseUrl}/budgets/${id}`);
   }
 
-  getMonthlyBudgets(page = 0, size = 20): Observable<PagedModelBudgetResponse> {
-    const params = new HttpParams().set('page', page).set('size', size);
-    return this.http.get<PagedModelBudgetResponse>(`${this.baseUrl}/budgets/monthly`, { params });
+  getMonthlyBudgets(year: number, month: number): Observable<Budget[]> {
+    const params = new HttpParams().set('year', year).set('month', month);
+    return this.http.get<Budget[]>(`${this.baseUrl}/budgets/monthly`, { params });
   }
 
   createBudget(data: CreateBudgetDto): Observable<MessageResponse> {
@@ -341,5 +345,41 @@ export class ApiService {
     return this.http
       .delete<MessageResponse>(`${this.baseUrl}/recurring-expenses/${id}/delete`)
       .pipe(tap(() => this.cache.clear()));
+  }
+
+  // Reminders
+  getReminders(page = 0, size = 20): Observable<PagedModelRemindersResponseDto> {
+    const params = new HttpParams()
+      .set('page', page)
+      .set('size', size)
+      .append('sort', 'remindAt,asc');
+
+    const url = `${this.baseUrl}/reminders`;
+    if (page === 0) {
+      return this.getWithCache<PagedModelRemindersResponseDto>(
+        `reminders_page_0_size_${size}`,
+        url,
+        params
+      );
+    }
+    return this.http.get<PagedModelRemindersResponseDto>(url, { params });
+  }
+
+  createReminder(data: CreateRemindersDto): Observable<MessageResponse> {
+    return this.http
+      .post<MessageResponse>(`${this.baseUrl}/reminders/create`, data)
+      .pipe(tap(() => this.cache.invalidate('reminders')));
+  }
+
+  updateReminder(id: number, data: UpdateRemindersDto): Observable<MessageResponse> {
+    return this.http
+      .put<MessageResponse>(`${this.baseUrl}/reminders/${id}/update`, data)
+      .pipe(tap(() => this.cache.invalidate('reminders')));
+  }
+
+  deleteReminder(id: number): Observable<MessageResponse> {
+    return this.http
+      .delete<MessageResponse>(`${this.baseUrl}/reminders/${id}/delete`)
+      .pipe(tap(() => this.cache.invalidate('reminders')));
   }
 }

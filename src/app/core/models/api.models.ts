@@ -116,6 +116,38 @@ export interface PremiumStatusDto {
   message: string;
 }
 
+// Reminders
+export interface CreateRemindersDto {
+  title: string;
+  message: string;
+  remindAt: string; // date-time
+  expenseId?: number;
+  amount?: number;
+  user?: number;
+}
+
+export interface UpdateRemindersDto {
+  title?: string;
+  message?: string;
+  remindAt?: string;
+  amount?: number;
+}
+
+export interface RemindersResponseDto {
+  id: number;
+  title: string;
+  message: string;
+  remindAt: string;
+  amount?: number;
+  expenseId?: number;
+  createdAt?: string;
+}
+
+export interface PagedModelRemindersResponseDto {
+  content: RemindersResponseDto[];
+  page: PageMetadata;
+}
+
 // Saving Goals
 export interface SavingGoalsResponse {
   id: number;

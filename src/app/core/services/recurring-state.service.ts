@@ -82,15 +82,12 @@ export class RecurringStateService {
 
   constructor() {
     // Sync Server Data
-    effect(
-      () => {
-        const data = this.serverState();
-        if (data) {
-          this._localData.set(data);
-        }
-      },
-      { allowSignalWrites: true }
-    );
+    effect(() => {
+      const data = this.serverState();
+      if (data) {
+        this._localData.set(data);
+      }
+    });
   }
 
   refresh() {

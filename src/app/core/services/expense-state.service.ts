@@ -157,15 +157,12 @@ export class ExpenseStateService {
 
   constructor() {
     // Sync Server Data to Local Data
-    effect(
-      () => {
-        const data = this.serverState();
-        if (data) {
-          this._localData.set(data);
-        }
-      },
-      { allowSignalWrites: true }
-    );
+    effect(() => {
+      const data = this.serverState();
+      if (data) {
+        this._localData.set(data);
+      }
+    });
   }
 
   // Actions

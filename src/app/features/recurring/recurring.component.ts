@@ -36,10 +36,10 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
       <div class="flex flex-col md:flex-row justify-between md:items-end gap-6">
         <div>
           <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
-            Recurring Expenses
+            {{ ts.t()('recurring.title') }}
           </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">
-            Manage your automated subscriptions and bills
+            {{ ts.t()('recurring.subtitle') }}
           </p>
         </div>
         <button
@@ -47,7 +47,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
           class="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm md:text-base tracking-wide"
         >
           <span class="material-icons-outlined mr-2 text-lg md:text-xl">add_circle</span>
-          New
+          {{ ts.t()('recurring.new') }}
         </button>
       </div>
 
@@ -85,12 +85,14 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             >replay</span
           >
         </div>
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">No recurring expenses</h3>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
+          {{ ts.t()('recurring.empty') }}
+        </h3>
         <button
           (click)="openModal()"
           class="text-primary hover:text-primary-light font-bold text-sm"
         >
-          Create one now
+          {{ ts.t()('recurring.create_now') }}
         </button>
       </div>
       }
@@ -127,7 +129,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                   @if (!expense.isActive) {
                   <span
                     class="text-[10px] font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded"
-                    >INACTIVE</span
+                    >{{ ts.t()('recurring.inactive') }}</span
                   >
                   }
                 </div>
@@ -154,7 +156,9 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
 
           <div class="flex justify-between items-end mt-4">
             <div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Next payment</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                {{ ts.t()('recurring.next_payment') }}
+              </p>
               <p class="text-sm font-bold text-gray-900 dark:text-white">
                 {{ expense.nextExecutionDate | date : 'mediumDate' }}
               </p>
@@ -194,9 +198,9 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             }}</span>
           </div>
           <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-            {{ editingId() ? 'Edit Recurring Expense' : 'New Recurring Expense' }}
+            {{ editingId() ? ts.t()('recurring.edit_title') : ts.t()('recurring.new_title') }}
           </h2>
-          <p class="text-gray-500 text-xs mt-1">Automate your regular payments</p>
+          <p class="text-gray-500 text-xs mt-1">{{ ts.t()('recurring.modal_desc') }}</p>
         </div>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
@@ -205,7 +209,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             <label
               class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
             >
-              Description
+              {{ ts.t()('trans.desc') }}
             </label>
             <input
               type="text"
@@ -220,7 +224,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             <label
               class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
             >
-              Amount
+              {{ ts.t()('trans.amount') }}
             </label>
             <div class="relative group">
               <span
@@ -243,7 +247,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             <label
               class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
             >
-              Category
+              {{ ts.t()('trans.category') }}
             </label>
             <div class="relative">
               <div
@@ -263,7 +267,9 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                   }}</span>
                   } @else {
                   <span class="material-icons-outlined text-gray-400 text-lg">category</span>
-                  <span class="text-gray-400 text-sm font-medium">Select Category</span>
+                  <span class="text-gray-400 text-sm font-medium">{{
+                    ts.t()('trans.select_category')
+                  }}</span>
                   }
                 </div>
                 <span
@@ -305,7 +311,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
               <label
                 class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
               >
-                Frequency
+                {{ ts.t()('recurring.freq') }}
               </label>
               <select
                 formControlName="frequency"
@@ -324,7 +330,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
               <label
                 class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
               >
-                Day of Month
+                {{ ts.t()('recurring.day_month') }}
               </label>
               <input
                 type="number"
@@ -342,7 +348,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
               <label
                 class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
               >
-                Day of Week
+                {{ ts.t()('recurring.day_week') }}
               </label>
               <select
                 formControlName="dayOfWeek"
@@ -365,7 +371,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             <label
               class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
             >
-              Duration
+              {{ ts.t()('recurring.duration') }}
             </label>
             <div class="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
               <button
@@ -378,7 +384,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
                 "
               >
-                Indefinite
+                {{ ts.t()('recurring.indefinite') }}
               </button>
               <button
                 type="button"
@@ -390,14 +396,14 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
                 "
               >
-                Set End Date
+                {{ ts.t()('recurring.fixed') }}
               </button>
             </div>
 
             @if (durationMode() === 'fixed') {
             <div class="animate-fade-in space-y-1.5">
               <p class="text-[10px] text-gray-400 ml-1">
-                How many times should this expense occur?
+                {{ ts.t()('recurring.how_many') }}
               </p>
               <div class="relative">
                 <input
@@ -407,7 +413,9 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                   placeholder="e.g. 12"
                   class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
-                <span class="absolute right-4 top-3.5 text-xs font-bold text-gray-400">Times</span>
+                <span class="absolute right-4 top-3.5 text-xs font-bold text-gray-400">{{
+                  ts.t()('recurring.times')
+                }}</span>
               </div>
             </div>
             }
@@ -421,7 +429,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             class="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm"
           >
             <span class="material-icons-outlined text-lg">check</span>
-            {{ editingId() ? 'Update Expense' : 'Create Recurring Expense' }}
+            {{ editingId() ? ts.t()('recurring.update_btn') : ts.t()('recurring.create_btn') }}
           </button>
         </form>
       </div>
@@ -440,9 +448,11 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
         >
           <span class="material-icons-outlined text-2xl">delete_forever</span>
         </div>
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Delete Expense?</h3>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">
+          {{ ts.t()('recurring.delete_title') }}
+        </h3>
         <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm leading-relaxed">
-          Are you sure you want to delete
+          {{ ts.t()('recurring.delete_confirm') }}
           <span class="font-bold text-gray-900 dark:text-white">{{
             expenseToDelete()?.description
           }}</span
@@ -453,13 +463,13 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             (click)="cancelDelete()"
             class="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors text-sm"
           >
-            Cancel
+            {{ ts.t()('trans.cancel') }}
           </button>
           <button
             (click)="performDelete()"
             class="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02] text-sm"
           >
-            Delete
+            {{ ts.t()('trans.delete') }}
           </button>
         </div>
       </div>
@@ -641,7 +651,7 @@ export class RecurringComponent implements OnInit {
         // Update
         const id = this.editingId()!;
         this.state.update(id, dto).then(() => {
-          this.ns.show('Recurring expense updated', 'success');
+          this.ns.show(this.ts.translate('recurring.updated'), 'success');
           this.closeModal();
         });
       } else {
@@ -650,12 +660,12 @@ export class RecurringComponent implements OnInit {
         const selectedCat = this.getSelectedCategory();
 
         this.state.add(dto, selectedCat).then(() => {
-          this.ns.show('Recurring expense created', 'success');
+          this.ns.show(this.ts.translate('recurring.created'), 'success');
           this.closeModal();
         });
       }
     } catch (err: any) {
-      this.ns.show(err.error?.message || 'Operation failed', 'error');
+      this.ns.show(err.error?.message || this.ts.translate('recurring.fail'), 'error');
     }
   }
 
@@ -680,9 +690,9 @@ export class RecurringComponent implements OnInit {
 
     try {
       await this.state.delete(expense.id);
-      this.ns.show('Expense deleted', 'success');
+      this.ns.show(this.ts.translate('recurring.deleted'), 'success');
     } catch (err) {
-      this.ns.show('Failed to delete', 'error');
+      this.ns.show(this.ts.translate('recurring.fail'), 'error');
     }
   }
 }

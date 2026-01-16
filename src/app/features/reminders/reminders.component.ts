@@ -171,7 +171,7 @@ import {
           <h2 class="text-xl font-bold text-gray-900 dark:text-white">
             {{ isEditing ? ts.t()('trans.edit') : ts.t()('goals.new_title') }}
           </h2>
-          <p class="text-gray-500 text-xs mt-1">Set up your alert details</p>
+          <p class="text-gray-500 text-xs mt-1">{{ ts.t()('reminders.setup') }}</p>
         </div>
 
         <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
@@ -210,7 +210,7 @@ import {
             <label
               class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
             >
-              {{ ts.t()('trans.amount') }} (Optional)
+              {{ ts.t()('trans.amount') }}
             </label>
             <div class="relative group">
               <span
@@ -234,7 +234,7 @@ import {
               {{ ts.t()('trans.date') }}
             </label>
             <input
-              type="date"
+              type="datetime-local"
               formControlName="remindAt"
               class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             />
@@ -269,7 +269,7 @@ export class RemindersComponent {
   form: FormGroup = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
     message: ['', [Validators.required, Validators.minLength(3)]],
-    amount: [null],
+    amount: [null, [Validators.required, Validators.min(0.01)]],
     remindAt: ['', [Validators.required]],
   });
 
@@ -277,11 +277,10 @@ export class RemindersComponent {
     this.showModal = true;
     this.isEditing = false;
     this.editingId = null;
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrow = new Date(Date.now() + 86400000);
     this.form.reset({
-      // Default to "tomorrow"
-      remindAt: tomorrow.toISOString().split('T')[0],
+      // Default to "tomorrow" same time if new
+      remindAt: tomorrow.toISOString().slice(0, 16),
       amount: null,
       title: '',
       message: '',
@@ -297,11 +296,10 @@ export class RemindersComponent {
     this.isEditing = true;
     this.editingId = item.id;
     this.showModal = true;
-    // Extract YYYY-MM-DD from the timestamp or string
+    // Format for datetime-local: YYYY-MM-DDTHH:mm
     let dateStr = '';
     if (item.remindAt) {
-      // If it comes as full ISO, split it. If already YYYY-MM-DD, keep it.
-      dateStr = item.remindAt.toString().split('T')[0];
+      dateStr = new Date(item.remindAt).toISOString().slice(0, 16);
     }
 
     this.form.patchValue({
@@ -320,28 +318,28 @@ export class RemindersComponent {
       title: val.title,
       message: val.message,
       amount: val.amount,
-      remindAt: val.remindAt, // Already YYYY-MM-DD from type="date"
+      remindAt: val.remindAt.length === 16 ? val.remindAt + ':00' : val.remindAt, // Ensure seconds are present, no Z or millis
     } as CreateRemindersDto;
 
     if (this.isEditing && this.editingId) {
       this.state
         .update(this.editingId, payload)
         .then(() => {
-          this.ns.show('Reminder updated', 'success');
+          this.ns.show(this.ts.translate('reminders.updated'), 'success');
           this.closeModal();
         })
         .catch((err: any) => {
-          this.ns.show('Failed to update reminder', 'error');
+          this.ns.show(this.ts.translate('reminders.fail_update'), 'error');
         });
     } else {
       this.state
         .add(payload)
         .then(() => {
-          this.ns.show('Reminder created', 'success');
+          this.ns.show(this.ts.translate('reminders.created'), 'success');
           this.closeModal();
         })
         .catch((err: any) => {
-          this.ns.show('Failed to create reminder', 'error');
+          this.ns.show(this.ts.translate('reminders.fail_create'), 'error');
         });
     }
   }
@@ -351,10 +349,10 @@ export class RemindersComponent {
       this.state
         .delete(id)
         .then(() => {
-          this.ns.show('Reminder deleted', 'success');
+          this.ns.show(this.ts.translate('reminders.deleted'), 'success');
         })
         .catch((err: any) => {
-          this.ns.show('Failed to delete', 'error');
+          this.ns.show(this.ts.translate('reminders.fail_delete'), 'error');
         });
     }
   }

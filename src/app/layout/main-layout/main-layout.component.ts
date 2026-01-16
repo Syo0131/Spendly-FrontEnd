@@ -13,6 +13,7 @@ import { BudgetStateService } from '../../core/services/budget-state.service';
 import { ExpenseStateService } from '../../core/services/expense-state.service';
 import { IncomeStateService } from '../../core/services/income-state.service';
 import { DataPreloadService } from '../../core/services/data-preload.service';
+import { AlertService } from '../../core/services/alert.service'; // Added AlertService
 
 @Component({
   selector: 'app-main-layout',
@@ -336,9 +337,15 @@ export class MainLayoutComponent {
   // private incomeState = inject(IncomeStateService);
   // private apiService = inject(ApiService);
   private preloadService = inject(DataPreloadService);
+  private alertService = inject(AlertService); // Inject it
 
   constructor() {
     this.preloadService.preloadAll();
+    this.alertService.init(); // Start polling for alerts
+  }
+
+  ngOnDestroy() {
+    this.alertService.stop(); // Stop polling when layout is destroyed (e.g. logout/nav change if layout changes)
   }
 
   toggleNotifications() {

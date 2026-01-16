@@ -4,6 +4,7 @@ import { IncomeStateService } from './income-state.service';
 import { BudgetStateService } from './budget-state.service';
 import { RecurringStateService } from './recurring-state.service';
 import { GoalStateService } from './goal-state.service';
+import { RemindersStateService } from './reminders-state.service';
 import { ApiService } from './api.service';
 
 @Injectable({
@@ -16,6 +17,7 @@ export class DataPreloadService {
   private budgetState = inject(BudgetStateService);
   private recurringState = inject(RecurringStateService);
   private goalState = inject(GoalStateService);
+  private remindersState = inject(RemindersStateService);
 
   preloadAll() {
     console.log('[DataPreload] Starting aggressive preloading...');
@@ -30,6 +32,7 @@ export class DataPreloadService {
     this.budgetState.refresh();
     this.recurringState.refresh();
     this.goalState.refresh();
+    this.remindersState.refresh();
 
     // Prefetch Dashboard specific stats
     const now = new Date();

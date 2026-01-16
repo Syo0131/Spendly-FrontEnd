@@ -70,6 +70,7 @@ export class TranslationService {
     'trans.add_income': { es: 'Agregar Ingreso', en: 'Add Income' },
     'trans.add_expense': { es: 'Agregar Gasto', en: 'Add Expense' },
     'trans.desc': { es: 'Descripción', en: 'Description' },
+    'trans.title': { es: 'Título', en: 'Title' },
     'trans.amount': { es: 'Monto', en: 'Amount' },
     'trans.date': { es: 'Fecha', en: 'Date' },
     'trans.category': { es: 'Categoría', en: 'Category' },
@@ -210,6 +211,57 @@ export class TranslationService {
       es: '¡Administra suscripciones y facturas recurrentes pronto!',
       en: 'Manage subscriptions and recurring bills soon!',
     },
+    'recurring.subtitle': {
+      es: 'Administra tus suscripciones y facturas',
+      en: 'Manage your automated subscriptions and bills',
+    },
+    'recurring.new': { es: 'Nuevo', en: 'New' },
+    'recurring.empty': { es: 'No hay gastos recurrentes', en: 'No recurring expenses' },
+    'recurring.create_now': { es: 'Crear uno ahora', en: 'Create one now' },
+    'recurring.next_payment': { es: 'Próximo pago', en: 'Next payment' },
+    'recurring.edit_title': { es: 'Editar Gasto Recurrente', en: 'Edit Recurring Expense' },
+    'recurring.new_title': { es: 'Nuevo Gasto Recurrente', en: 'New Recurring Expense' },
+    'recurring.modal_desc': {
+      es: 'Automatiza tus pagos regulares',
+      en: 'Automate your regular payments',
+    },
+    'recurring.freq': { es: 'Frecuencia', en: 'Frequency' },
+    'recurring.day_month': { es: 'Día del Mes', en: 'Day of Month' },
+    'recurring.day_week': { es: 'Día de la Semana', en: 'Day of Week' },
+    'recurring.duration': { es: 'Duración', en: 'Duration' },
+    'recurring.indefinite': { es: 'Indefinido', en: 'Indefinite' },
+    'recurring.fixed': { es: 'Definir Fin', en: 'Set End Date' },
+    'recurring.how_many': {
+      es: '¿Cuántas veces ocurrirá?',
+      en: 'How many times should this expense occur?',
+    },
+    'recurring.times': { es: 'Veces', en: 'Times' },
+    'recurring.update_btn': { es: 'Actualizar Gasto', en: 'Update Expense' },
+    'recurring.create_btn': { es: 'Crear Gasto Recurrente', en: 'Create Recurring Expense' },
+    'recurring.delete_title': { es: '¿Eliminar Gasto?', en: 'Delete Expense?' },
+    'recurring.delete_confirm': {
+      es: '¿Seguro que deseas eliminar',
+      en: 'Are you sure you want to delete',
+    },
+    'recurring.updated': { es: 'Gasto recurrente actualizado', en: 'Recurring expense updated' },
+    'recurring.created': { es: 'Gasto recurrente creado', en: 'Recurring expense created' },
+    'recurring.deleted': { es: 'Gasto eliminado', en: 'Expense deleted' },
+    'recurring.fail': { es: 'Operación fallida', en: 'Operation failed' },
+    'recurring.inactive': { es: 'INACTIVO', en: 'INACTIVE' },
+
+    'reminders.setup': {
+      es: 'Configura los detalles de tu alerta',
+      en: 'Set up your alert details',
+    },
+    'reminders.created': { es: 'Recordatorio creado', en: 'Reminder created' },
+    'reminders.updated': { es: 'Recordatorio actualizado', en: 'Reminder updated' },
+    'reminders.deleted': { es: 'Recordatorio eliminado', en: 'Reminder deleted' },
+    'reminders.fail_create': { es: 'Error al crear recordatorio', en: 'Failed to create reminder' },
+    'reminders.fail_update': {
+      es: 'Error al actualizar recordatorio',
+      en: 'Failed to update reminder',
+    },
+    'reminders.fail_delete': { es: 'Error al eliminar', en: 'Failed to delete' },
 
     // Forms
     'forms.description_optional': {
@@ -232,6 +284,7 @@ export class TranslationService {
     'notif.income_updated': { es: 'Ingreso actualizado', en: 'Income updated' },
     'notif.income_deleted': { es: 'Ingreso eliminado', en: 'Income deleted' },
     'notif.income_delete_fail': { es: 'Error al eliminar ingreso', en: 'Failed to delete income' },
+    'alert.reminder_due': { es: 'Recordatorio', en: 'Reminder Due' },
     'notif.profile_updated': {
       es: 'Perfil actualizado exitosamente!',
       en: 'Profile updated successfully!',

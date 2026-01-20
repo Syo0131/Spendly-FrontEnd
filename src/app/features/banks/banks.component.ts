@@ -4,6 +4,7 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { BankOption } from '../../core/models/api.models';
 import { TranslationService } from '../../core/services/translation.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-banks',
@@ -77,18 +78,18 @@ import { TranslationService } from '../../core/services/translation.service';
         </div>
       </div>
 
-      <!-- Premium Lock Overlay -->
+      <!-- Coming Soon Overlay -->
       <div
         *ngIf="!isPremium()"
         class="absolute inset-0 z-10 flex items-center justify-center -mt-20"
       >
         <div
-          class="glass-card p-8 max-w-md text-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-amber-500/30 shadow-2xl shadow-amber-500/10 animate-fade-in-up"
+          class="glass-card p-8 max-w-md text-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-primary/30 shadow-2xl shadow-primary/10 animate-fade-in-up"
         >
           <div
-            class="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-amber-500/30"
+            class="w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary/30"
           >
-            <span class="material-icons text-3xl text-white">lock</span>
+            <span class="material-icons text-3xl text-white">construction</span>
           </div>
 
           <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -100,13 +101,10 @@ import { TranslationService } from '../../core/services/translation.service';
 
           <div class="space-y-3">
             <button
-              (click)="unlockPremium()"
-              class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transform hover:scale-[1.02] transition-all"
+              (click)="notifyMe()"
+              class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transform hover:scale-[1.02] transition-all"
             >
               {{ ts.t()('banks.premium_btn') }}
-            </button>
-            <button class="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-              {{ ts.t()('banks.restore') }}
             </button>
           </div>
         </div>
@@ -200,6 +198,7 @@ export class BanksComponent implements OnInit {
   public authService = inject(AuthService);
   private apiService = inject(ApiService);
   public ts = inject(TranslationService);
+  private ns = inject(NotificationService);
 
   // Alias the global signal directly! No flickering.
   isPremium = this.authService.isPremium;
@@ -275,13 +274,11 @@ export class BanksComponent implements OnInit {
     });
   }
 
-  unlockPremium() {
-    // Mock Unlock
-    if (confirm('Simulate Payment Success?')) {
-      this.authService.isPremium.set(true);
-      localStorage.setItem('spendly_premium', 'true');
-      this.checkStatus(); // Immediately refresh status
-    }
+  notifyMe() {
+    this.ns.show(
+      this.ts.currentLang() === 'es' ? '¡Te avisaremos pronto!' : 'We will notify you soon!',
+      'success'
+    );
   }
 
   connectBank(bank: BankOption) {

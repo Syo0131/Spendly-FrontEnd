@@ -101,12 +101,12 @@ export class TranslationService {
       en: 'Connect your bank accounts to automatically sync transactions',
     },
     'banks.connect': { es: 'Conectar', en: 'Connect' },
-    'banks.premium_title': { es: 'Función Premium', en: 'Premium Feature' },
+    'banks.premium_title': { es: 'Próximamente', en: 'Coming Soon' },
     'banks.premium_desc': {
-      es: 'Desbloquea integraciones bancarias ilimitadas y sincronización automática con Spendly Premium.',
-      en: 'Unlock unlimited bank integrations and automatic sync with Spendly Premium.',
+      es: 'Estamos trabajando en integraciones bancarias automáticas. ¡Muy pronto!',
+      en: 'We are working on automatic bank integrations. Coming very soon!',
     },
-    'banks.premium_btn': { es: 'Obtener Premium - $4.99/mes', en: 'Get Premium - $4.99/mo' },
+    'banks.premium_btn': { es: 'Notificarme', en: 'Notify Me' },
     'banks.restore': { es: 'Restaurar Compra', en: 'Restore Purchase' },
 
     'settings.security.note_title': { es: 'Nota de Seguridad', en: 'Security Note' },

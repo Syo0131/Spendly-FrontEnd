@@ -20,6 +20,7 @@ export class ExpenseStateService {
   pageSize = signal(6);
   // Filters (Moved up to fix "used before initialization")
   categoryFilter = signal<number | null>(null);
+  dateFilter = signal<{ month: number; year: number } | null>(null);
 
   // Triggers
   private refresh$ = new Subject<void>();
@@ -118,17 +119,27 @@ export class ExpenseStateService {
     }
   });
 
-  // Filters
-  // categoryFilter moved to top
-
   // Public Read-only Signals
   private filteredContent = computed(() => {
     const all = this._localData()?.content || [];
     const catId = this.categoryFilter();
+    const date = this.dateFilter();
+
+    let filtered = all;
+
     if (catId) {
-      return all.filter((e: ExpenseResponse) => e.category?.id === catId);
+      filtered = filtered.filter((e: ExpenseResponse) => e.category?.id === catId);
     }
-    return all;
+
+    if (date) {
+      filtered = filtered.filter((e: ExpenseResponse) => {
+        // e.date likely YYYY-MM-DD
+        const [y, m] = e.date.toString().split('-');
+        return parseInt(y, 10) === date.year && parseInt(m, 10) === date.month;
+      });
+    }
+
+    return filtered;
   });
 
   expenses = computed(() => {
@@ -153,6 +164,15 @@ export class ExpenseStateService {
   setFilter(categoryId: number | null) {
     this.categoryFilter.set(categoryId);
     this.currentPage.set(0); // Reset to first page on filter change
+  }
+
+  setDateFilter(month: number | null, year: number | null) {
+    if (month === null || year === null) {
+      this.dateFilter.set(null);
+    } else {
+      this.dateFilter.set({ month, year });
+    }
+    this.currentPage.set(0);
   }
 
   constructor() {

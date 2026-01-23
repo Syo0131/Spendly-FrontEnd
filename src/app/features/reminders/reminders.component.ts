@@ -20,7 +20,7 @@ import {
       <div class="flex flex-col md:flex-row justify-between md:items-end gap-6">
         <div>
           <h1
-            class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3"
+            class="text-xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3"
           >
             {{ ts.t()('reminders.title') }}
           </h1>
@@ -30,7 +30,7 @@ import {
         </div>
         <button
           (click)="openModal()"
-          class="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary-700 text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm md:text-base tracking-wide"
+          class="w-full md:w-auto px-3 py-1.5 md:px-6 md:py-3 bg-primary hover:bg-primary-700 text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm md:text-base tracking-wide"
         >
           <span class="material-icons-outlined mr-2 text-lg md:text-xl">add_circle</span>
           {{ ts.t()('forms.add') }}
@@ -79,7 +79,7 @@ import {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         @for (item of state.reminders(); track item.id) {
         <div
-          class="glass-card p-5 border border-gray-100 dark:border-white/5 hover:shadow-xl hover:border-indigo-500/20 transition-all duration-300 rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 group"
+          class="glass-card p-4 md:p-5 border border-gray-100 dark:border-white/5 hover:shadow-xl hover:border-indigo-500/20 transition-all duration-300 rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 group"
         >
           <!-- Card Content -->
           <div class="flex justify-between items-start mb-4">
@@ -91,7 +91,7 @@ import {
               </div>
               <div>
                 <h3
-                  class="text-base font-bold text-gray-900 dark:text-white leading-tight mb-1 line-clamp-1 break-all"
+                  class="text-sm md:text-base font-bold text-gray-900 dark:text-white leading-tight mb-1 line-clamp-1 break-all"
                 >
                   {{ item.title }}
                 </h3>

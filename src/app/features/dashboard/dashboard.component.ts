@@ -30,10 +30,10 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
         class="flex flex-col md:flex-row justify-between md:items-center gap-4 animate-fade-in-up"
       >
         <div>
-          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-xl md:text-3xl font-bold text-gray-900 dark:text-white">
             {{ ts.t()('dash.title') }}
           </h1>
-          <p class="text-sm md:text-base text-gray-500 dark:text-gray-400">
+          <p class="text-xs md:text-base text-gray-500 dark:text-gray-400">
             {{ ts.t()('dash.welcome') }}, {{ authService.currentUserStr() }}
           </p>
         </div>
@@ -154,12 +154,12 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up delay-100">
         <!-- Balance -->
         <div
-          class="glass-card p-5 md:p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
+          class="glass-card p-4 md:p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
         >
           <div
             class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"
           >
-            <span class="material-icons-outlined text-5xl md:text-6xl text-primary"
+            <span class="material-icons-outlined text-4xl md:text-6xl text-primary"
               >account_balance_wallet</span
             >
           </div>
@@ -167,7 +167,7 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
             {{ ts.t()('dash.balance') }}
           </p>
           <h3
-            class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white"
+            class="text-lg md:text-2xl font-bold text-gray-900 dark:text-white"
             [class.text-red-500]="totalBalance() < 0"
           >
             {{ totalBalance() | currency : 'DOP' : 'symbol' : '1.2-2' }}
@@ -176,34 +176,34 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
 
         <!-- Income -->
         <div
-          class="glass-card p-5 md:p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
+          class="glass-card p-4 md:p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
         >
           <div
             class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"
           >
-            <span class="material-icons-outlined text-5xl md:text-6xl text-secondary">arrow_circle_up</span>
+            <span class="material-icons-outlined text-4xl md:text-6xl text-secondary">arrow_circle_up</span>
           </div>
           <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
             {{ ts.t()('dash.income') }}
           </p>
-          <h3 class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+          <h3 class="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">
             {{ totalIncome() | currency : 'DOP' : 'symbol' : '1.2-2' }}
           </h3>
         </div>
 
         <!-- Expenses -->
         <div
-          class="glass-card p-5 md:p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
+          class="glass-card p-4 md:p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
         >
           <div
             class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"
           >
-            <span class="material-icons-outlined text-5xl md:text-6xl text-danger">arrow_circle_down</span>
+            <span class="material-icons-outlined text-4xl md:text-6xl text-danger">arrow_circle_down</span>
           </div>
           <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
             {{ ts.t()('dash.expenses') }}
           </p>
-          <h3 class="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+          <h3 class="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">
             {{ totalExpense() | currency : 'DOP' : 'symbol' : '1.2-2' }}
           </h3>
         </div>
@@ -353,6 +353,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Cache for translation updates
   private lastIncomes: any[] = [];
   private lastExpenses: any[] = [];
+  private lastCategoryStats: any = {};
 
   constructor(
     public authService: AuthService,
@@ -366,13 +367,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
       // Update Bar Chart Labels
       this.prepareHistoryChart(this.lastIncomes, this.lastExpenses);
 
-      // Update Doughnut Chart (Categories) if needed (labels are keys, unlikely to fetch new keys but good to refresh)
-      // Actually doughnut labels come from API 'categoryStats' keys which are usually 'Food', 'Rent' etc.
-      // These keys effectively need translation logic if they are 'Food' in English but API returns localized?
-      // Assuming API returns English keys or keys that need client-side mapping.
-      // For now focusing on the "Financial Summary" (Bar Chart) labels which was the user request.
+      // Update Doughnut Chart (Categories)
+      this.updateDoughnutChart();
+
       this.cdr.markForCheck();
     });
+  }
+
+  updateDoughnutChart() {
+    if (!this.lastCategoryStats) return;
+
+    const keys = Object.keys(this.lastCategoryStats);
+    const translatedLabels = keys.map((k) => this.ts.translateCategory(k));
+
+    this.doughnutChartData = {
+      labels: translatedLabels,
+      datasets: [
+        {
+          data: Object.values(this.lastCategoryStats),
+          backgroundColor: ['#8b5cf6', '#06b6d4', '#fb7185', '#fbbf24', '#10b981', '#f59e0b'],
+          hoverBackgroundColor: ['#7c3aed', '#0891b2', '#f43f5e', '#f59e0b', '#059669', '#d97706'],
+          borderWidth: 0,
+        },
+      ],
+    };
   }
 
   ngOnInit() {
@@ -401,6 +419,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!isBackground) {
       this.isLoading.set(true);
       this.apiService.clearCache('expenses');
+      this.apiService.clearCache('incomes');
+      this.apiService.clearCache('dashboard');
     }
 
     // 1. FAST PATH: Quick Stats (Expense Total, Category Breakdown)
@@ -441,25 +461,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         this.updateBalance();
 
-        // Update Doughnut Chart (Categories) immediately
-        this.doughnutChartData = {
-          labels: Object.keys(categoryStats),
-          datasets: [
-            {
-              data: Object.values(categoryStats),
-              backgroundColor: ['#8b5cf6', '#06b6d4', '#fb7185', '#fbbf24', '#10b981', '#f59e0b'],
-              hoverBackgroundColor: [
-                '#7c3aed',
-                '#0891b2',
-                '#f43f5e',
-                '#f59e0b',
-                '#059669',
-                '#d97706',
-              ],
-              borderWidth: 0,
-            },
-          ],
-        };
+        // Store raw stats for re-translation
+        this.lastCategoryStats = categoryStats;
+        this.updateDoughnutChart();
+
         // We do NOT set isLoading=false here, we wait for full history
         // But the user sees numbers!
       },
@@ -510,7 +515,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     fetchFn: (page: number, size: number) => Observable<PagedResponse<T>>
   ): Observable<T[]> {
     const today = new Date();
-    const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 5, 1); // 5 months back + current = 6 months window
+    const twelveMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 11, 1); // 11 months back + current = 12 months window
 
     return fetchFn(0, 100).pipe(
       expand((res: PagedResponse<T>) => {
@@ -526,7 +531,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         // Note: API validation might be needed if dates aren't perfectly sorted,
         // but assuming desc sort from API:
-        if (lastDate < sixMonthsAgo) {
+        if (lastDate < twelveMonthsAgo) {
           return EMPTY;
         }
 
@@ -537,14 +542,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   prepareHistoryChart(incomes: any[], expenses: any[]) {
-    // 1. Generate last 6 month labels
+    // 1. Generate last 12 month labels
     const months: string[] = [];
-    const incomeData: number[] = [0, 0, 0, 0, 0, 0];
-    const expenseData: number[] = [0, 0, 0, 0, 0, 0];
+    const incomeData: number[] = new Array(12).fill(0);
+    const expenseData: number[] = new Array(12).fill(0);
 
     const today = this.currentDate();
 
-    for (let i = 5; i >= 0; i--) {
+    // Loop from 11 down to 0 (12 months total)
+    for (let i = 11; i >= 0; i--) {
       const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
       const monthName = d.toLocaleString(this.ts.currentLang() === 'es' ? 'es-ES' : 'en-US', {
         month: 'short',
@@ -573,10 +579,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         })
         .reduce((sum, t) => sum + t.amount, 0);
 
-      // Map to array index (5 - i)
-      // i=5 (oldest) -> index 0
-      // i=0 (current) -> index 5
-      const index = 5 - i;
+      // Map to array index (11 - i)
+      // i=11 (oldest) -> index 0
+      // i=0 (current) -> index 11
+      const index = 11 - i;
       incomeData[index] = monthIncome;
       expenseData[index] = monthExpense;
     }

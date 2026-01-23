@@ -36,12 +36,54 @@ import { RouterModule } from '@angular/router';
         </div>
 
         <!-- Right Actions: Filter & Add -->
-        <div class="flex items-center gap-3">
-          <!-- Filter Dropdown -->
+        <!-- Filter Dropdown -->
+        <div class="flex items-center gap-2">
+          <!-- Date Filter -->
+          <div class="relative">
+            <button
+              (click)="toggleMonthPicker()"
+              class="px-2 py-1.5 md:px-4 md:py-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2"
+            >
+              <span class="material-icons-outlined text-gray-500 dark:text-gray-400"
+                >calendar_today</span
+              >
+              <span>{{ getDateFilterLabel() }}</span>
+              <span class="material-icons-outlined text-sm">expand_more</span>
+            </button>
+
+            @if (isMonthPickerOpen()) {
+            <div
+              class="absolute z-40 top-full left-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl shadow-xl overflow-hidden animate-scale-in"
+            >
+              <div class="py-2">
+                <button
+                  (click)="selectMonth(null, null)"
+                  class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center gap-2"
+                  [class.text-primary]="!currentDateFilter()"
+                >
+                  All Time
+                </button>
+                @for (m of getAvailableMonths(); track m.label) {
+                <button
+                  (click)="selectMonth(m.month, m.year)"
+                  class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                  [class.text-primary]="
+                    currentDateFilter()?.month === m.month && currentDateFilter()?.year === m.year
+                  "
+                >
+                  {{ m.label }}
+                </button>
+                }
+              </div>
+            </div>
+            }
+          </div>
+
+          <!-- Category Filter -->
           <div class="relative">
             <button
               (click)="toggleFilterDropdown()"
-              class="px-3 py-2 md:px-4 md:py-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2"
+              class="px-2 py-1.5 md:px-4 md:py-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2"
             >
               <span class="material-icons-outlined text-gray-500 dark:text-gray-400"
                 >filter_list</span
@@ -86,7 +128,7 @@ import { RouterModule } from '@angular/router';
 
           <button
             (click)="openModal()"
-            class="px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
+            class="px-3 py-1.5 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
           >
             <span class="material-icons-outlined mr-1 md:mr-2 text-lg md:text-2xl">add</span>
             <span class="text-xs md:text-base font-bold">{{ ts.t()('trans.add_expense') }}</span>
@@ -167,7 +209,7 @@ import { RouterModule } from '@angular/router';
             @for (item of expenses(); track trackById($index, item)) {
             <div
               (click)="openActionMenu(item)"
-              class="animate-fade-in p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer"
+              class="animate-fade-in p-3 md:p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer"
             >
               <!-- Left: Icon & Desc -->
               <div class="flex items-center gap-3 overflow-hidden">
@@ -180,7 +222,9 @@ import { RouterModule } from '@angular/router';
                   </span>
                 </div>
                 <div class="min-w-0">
-                  <p class="font-medium text-gray-900 dark:text-white truncate">
+                  <p
+                    class="font-medium text-sm md:text-base text-gray-900 dark:text-white truncate"
+                  >
                     {{ item.description }}
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -191,7 +235,7 @@ import { RouterModule } from '@angular/router';
 
               <!-- Right: Amount & Date -->
               <div class="flex flex-col items-end gap-1 ml-2 shrink-0">
-                <span class="font-bold text-rose-600 dark:text-rose-400">
+                <span class="font-bold text-sm md:text-base text-rose-600 dark:text-rose-400">
                   - {{ item.amount | currency : 'DOP' : 'symbol' : '1.2-2' }}
                 </span>
                 <span class="text-xs text-gray-400">
@@ -677,6 +721,41 @@ export class ExpensesComponent implements OnInit, OnDestroy {
     if (!id) return 'All Categories';
     const cat = this.categories().find((c) => c.id === id);
     return cat ? this.ts.translateCategory(cat.name) : 'Category';
+  }
+
+  // Date Filter Logic
+  isMonthPickerOpen = signal(false);
+  currentDateFilter = this.state.dateFilter;
+
+  toggleMonthPicker() {
+    this.isMonthPickerOpen.update((v) => !v);
+  }
+
+  selectMonth(month: number | null, year: number | null) {
+    this.state.setDateFilter(month, year);
+    this.isMonthPickerOpen.set(false);
+  }
+
+  getDateFilterLabel(): string {
+    const filter = this.currentDateFilter();
+    if (!filter) return 'All Time';
+    const date = new Date(filter.year, filter.month - 1);
+    return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(date);
+  }
+
+  getAvailableMonths(): { month: number; year: number; label: string }[] {
+    // Generate last 13 months for filtering (Current + 12 previous)
+    const dates = [];
+    const today = new Date();
+    for (let i = 0; i < 13; i++) {
+      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      dates.push({
+        month: d.getMonth() + 1,
+        year: d.getFullYear(),
+        label: new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(d),
+      });
+    }
+    return dates;
   }
 
   onEditFromMenu() {

@@ -37,6 +37,7 @@ import {
 import { CacheService } from './cache.service';
 import { of, Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
+import { CACHE_KEYS } from '../constants/cache.constants';
 
 import { environment } from '../../../environments/environment';
 
@@ -47,6 +48,29 @@ export class ApiService {
   private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient, private cache: CacheService) {}
+
+  private invalidateDependencies(type: 'expense' | 'income' | 'budget' | 'reminder' | 'goal') {
+    switch (type) {
+      case 'expense':
+        this.cache.invalidate(CACHE_KEYS.EXPENSES);
+        this.cache.invalidate(CACHE_KEYS.DASHBOARD);
+        this.cache.invalidate(CACHE_KEYS.BUDGETS);
+        break;
+      case 'income':
+        this.cache.invalidate(CACHE_KEYS.INCOMES);
+        this.cache.invalidate(CACHE_KEYS.DASHBOARD);
+        break;
+      case 'budget':
+        this.cache.invalidate(CACHE_KEYS.BUDGETS);
+        break;
+      case 'reminder':
+        this.cache.invalidate(CACHE_KEYS.REMINDERS);
+        break;
+      case 'goal':
+        this.cache.invalidate(CACHE_KEYS.SAVING_GOALS);
+        break;
+    }
+  }
 
   // Helper for Cache-First Strategy with Offline Fallback
   private getWithCache<T>(key: string, url: string, params?: HttpParams): Observable<T> {
@@ -110,19 +134,19 @@ export class ApiService {
   createIncome(data: CreateIncome): Observable<MessageResponse> {
     return this.http
       .post<MessageResponse>(`${this.baseUrl}/incomes/create`, data)
-      .pipe(tap(() => this.cache.invalidate('incomes')));
+      .pipe(tap(() => this.invalidateDependencies('income')));
   }
 
   deleteIncome(id: number): Observable<MessageResponse> {
     return this.http
       .delete<MessageResponse>(`${this.baseUrl}/incomes/${id}/delete`)
-      .pipe(tap(() => this.cache.invalidate('incomes')));
+      .pipe(tap(() => this.invalidateDependencies('income')));
   }
 
   updateIncome(id: number, data: UpdateIncome): Observable<MessageResponse> {
     return this.http
       .put<MessageResponse>(`${this.baseUrl}/incomes/${id}/update`, data)
-      .pipe(tap(() => this.cache.invalidate('incomes')));
+      .pipe(tap(() => this.invalidateDependencies('income')));
   }
 
   // Expenses
@@ -147,19 +171,19 @@ export class ApiService {
   createExpense(data: CreateExpense): Observable<MessageResponse> {
     return this.http
       .post<MessageResponse>(`${this.baseUrl}/expenses/create`, data)
-      .pipe(tap(() => this.cache.invalidate('expenses')));
+      .pipe(tap(() => this.invalidateDependencies('expense')));
   }
 
   updateExpense(id: number, data: UpdateExpense): Observable<MessageResponse> {
     return this.http
       .put<MessageResponse>(`${this.baseUrl}/expenses/${id}/update`, data)
-      .pipe(tap(() => this.cache.invalidate('expenses')));
+      .pipe(tap(() => this.invalidateDependencies('expense')));
   }
 
   deleteExpense(id: number): Observable<MessageResponse> {
     return this.http
       .delete<MessageResponse>(`${this.baseUrl}/expenses/${id}/delete`)
-      .pipe(tap(() => this.cache.invalidate('expenses')));
+      .pipe(tap(() => this.invalidateDependencies('expense')));
   }
 
   getExpensesMonthTotal(year: number, month: number): Observable<any> {
@@ -196,7 +220,7 @@ export class ApiService {
   createSavingGoal(data: CreateSavingGoalsDto): Observable<MessageResponse> {
     return this.http
       .post<MessageResponse>(`${this.baseUrl}/saving-goals/create`, data)
-      .pipe(tap(() => this.cache.clear()));
+      .pipe(tap(() => this.invalidateDependencies('goal')));
   }
 
   addContribution(
@@ -209,7 +233,7 @@ export class ApiService {
         amount,
         description,
       })
-      .pipe(tap(() => this.cache.clear()));
+      .pipe(tap(() => this.invalidateDependencies('goal')));
   }
 
   updateSavingGoal(id: number, data: UpdateSavingGoals): Observable<MessageResponse> {
@@ -368,13 +392,13 @@ export class ApiService {
   createReminder(data: CreateRemindersDto): Observable<MessageResponse> {
     return this.http
       .post<MessageResponse>(`${this.baseUrl}/reminders/create`, data)
-      .pipe(tap(() => this.cache.invalidate('reminders')));
+      .pipe(tap(() => this.invalidateDependencies('reminder')));
   }
 
   updateReminder(id: number, data: UpdateRemindersDto): Observable<MessageResponse> {
     return this.http
       .put<MessageResponse>(`${this.baseUrl}/reminders/${id}/update`, data)
-      .pipe(tap(() => this.cache.invalidate('reminders')));
+      .pipe(tap(() => this.invalidateDependencies('reminder')));
   }
 
   deleteReminder(id: number): Observable<MessageResponse> {

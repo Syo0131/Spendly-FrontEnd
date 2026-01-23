@@ -36,7 +36,7 @@ import { RouterModule } from '@angular/router';
         </div>
         <button
           (click)="openModal()"
-          class="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
+          class="w-full md:w-auto px-3 py-1.5 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
         >
           <span class="material-icons-outlined mr-1 md:mr-2 text-lg md:text-2xl">add</span>
           <span class="text-sm md:text-base font-bold">{{ ts.t()('trans.add_income') }}</span>
@@ -116,7 +116,7 @@ import { RouterModule } from '@angular/router';
             @for (item of incomes(); track trackById($index, item)) {
             <div
               (click)="openActionMenu(item)"
-              class="p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer"
+              class="p-3 md:p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer"
             >
               <!-- Left: Icon & Desc -->
               <div class="flex items-center gap-3 overflow-hidden">
@@ -128,7 +128,9 @@ import { RouterModule } from '@angular/router';
                   </span>
                 </div>
                 <div class="min-w-0">
-                  <p class="font-medium text-gray-900 dark:text-white truncate">
+                  <p
+                    class="font-medium text-sm md:text-base text-gray-900 dark:text-white truncate"
+                  >
                     {{ item.description }}
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -139,7 +141,7 @@ import { RouterModule } from '@angular/router';
 
               <!-- Right: Amount -->
               <div class="flex flex-col items-end gap-1 ml-2 shrink-0">
-                <span class="font-bold text-teal-600 dark:text-teal-400">
+                <span class="font-bold text-sm md:text-base text-teal-600 dark:text-teal-400">
                   + {{ item.amount | currency : 'DOP' : 'symbol' : '1.2-2' }}
                 </span>
               </div>

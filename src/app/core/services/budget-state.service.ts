@@ -3,8 +3,8 @@ import { CacheService } from './cache.service';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ApiService } from './api.service';
 import { Budget, CreateBudgetDto } from '../models/api.models';
-import { firstValueFrom, Subject, combineLatest, of } from 'rxjs';
-import { switchMap, tap, finalize, startWith, catchError, shareReplay } from 'rxjs/operators';
+import { firstValueFrom, Subject, combineLatest, of, forkJoin } from 'rxjs';
+import { switchMap, tap, finalize, startWith, catchError, shareReplay, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -21,29 +21,47 @@ export class BudgetStateService {
   private refresh$ = new Subject<void>();
 
   // Data Source
-  private resource$ = combineLatest([this.refresh$.pipe(startWith(undefined))]).pipe(
+  private resource$ = combineLatest([
+    this.refresh$.pipe(startWith(undefined)),
+    toObservable(this._currentDate),
+  ]).pipe(
     tap(() => {
-      if (!this._localData()) {
-        this._isLoading.set(true);
-      }
+      this._isLoading.set(true);
     }),
-    switchMap(() => {
-      const key = 'budgets_all';
+    switchMap(([_, date]) => {
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+      const key = `budgets_${year}_${month}`;
+
       const cached = this.cache.get(key);
       if (cached) {
-        return of(cached).pipe(finalize(() => this._isLoading.set(false)));
+        return of({ content: cached }).pipe(finalize(() => this._isLoading.set(false)));
       }
 
-      return this.api.getBudgets(0, 300).pipe(
+      // Fetch both Budgets and Expense Stats
+      return forkJoin({
+        budgets: this.api.getMonthlyBudgets(year, month),
+        stats: this.api.getExpensesByCategory(year, month),
+      }).pipe(
+        map(({ budgets, stats }) => {
+          // Enrich budgets with spent data from stats
+          return budgets.map((b) => {
+            const catName = b.category?.name;
+            const spent = catName && stats[catName] !== undefined ? stats[catName] : 0;
+            return { ...b, spent };
+          });
+        }),
         tap((data) => this.cache.set(key, data)),
+        // Map array to object structure for consistency with _localData type
+        switchMap((data) => of({ content: data })),
         catchError((err) => {
           console.error('Failed to load budgets', err);
           return of({ content: [] as Budget[] });
         }),
-        finalize(() => this._isLoading.set(false))
+        finalize(() => this._isLoading.set(false)),
       );
     }),
-    shareReplay(1)
+    shareReplay(1),
   );
 
   // Writable Local State for Optimistic UI
@@ -51,9 +69,7 @@ export class BudgetStateService {
 
   // Read-only server state
   private serverState = toSignal(this.resource$, { initialValue: null });
-  // private resourceState = ... removed
 
-  // Helper to maintain compatibility
   // Helper to maintain compatibility
   private _budgets = computed(() => this._localData()?.content || []);
 
@@ -74,16 +90,9 @@ export class BudgetStateService {
   currentDate = this._currentDate.asReadonly();
   loaded = computed(() => !!this._localData());
 
-  // Computed: Filter budgets by current date
+  // Computed: Filter budgets by current date (Now redundant but kept for interface compatibility)
   filteredBudgets = computed(() => {
-    const all = this._budgets();
-    const date = this._currentDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-
-    return all.filter(
-      (b: Budget) => (b.month === month && b.year === year) || (!b.month && !b.year)
-    );
+    return this._budgets();
   });
 
   constructor() {
@@ -102,9 +111,7 @@ export class BudgetStateService {
   }
 
   load(force = false) {
-    if (force) {
-      this.refresh();
-    }
+    this.refresh();
   }
 
   refresh() {
@@ -160,7 +167,7 @@ export class BudgetStateService {
           });
         }
         throw err;
-      })
+      }),
     );
   }
 
@@ -201,7 +208,7 @@ export class BudgetStateService {
       catchError((err) => {
         if (current) this._localData.set(current);
         throw err;
-      })
+      }),
     );
   }
 
@@ -224,7 +231,7 @@ export class BudgetStateService {
       catchError((err) => {
         if (current) this._localData.set(current);
         throw err;
-      })
+      }),
     );
   }
 }

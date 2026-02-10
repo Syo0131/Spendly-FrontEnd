@@ -96,11 +96,15 @@ export class OAuthCallbackComponent implements OnInit {
   connectedBanks = signal<string>('');
   errorMessage = signal<string>('');
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe({
       next: (params) => {
+        console.log('OAuth Callback Params:', params);
         // Simulate a small delay for better UX so the spinner is seen
         setTimeout(() => {
           this.loading.set(false);
@@ -112,7 +116,7 @@ export class OAuthCallbackComponent implements OnInit {
             this.connectedBanks.set(banksParam.split(',').join(', '));
           } else {
             this.errorMessage.set(
-              this.getErrorMessage(params['error'], params['bank'], params['message'])
+              this.getErrorMessage(params['error'], params['bank'], params['message']),
             );
           }
         }, 1000);

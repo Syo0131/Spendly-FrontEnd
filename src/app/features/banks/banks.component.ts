@@ -261,7 +261,13 @@ export class BanksComponent implements OnInit {
 
   loadBanks() {
     this.apiService.getBanks().subscribe({
-      next: (res) => this.banks.set(res),
+      next: (res) => {
+        const banks = [...res];
+        if (!banks.find((b) => b.code === 'BHD')) {
+          banks.push({ code: 'BHD', displayName: 'Banco BHD', email: '' });
+        }
+        this.banks.set(banks);
+      },
       error: (err) => {
         // Fallback for demo if API fails
         this.banks.set([
@@ -277,7 +283,7 @@ export class BanksComponent implements OnInit {
   notifyMe() {
     this.ns.show(
       this.ts.currentLang() === 'es' ? '¡Te avisaremos pronto!' : 'We will notify you soon!',
-      'success'
+      'success',
     );
   }
 

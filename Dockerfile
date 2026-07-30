@@ -1,5 +1,6 @@
 # Stage 1: Build the Angular application
-FROM node:20-alpine AS build
+# Node 22.22.3+ required by @angular/cli@22
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
@@ -7,7 +8,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies (using npm ci for consistent installs)
-RUN npm ci
+# --legacy-peer-deps: lucide-angular@1.0.0's declared peer range (Angular 13-21)
+# lags behind our Angular 22 upgrade; it works fine at runtime regardless.
+RUN npm ci --legacy-peer-deps
 
 # Copy the rest of the application source code
 COPY . .

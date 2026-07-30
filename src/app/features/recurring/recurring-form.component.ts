@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslationService } from '../../core/services/translation.service';
 import {
@@ -277,6 +277,7 @@ import { CategoryIconPipe } from '../../shared/icons/category-icon.pipe';
       </div>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       .animate-scale-in {

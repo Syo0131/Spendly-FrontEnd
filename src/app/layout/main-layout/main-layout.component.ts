@@ -1,4 +1,4 @@
-import { Component, inject, signal, HostListener } from '@angular/core';
+import { Component, inject, signal, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule, NgClass } from '@angular/common';
 import { SidebarComponent } from '../sidebar/sidebar.component';
@@ -333,6 +333,7 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
 
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [],
 })
 export class MainLayoutComponent {

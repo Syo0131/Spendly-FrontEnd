@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { NotificationService } from '../../../core/services/notification.service';
 import { TranslationService } from '../../../core/services/translation.service';
@@ -8,6 +8,7 @@ import { IconComponent } from '../icon/icon.component';
   selector: 'app-toast',
   standalone: true,
   imports: [NgClass, IconComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
       @for (toast of ns.toasts(); track toast.id) {

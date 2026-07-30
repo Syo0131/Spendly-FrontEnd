@@ -94,7 +94,7 @@ import { CategoryIconPipe } from '../../shared/icons/category-icon.pipe';
                 class="w-12 h-12 rounded-full flex items-center justify-center shadow-inner"
                 [style.background-color]="(budget.category?.color || '#3b82f6') + '20'"
               >
-                <app-icon [name]="(budget.category?.name || '') | categoryIcon: budget.category?.icons" [size]="26" [style.color]="budget.category?.color || '#3b82f6'" />
+                <app-icon [name]="(budget.category?.name || '') | categoryIcon: $safeNavigationMigration(budget.category?.icons)" [size]="26" [style.color]="budget.category?.color || '#3b82f6'" />
               </div>
               <div>
                 <h3 class="font-bold text-content text-lg">

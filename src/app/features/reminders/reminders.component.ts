@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { TranslationService } from '../../core/services/translation.service';
 import { RemindersStateService } from '../../core/services/reminders-state.service';
@@ -252,6 +252,7 @@ import { UiEmptyStateComponent } from '../../shared/components/ui/ui-empty-state
     </div>
     }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [],
 })
 export class RemindersComponent {

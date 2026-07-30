@@ -6,6 +6,7 @@ import {
   ElementRef,
   HostListener,
   inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -189,6 +190,7 @@ import { IconComponent } from '../icon/icon.component';
        }
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [],
 })
 export class DatePickerComponent implements ControlValueAccessor {

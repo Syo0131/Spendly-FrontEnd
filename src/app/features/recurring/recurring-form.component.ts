@@ -8,23 +8,25 @@ import {
 } from '../../core/models/api.models';
 import { ApiService } from '../../core/services/api.service';
 import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
+import { IconComponent } from '../../shared/components/icon/icon.component';
+import { CategoryIconPipe } from '../../shared/icons/category-icon.pipe';
 
 @Component({
   selector: 'app-recurring-form',
   standalone: true,
-  imports: [FormsModule, CurrencyInputDirective],
+  imports: [FormsModule, CurrencyInputDirective, IconComponent, CategoryIconPipe],
   template: `
     <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 px-4 sm:px-0">
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="onCancel()"></div>
       <div
-        class="glass-card w-full max-w-md p-6 relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl animate-scale-in"
+        class="glass-card w-full max-w-md p-6 relative bg-surface-2 border border-divider shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar rounded-2xl animate-scale-in"
       >
         <!-- Close Button -->
         <button
           (click)="onCancel()"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full"
+          class="absolute top-4 right-4 text-content-subtle hover:text-content transition-colors p-2 hover:bg-surface-3 rounded-full"
         >
-          <span class="material-icons-outlined text-lg">close</span>
+          <app-icon name="close" [size]="20" />
         </button>
 
         <!-- Header -->
@@ -32,21 +34,19 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
           <div
             class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4"
           >
-            <span class="material-icons-outlined text-3xl text-primary">{{
-              isEdit ? 'edit_calendar' : 'update'
-            }}</span>
+            <app-icon [name]="isEdit ? 'edit_calendar' : 'update'" [size]="30" class="text-primary" />
           </div>
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+          <h2 class="text-xl font-bold text-content">
             {{ isEdit ? 'Edit Recurring Expense' : 'New Recurring Expense' }}
           </h2>
-          <p class="text-gray-500 text-xs mt-1">Automate your regular payments</p>
+          <p class="text-content-muted text-xs mt-1">Automate your regular payments</p>
         </div>
 
         <form (ngSubmit)="onSubmit()" #form="ngForm" class="space-y-5">
           <!-- Description -->
           <div class="space-y-1.5">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
               >Description</label
             >
             <input
@@ -55,19 +55,19 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
               name="description"
               required
               placeholder="e.g. Netflix, Rent"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-semibold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder-gray-300"
+              class="w-full bg-surface-3 border border-divider text-content text-sm font-semibold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-content-subtle"
             />
           </div>
 
           <!-- Amount -->
           <div class="space-y-1.5">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
               >Amount</label
             >
             <div class="relative group">
               <span
-                class="absolute left-4 top-3.5 text-gray-500 dark:text-gray-400 font-bold text-lg"
+                class="absolute left-4 top-3.5 text-content-muted font-bold text-lg"
                 >$</span
               >
               <input
@@ -78,7 +78,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 name="amount"
                 required
                 placeholder="0.00"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-lg font-bold rounded-xl p-3 pl-8 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder-gray-300"
+                class="w-full bg-surface-3 border border-divider text-content text-lg font-bold rounded-xl p-3 pl-8 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-content-subtle"
               />
             </div>
           </div>
@@ -86,14 +86,14 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
           <!-- Category -->
           <div class="space-y-1.5">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
               >Category</label
             >
             <div class="relative">
               <button
                 type="button"
                 (click)="showCategoryDropdown = !showCategoryDropdown"
-                class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 text-left transition-colors hover:border-primary/50"
+                class="w-full flex items-center justify-between p-3 bg-surface-3 rounded-xl border border-divider text-left transition-colors hover:border-primary/50"
               >
                 <div class="flex items-center gap-2">
                   @if (getSelectedCategory(); as cat) {
@@ -101,36 +101,36 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                     class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
                     [style.background-color]="cat.color"
                   >
-                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
+                    <app-icon [name]="cat.name | categoryIcon: cat.icons" [size]="14" />
                   </div>
-                  <span class="text-gray-900 dark:text-white font-medium">{{
+                  <span class="text-content font-medium">{{
                     ts.translateCategory(cat.name)
                   }}</span>
                   } @else {
-                  <span class="text-gray-400 text-sm font-medium">Select Category</span>
+                  <span class="text-content-subtle text-sm font-medium">Select Category</span>
                   }
                 </div>
-                <span class="material-icons-outlined text-gray-400">expand_more</span>
+                <app-icon name="expand_more" [size]="24" class="text-content-subtle" />
               </button>
 
               <!-- Dropdown -->
               @if (showCategoryDropdown) {
               <div
-                class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-52 overflow-y-auto no-scrollbar animate-scale-in"
+                class="absolute z-50 top-full left-0 right-0 mt-2 bg-surface-2 border border-divider rounded-xl shadow-xl max-h-52 overflow-y-auto no-scrollbar animate-scale-in"
               >
                 @for (cat of categories; track cat.id) {
                 <button
                   type="button"
                   (click)="selectCategory(cat)"
-                  class="w-full flex items-center gap-2.5 p-2.5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border-b border-gray-100 dark:border-white/5 last:border-0"
+                  class="w-full flex items-center gap-2.5 p-2.5 hover:bg-surface-3 transition-colors border-b border-divider last:border-0"
                 >
                   <div
                     class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
                     [style.background-color]="cat.color"
                   >
-                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
+                    <app-icon [name]="cat.name | categoryIcon: cat.icons" [size]="14" />
                   </div>
-                  <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{
+                  <span class="text-sm font-bold text-content">{{
                     ts.translateCategory(cat.name)
                   }}</span>
                 </button>
@@ -144,13 +144,13 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
           <div class="grid grid-cols-2 gap-3">
             <div class="space-y-1.5">
               <label
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+                class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
                 >Frequency</label
               >
               <select
                 [(ngModel)]="formData.frequency"
                 name="frequency"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 cursor-pointer"
+                class="w-full bg-surface-3 border border-divider text-content text-sm font-bold rounded-xl p-3 cursor-pointer"
               >
                 <option value="DAILY">Daily</option>
                 <option value="WEEKLY">Weekly</option>
@@ -163,7 +163,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             @if (formData.frequency === 'MONTHLY') {
             <div class="space-y-1.5">
               <label
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+                class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
                 >Day of Month</label
               >
               <input
@@ -173,7 +173,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 [(ngModel)]="formData.dayOfMonth"
                 name="dayOfMonth"
                 required
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                class="w-full bg-surface-3 border border-divider text-content text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
             </div>
             }
@@ -182,14 +182,14 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             @if (formData.frequency === 'WEEKLY') {
             <div class="space-y-1.5">
               <label
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+                class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
                 >Day of Week</label
               >
               <select
                 [(ngModel)]="formData.dayOfWeek"
                 name="dayOfWeek"
                 required
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 cursor-pointer"
+                class="w-full bg-surface-3 border border-divider text-content text-sm font-bold rounded-xl p-3 cursor-pointer"
               >
                 <option [ngValue]="1">Monday</option>
                 <option [ngValue]="2">Tuesday</option>
@@ -206,12 +206,12 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
           <!-- Duration / End After -->
           <div class="space-y-3 pt-2">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
               >Duration</label
             >
 
             <!-- Toggle -->
-            <div class="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
+            <div class="flex bg-surface-3 p-1 rounded-xl">
               <button
                 type="button"
                 (click)="durationMode = 'indefinite'; formData.totalOccurrences = undefined"
@@ -219,7 +219,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 [class]="
                   durationMode === 'indefinite'
                     ? 'bg-white dark:bg-white/10 text-primary shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+                    : 'text-content-muted hover:text-content-muted'
                 "
               >
                 Indefinite
@@ -231,7 +231,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 [class]="
                   durationMode === 'fixed'
                     ? 'bg-white dark:bg-white/10 text-primary shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+                    : 'text-content-muted hover:text-content-muted'
                 "
               >
                 Set End Date
@@ -241,7 +241,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             <!-- Input for Fixed -->
             @if (durationMode === 'fixed') {
             <div class="animate-fade-in space-y-1.5">
-              <p class="text-[10px] text-gray-400 ml-1">
+              <p class="text-[10px] text-content-subtle ml-1">
                 How many times should this expense occur?
               </p>
               <div class="relative">
@@ -252,9 +252,9 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                   name="totalOccurrences"
                   placeholder="e.g. 12"
                   required
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  class="w-full bg-surface-3 border border-divider text-content text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
-                <span class="absolute right-4 top-3.5 text-xs font-bold text-gray-400">Times</span>
+                <span class="absolute right-4 top-3.5 text-xs font-bold text-content-subtle">Times</span>
               </div>
             </div>
             }
@@ -268,9 +268,9 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
               !formData.categoryId ||
               (durationMode === 'fixed' && !formData.totalOccurrences)
             "
-            class="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm"
+            class="w-full bg-primary hover:bg-primary-dark text-primary-on py-3 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm"
           >
-            <span class="material-icons-outlined text-lg">check</span>
+            <app-icon name="check" [size]="20" />
             {{ isEdit ? 'Update Expense' : 'Create Recurring Expense' }}
           </button>
         </form>

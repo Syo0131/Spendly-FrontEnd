@@ -5,11 +5,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { BankOption } from '../../core/models/api.models';
 import { TranslationService } from '../../core/services/translation.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-banks',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -17,11 +18,11 @@ import { NotificationService } from '../../core/services/notification.service';
     >
       <!-- Header -->
       <div class="text-center">
-        <span class="material-icons-outlined text-6xl text-primary mb-4">account_balance</span>
-        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <app-icon name="account_balance" [size]="64" class="text-primary mb-4 mx-auto" />
+        <h2 class="text-3xl font-bold text-content mb-2">
           {{ ts.t()('banks.title') }}
         </h2>
-        <p class="text-gray-500 dark:text-gray-400">{{ ts.t()('banks.subtitle') }}</p>
+        <p class="text-content-muted">{{ ts.t()('banks.subtitle') }}</p>
       </div>
 
       <!-- Content (Blurred if not premium) -->
@@ -33,14 +34,14 @@ import { NotificationService } from '../../core/services/notification.service';
       >
         <!-- Mock Items for Lock Display if list empty -->
         <ng-container *ngIf="banks().length === 0 && !isPremium()">
-          <div class="glass-card p-6 h-32 animate-pulse bg-gray-200 dark:bg-white/5"></div>
-          <div class="glass-card p-6 h-32 animate-pulse bg-gray-200 dark:bg-white/5"></div>
-          <div class="glass-card p-6 h-32 animate-pulse bg-gray-200 dark:bg-white/5"></div>
+          <div class="glass-card p-6 h-32 animate-pulse bg-surface-3"></div>
+          <div class="glass-card p-6 h-32 animate-pulse bg-surface-3"></div>
+          <div class="glass-card p-6 h-32 animate-pulse bg-surface-3"></div>
         </ng-container>
 
         <div
           *ngFor="let bank of banks(); trackBy: trackByCode"
-          class="glass-card p-6 flex items-center justify-between bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors cursor-pointer group"
+          class="glass-card p-6 flex items-center justify-between bg-surface-2 border border-divider hover:bg-surface-3 transition-colors cursor-pointer group"
         >
           <div class="flex items-center space-x-3">
             <div
@@ -49,8 +50,8 @@ import { NotificationService } from '../../core/services/notification.service';
               🏦
             </div>
             <div>
-              <h3 class="text-gray-900 dark:text-white font-semibold">{{ bank.displayName }}</h3>
-              <p class="text-xs text-gray-500">{{ bank.code }}</p>
+              <h3 class="text-content font-semibold">{{ bank.displayName }}</h3>
+              <p class="text-xs text-content-muted">{{ bank.code }}</p>
             </div>
           </div>
           <div class="flex gap-2">
@@ -61,7 +62,7 @@ import { NotificationService } from '../../core/services/notification.service';
               [class.opacity-0]="connectingBank() !== bank.code"
               [class.group-hover:opacity-100]="connectingBank() !== bank.code"
               [class.text-primary]="connectingBank() !== bank.code"
-              [class.text-gray-400]="connectingBank() === bank.code"
+              [class.text-content-subtle]="connectingBank() === bank.code"
               [disabled]="!!connectingBank()"
             >
               {{ connectingBank() === bank.code ? 'Connecting...' : ts.t()('banks.connect') }}
@@ -70,7 +71,7 @@ import { NotificationService } from '../../core/services/notification.service';
             <button
               *ngIf="isConnected(bank.code)"
               (click)="disconnectBank(bank)"
-              class="text-red-500 hover:text-red-600 font-medium text-sm transition-colors"
+              class="text-expense hover:text-red-600 font-medium text-sm transition-colors"
             >
               Disconnect
             </button>
@@ -84,18 +85,18 @@ import { NotificationService } from '../../core/services/notification.service';
         class="absolute inset-0 z-10 flex items-center justify-center -mt-20"
       >
         <div
-          class="glass-card p-8 max-w-md text-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-primary/30 shadow-2xl shadow-primary/10 animate-fade-in-up"
+          class="glass-card p-8 max-w-md text-center bg-surface-2/80 backdrop-blur-md border border-primary/30 shadow-2xl shadow-primary/10 animate-fade-in-up"
         >
           <div
             class="w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary/30"
           >
-            <span class="material-icons text-3xl text-white">construction</span>
+            <app-icon name="construction" [size]="30" class="text-white" />
           </div>
 
-          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h3 class="text-2xl font-bold text-content mb-2">
             {{ ts.t()('banks.premium_title') }}
           </h3>
-          <p class="text-gray-500 dark:text-gray-300 mb-6">
+          <p class="text-content-muted mb-6">
             {{ ts.t()('banks.premium_desc') }}
           </p>
 
@@ -115,17 +116,17 @@ import { NotificationService } from '../../core/services/notification.service';
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
       >
         <div
-          class="glass-card w-full max-w-sm p-6 relative animate-scale-in bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl text-center"
+          class="glass-card w-full max-w-sm p-6 relative animate-scale-in bg-surface-2 border border-divider shadow-2xl text-center"
         >
           <div
             class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4"
           >
-            <span class="material-icons-outlined text-3xl text-red-500">link_off</span>
+            <app-icon name="link_off" [size]="30" class="text-expense" />
           </div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Disconnect Bank?</h3>
-          <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+          <h3 class="text-xl font-bold text-content mb-2">Disconnect Bank?</h3>
+          <p class="text-content-muted mb-6 text-sm">
             Are you sure you want to disconnect
-            <span class="font-bold text-gray-700 dark:text-gray-300">{{
+            <span class="font-bold text-content-muted">{{
               bankToDisconnect()?.displayName
             }}</span>
             ? This will stop automatic transaction updates.
@@ -133,7 +134,7 @@ import { NotificationService } from '../../core/services/notification.service';
           <div class="flex space-x-3 justify-center">
             <button
               (click)="cancelDisconnect()"
-              class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+              class="px-5 py-2.5 rounded-xl border border-divider text-content-muted font-medium hover:bg-surface-3 transition-colors"
             >
               Cancel
             </button>
@@ -231,8 +232,6 @@ export class BanksComponent implements OnInit {
 
     this.apiService.getBankStatus().subscribe({
       next: (res) => {
-        console.log('Bank Status Response:', res); // DEBUG
-
         let connected: string[] = [];
         if (Array.isArray(res)) {
           connected = res;

@@ -15,13 +15,38 @@ import { ApiService } from '../../core/services/api.service';
 import { PagedResponse } from '../../core/models/api.models';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { ThemeService } from '../../core/services/theme.service';
+import { IconComponent } from '../../shared/components/icon/icon.component';
+import { UiCardComponent } from '../../shared/components/ui/ui-card.component';
+import { UiStatComponent } from '../../shared/components/ui/ui-stat.component';
+import { UiSectionHeaderComponent } from '../../shared/components/ui/ui-section-header.component';
+import { UiButtonComponent } from '../../shared/components/ui/ui-button.component';
+import {
+  CHART_PALETTE,
+  CHART_PALETTE_HOVER,
+  CHART_ANIMATION,
+  CHART_ANIMATION_RADIAL,
+  chartAxisColor,
+  chartGridColor,
+  chartIncomeColor,
+  chartExpenseColor,
+} from '../../shared/charts/chart-theme';
 import { forkJoin, of, interval, Subscription, EMPTY, Observable } from 'rxjs';
 import { catchError, expand, reduce, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [BaseChartDirective, DatePipe, CurrencyPipe],
+  imports: [
+    BaseChartDirective,
+    DatePipe,
+    CurrencyPipe,
+    IconComponent,
+    UiCardComponent,
+    UiStatComponent,
+    UiSectionHeaderComponent,
+    UiButtonComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6 transition-opacity duration-300" [class.opacity-50]="isLoading()" [class.pointer-events-none]="isLoading()">
@@ -30,28 +55,26 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
         class="flex flex-col md:flex-row justify-between md:items-center gap-4 animate-fade-in-up"
       >
         <div>
-          <h1 class="text-xl md:text-3xl font-bold text-gray-900 dark:text-white">
+          <p class="eyebrow mb-1">{{ ts.t()('dash.welcome') }}, {{ authService.currentUserStr() }}</p>
+          <h1 class="font-display text-3xl md:text-4xl font-semibold tracking-tight text-content">
             {{ ts.t()('dash.title') }}
           </h1>
-          <p class="text-xs md:text-base text-gray-500 dark:text-gray-400">
-            {{ ts.t()('dash.welcome') }}, {{ authService.currentUserStr() }}
-          </p>
         </div>
 
         <!-- Month Selector -->
         <div
-          class="flex items-center justify-between w-full md:w-auto bg-white dark:bg-white/5 rounded-xl p-1 shadow-sm border border-gray-200 dark:border-white/10"
+          class="flex items-center justify-between w-full md:w-auto bg-surface-2 rounded-xl p-1 shadow-sm border border-divider"
         >
           <button
             (click)="prevMonth()"
-            class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-gray-500 dark:text-gray-400 transition-colors"
+            class="p-2 hover:bg-surface-3 rounded-lg text-content-muted transition-colors"
           >
-            <span class="material-icons-outlined">chevron_left</span>
+            <app-icon name="chevron_left" [size]="22" />
           </button>
 
           <button
             (click)="openDatePicker()"
-            class="px-2 font-semibold text-gray-700 dark:text-gray-200 flex-1 md:flex-none md:w-40 text-center whitespace-nowrap hover:bg-gray-50 dark:hover:bg-white/5 py-1 rounded cursor-pointer transition-colors"
+            class="px-2 font-semibold text-content flex-1 md:flex-none md:w-40 text-center whitespace-nowrap hover:bg-surface-3 py-1.5 rounded-lg cursor-pointer transition-colors capitalize"
           >
             {{ currentDate() | date : 'MMMM yyyy' }}
           </button>
@@ -59,49 +82,42 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
           <button
             (click)="nextMonth()"
             [disabled]="isCurrentMonth()"
-            [class.opacity-50]="isCurrentMonth()"
+            [class.opacity-40]="isCurrentMonth()"
             [class.cursor-not-allowed]="isCurrentMonth()"
-            class="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-gray-500 dark:text-gray-400 transition-colors"
+            class="p-2 hover:bg-surface-3 rounded-lg text-content-muted transition-colors"
           >
-            <span class="material-icons-outlined">chevron_right</span>
+            <app-icon name="chevron_right" [size]="22" />
           </button>
         </div>
-        <!-- <button
-          class="hidden md:flex items-center justify-center px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-          title="Download Report"
-        >
-          <span class="material-icons-outlined text-xl md:hidden">download</span>
-          <span class="hidden md:inline text-sm font-medium">Download Report</span>
-        </button> -->
       </div>
 
       <!-- Month Picker Modal -->
       @defer (when showDatePicker()) {
       @if (showDatePicker()) {
       <div
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-content/50 backdrop-blur-sm animate-fade-in"
         (click)="closeDatePicker()"
       >
         <div
-          class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 p-6 w-full max-w-sm animate-scale-in"
+          class="bg-surface-2 rounded-2xl shadow-2xl border border-divider p-6 w-full max-w-sm animate-scale-in"
           (click)="$event.stopPropagation()"
         >
           <!-- Year Selector -->
           <div class="flex items-center justify-between mb-6">
             <button
               (click)="changeYear(-1)"
-              class="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors"
+              class="p-2 hover:bg-surface-3 rounded-full text-content-muted transition-colors"
             >
-              <span class="material-icons-outlined">chevron_left</span>
+              <app-icon name="chevron_left" [size]="22" />
             </button>
-            <span class="text-xl font-bold text-gray-900 dark:text-white">
+            <span class="font-display text-xl font-semibold text-content tabular">
               {{ tempDate().getFullYear() }}
             </span>
             <button
               (click)="changeYear(1)"
-              class="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors"
+              class="p-2 hover:bg-surface-3 rounded-full text-content-muted transition-colors"
             >
-              <span class="material-icons-outlined">chevron_right</span>
+              <app-icon name="chevron_right" [size]="22" />
             </button>
           </div>
 
@@ -111,17 +127,14 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
             <button
               (click)="selectMonth(i)"
               [disabled]="isFutureMonth(i)"
-              class="p-3 rounded-xl text-sm font-medium transition-all"
+              class="p-3 rounded-xl text-sm font-medium transition-all capitalize"
               [class.bg-primary]="isSelectedMonth(i)"
-              [class.text-white]="isSelectedMonth(i)"
-              [class.shadow-lg]="isSelectedMonth(i)"
-              [class.shadow-primary/30]="isSelectedMonth(i)"
-              [class.bg-gray-50]="!isSelectedMonth(i) && !isFutureMonth(i)"
-              [class.dark:bg-white/5]="!isSelectedMonth(i) && !isFutureMonth(i)"
-              [class.text-gray-700]="!isSelectedMonth(i) && !isFutureMonth(i)"
-              [class.dark:text-gray-300]="!isSelectedMonth(i) && !isFutureMonth(i)"
-              [class.hover:bg-gray-100]="!isSelectedMonth(i) && !isFutureMonth(i)"
-              [class.dark:hover:bg-white/10]="!isSelectedMonth(i) && !isFutureMonth(i)"
+              [class.text-primary-on]="isSelectedMonth(i)"
+              [class.shadow-sm]="isSelectedMonth(i)"
+              [class.bg-surface-3]="!isSelectedMonth(i) && !isFutureMonth(i)"
+              [class.text-content]="!isSelectedMonth(i) && !isFutureMonth(i)"
+              [class.hover:bg-primary]="!isSelectedMonth(i) && !isFutureMonth(i)"
+              [class.hover:text-primary-on]="!isSelectedMonth(i) && !isFutureMonth(i)"
               [class.opacity-30]="isFutureMonth(i)"
               [class.cursor-not-allowed]="isFutureMonth(i)"
             >
@@ -132,18 +145,12 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
 
           <!-- Actions -->
           <div class="flex gap-3">
-            <button
-              (click)="closeDatePicker()"
-              class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-sidebar-dark transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              (click)="confirmDateSelection()"
-              class="flex-1 py-2.5 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all hover:scale-[1.02]"
-            >
-              Apply
-            </button>
+            <ui-button variant="ghost" [block]="true" (click)="closeDatePicker()">
+              {{ ts.t()('action.cancel') }}
+            </ui-button>
+            <ui-button [block]="true" (click)="confirmDateSelection()">
+              {{ ts.t()('action.save') }}
+            </ui-button>
           </div>
         </div>
       </div>
@@ -151,73 +158,40 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
       }
 
       <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up delay-100">
-        <!-- Balance -->
-        <div
-          class="glass-card p-4 md:p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
-        >
-          <div
-            class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"
-          >
-            <span class="material-icons-outlined text-4xl md:text-6xl text-primary"
-              >account_balance_wallet</span
-            >
-          </div>
-          <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-            {{ ts.t()('dash.balance') }}
-          </p>
-          <h3
-            class="text-lg md:text-2xl font-bold text-gray-900 dark:text-white"
-            [class.text-red-500]="totalBalance() < 0"
-          >
-            {{ totalBalance() | currency : 'DOP' : 'symbol' : '1.2-2' }}
-          </h3>
-        </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 animate-fade-in-up delay-100">
+        <ui-card>
+          <ui-stat
+            [label]="ts.t()('dash.balance')"
+            [value]="totalBalance() | currency : 'DOP' : 'symbol' : '1.2-2'"
+            [tone]="totalBalance() < 0 ? 'expense' : 'ink'"
+            icon="account_balance_wallet"
+          />
+        </ui-card>
 
-        <!-- Income -->
-        <div
-          class="glass-card p-4 md:p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
-        >
-          <div
-            class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"
-          >
-            <span class="material-icons-outlined text-4xl md:text-6xl text-secondary">arrow_circle_up</span>
-          </div>
-          <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-            {{ ts.t()('dash.income') }}
-          </p>
-          <h3 class="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">
-            {{ totalIncome() | currency : 'DOP' : 'symbol' : '1.2-2' }}
-          </h3>
-        </div>
+        <ui-card>
+          <ui-stat
+            [label]="ts.t()('dash.income')"
+            [value]="totalIncome() | currency : 'DOP' : 'symbol' : '1.2-2'"
+            tone="success"
+            icon="arrow_circle_up"
+          />
+        </ui-card>
 
-        <!-- Expenses -->
-        <div
-          class="glass-card p-4 md:p-6 relative overflow-hidden group bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-slate-800/70 transition-colors"
-        >
-          <div
-            class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity"
-          >
-            <span class="material-icons-outlined text-4xl md:text-6xl text-danger">arrow_circle_down</span>
-          </div>
-          <p class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-            {{ ts.t()('dash.expenses') }}
-          </p>
-          <h3 class="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">
-            {{ totalExpense() | currency : 'DOP' : 'symbol' : '1.2-2' }}
-          </h3>
-        </div>
+        <ui-card>
+          <ui-stat
+            [label]="ts.t()('dash.expenses')"
+            [value]="totalExpense() | currency : 'DOP' : 'symbol' : '1.2-2'"
+            tone="expense"
+            icon="arrow_circle_down"
+          />
+        </ui-card>
       </div>
 
       <!-- Charts Row -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in-up delay-200">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 animate-fade-in-up delay-200">
         <!-- Expense Breakdown -->
-        <div
-          class="glass-card p-6 bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
-        >
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">
-            {{ ts.t()('dash.breakdown') }}
-          </h3>
+        <ui-card>
+          <ui-section-header [title]="ts.t()('dash.breakdown')" class="mb-6 block" />
           <div class="h-64 flex items-center justify-center">
             @defer (on viewport) {
             <canvas
@@ -229,35 +203,31 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
             </canvas>
             } @placeholder {
             <div class="w-full h-full flex items-center justify-center animate-pulse">
-              <div class="w-40 h-40 rounded-full border-8 border-gray-200 dark:border-white/10"></div>
+              <div class="w-40 h-40 rounded-full border-8 border-surface-3"></div>
             </div>
             }
           </div>
-        </div>
+        </ui-card>
 
         <!-- Income vs Expense -->
-        <div
-          class="glass-card p-6 bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
-        >
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">
-            {{ ts.t()('dash.overview') }}
-          </h3>
+        <ui-card>
+          <ui-section-header [title]="ts.t()('dash.overview')" class="mb-6 block" />
           <div class="h-64">
             @defer (on viewport) {
             <canvas baseChart [data]="barChartData" [type]="'bar'" [options]="barChartOptions">
             </canvas>
             } @placeholder {
             <div class="w-full h-full flex items-end gap-4 animate-pulse px-4">
-               <div class="w-1/6 h-[40%] bg-gray-200 dark:bg-white/10 rounded-t"></div>
-               <div class="w-1/6 h-[70%] bg-gray-200 dark:bg-white/10 rounded-t"></div>
-               <div class="w-1/6 h-[50%] bg-gray-200 dark:bg-white/10 rounded-t"></div>
-               <div class="w-1/6 h-[80%] bg-gray-200 dark:bg-white/10 rounded-t"></div>
-               <div class="w-1/6 h-[60%] bg-gray-200 dark:bg-white/10 rounded-t"></div>
-               <div class="w-1/6 h-[90%] bg-gray-200 dark:bg-white/10 rounded-t"></div>
+               <div class="w-1/6 h-[40%] bg-surface-3 rounded-t"></div>
+               <div class="w-1/6 h-[70%] bg-surface-3 rounded-t"></div>
+               <div class="w-1/6 h-[50%] bg-surface-3 rounded-t"></div>
+               <div class="w-1/6 h-[80%] bg-surface-3 rounded-t"></div>
+               <div class="w-1/6 h-[60%] bg-surface-3 rounded-t"></div>
+               <div class="w-1/6 h-[90%] bg-surface-3 rounded-t"></div>
             </div>
             }
           </div>
-        </div>
+        </ui-card>
       </div>
     </div>
   `,
@@ -299,14 +269,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   totalIncome = signal(0);
   totalExpense = signal(0);
 
-  // Charts Config
+  // Charts Config — colors come from design tokens (see shared/charts/chart-theme)
+  // and are refreshed on theme changes by the effect() in the constructor.
   doughnutChartData: ChartData<'doughnut'> = {
     labels: [],
     datasets: [
       {
         data: [],
-        backgroundColor: ['#8b5cf6', '#06b6d4', '#fb7185', '#fbbf24'],
-        hoverBackgroundColor: ['#7c3aed', '#0891b2', '#f43f5e', '#f59e0b'],
+        backgroundColor: CHART_PALETTE,
+        hoverBackgroundColor: CHART_PALETTE_HOVER,
         borderWidth: 0,
       },
     ],
@@ -315,8 +286,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   doughnutChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: CHART_ANIMATION_RADIAL,
     plugins: {
-      legend: { position: 'right', labels: { color: '#94a3b8' } },
+      legend: { position: 'right', labels: { color: chartAxisColor() } },
     },
   };
 
@@ -326,13 +298,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       {
         data: [],
         label: 'Income',
-        backgroundColor: '#06b6d4',
+        backgroundColor: chartIncomeColor(),
         borderRadius: 4,
       },
       {
         data: [],
         label: 'Expense',
-        backgroundColor: '#fb7185',
+        backgroundColor: chartExpenseColor(),
         borderRadius: 4,
       },
     ],
@@ -341,12 +313,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   barChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: CHART_ANIMATION,
     scales: {
-      x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+      x: { grid: { color: chartGridColor() }, ticks: { color: chartAxisColor() } },
+      y: { grid: { color: chartGridColor() }, ticks: { color: chartAxisColor() } },
     },
     plugins: {
-      legend: { labels: { color: '#94a3b8' } },
+      legend: { labels: { color: chartAxisColor() } },
     },
   };
 
@@ -359,11 +332,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     public authService: AuthService,
     private apiService: ApiService,
     public ts: TranslationService,
+    private theme: ThemeService,
     private cdr: ChangeDetectorRef
   ) {
-    // React to language changes to update chart labels
+    // React to language AND theme changes to update chart labels/colors
     effect(() => {
       const lang = this.ts.currentLang(); // dependency
+      this.theme.darkMode(); // dependency — re-theme charts on toggle
+
+      // Refresh token-driven colors (axis/grid/series) for the new theme
+      this.applyChartTheme();
+
       // Update Bar Chart Labels
       this.prepareHistoryChart(this.lastIncomes, this.lastExpenses);
 
@@ -372,6 +351,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
       this.cdr.markForCheck();
     });
+  }
+
+  /** Re-read design tokens and apply them to the (theme-aware) chart options. */
+  private applyChartTheme() {
+    const axis = chartAxisColor();
+    const grid = chartGridColor();
+    this.doughnutChartOptions = {
+      ...this.doughnutChartOptions,
+      animation: CHART_ANIMATION_RADIAL,
+      plugins: { legend: { position: 'right', labels: { color: axis } } },
+    };
+    this.barChartOptions = {
+      ...this.barChartOptions,
+      animation: CHART_ANIMATION,
+      scales: {
+        x: { grid: { color: grid }, ticks: { color: axis } },
+        y: { grid: { color: grid }, ticks: { color: axis } },
+      },
+      plugins: { legend: { labels: { color: axis } } },
+    };
   }
 
   updateDoughnutChart() {
@@ -385,8 +384,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       datasets: [
         {
           data: Object.values(this.lastCategoryStats),
-          backgroundColor: ['#8b5cf6', '#06b6d4', '#fb7185', '#fbbf24', '#10b981', '#f59e0b'],
-          hoverBackgroundColor: ['#7c3aed', '#0891b2', '#f43f5e', '#f59e0b', '#059669', '#d97706'],
+          backgroundColor: CHART_PALETTE,
+          hoverBackgroundColor: CHART_PALETTE_HOVER,
           borderWidth: 0,
         },
       ],
@@ -593,13 +592,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
         {
           data: incomeData,
           label: this.ts.t()('dash.income'),
-          backgroundColor: '#06b6d4',
+          backgroundColor: chartIncomeColor(),
           borderRadius: 4,
         },
         {
           data: expenseData,
           label: this.ts.t()('dash.expenses'),
-          backgroundColor: '#fb7185',
+          backgroundColor: chartExpenseColor(),
           borderRadius: 4,
         },
       ],

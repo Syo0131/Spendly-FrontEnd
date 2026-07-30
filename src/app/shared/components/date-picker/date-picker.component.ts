@@ -10,11 +10,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TranslationService } from '../../../core/services/translation.service';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-date-picker',
   standalone: true,
-  imports: [],
+  imports: [IconComponent],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -26,19 +27,19 @@ import { TranslationService } from '../../../core/services/translation.service';
     <div class="relative">
       <!-- Input Field -->
       <div
-        class="flex items-center justify-between w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 cursor-pointer hover:border-primary/50 transition-colors group"
+        class="flex items-center justify-between w-full bg-surface-3 border border-divider rounded-xl px-4 py-2.5 cursor-pointer hover:border-primary/50 transition-colors group"
         (click)="toggleCalendar()"
       >
-        <span [class.text-gray-400]="!value()" [class.text-gray-900]="value()" [class.dark:text-white]="value()">
+        <span [class.text-content-subtle]="!value()" [class.text-content]="value()">
           {{ formattedDate() || 'Select Date' }}
         </span>
-        <span class="material-icons-outlined text-gray-400 group-hover:text-primary ml-3">calendar_today</span>
+        <app-icon name="calendar_today" [size]="20" class="text-content-subtle group-hover:text-primary ml-3" />
       </div>
 
       <!-- Calendar Dropdown -->
       @if (isOpen()) {
         <div
-          class="absolute top-full left-0 mt-2 w-full min-w-[300px] bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-200 dark:border-white/10 p-4 z-50 animate-scale-in origin-top-left"
+          class="absolute top-full left-0 mt-2 w-full min-w-[300px] bg-surface-2 rounded-2xl shadow-xl border border-divider p-4 z-50 animate-scale-in origin-top-left"
         >
           <!-- MONTH VIEW (Year Selector + Month Grid) -->
           @if (view() === 'months') {
@@ -49,21 +50,21 @@ import { TranslationService } from '../../../core/services/translation.service';
                         type="button"
                         (click)="changeYear(-1)"
                         [disabled]="isPastYear(currentYear() - 1)"
-                        class="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full text-white dark:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                        class="p-2 hover:bg-surface-3 rounded-full text-content disabled:opacity-30 disabled:cursor-not-allowed"
                     >
-                        <span class="material-icons-outlined text-sm font-bold">chevron_left</span>
+                        <app-icon name="chevron_left" [size]="18" />
                     </button>
   
-                    <span class="text-xl font-bold text-gray-900 dark:text-white">
+                    <span class="text-xl font-bold text-content">
                         {{ currentYear() }}
                     </span>
   
                     <button
                         type="button"
                         (click)="changeYear(1)"
-                        class="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full text-white dark:text-white"
+                        class="p-2 hover:bg-surface-3 rounded-full text-content"
                     >
-                        <span class="material-icons-outlined text-sm font-bold">chevron_right</span>
+                        <app-icon name="chevron_right" [size]="18" />
                     </button>
                 </div>
   
@@ -75,12 +76,12 @@ import { TranslationService } from '../../../core/services/translation.service';
                           [disabled]="isPastMonth(i)"
                           class="p-3 rounded-xl text-sm font-medium transition-all relative overflow-hidden"
                           [class.bg-primary]="currentMonthIndex() === i"
-                          [class.text-white]="currentMonthIndex() === i"
+                          [class.text-primary-on]="currentMonthIndex() === i"
                           [class.shadow-lg]="currentMonthIndex() === i"
                           [class.shadow-primary/40]="currentMonthIndex() === i"
-                          [class.text-gray-500]="currentMonthIndex() !== i && !isPastMonth(i)"
-                          [class.dark:text-gray-400]="currentMonthIndex() !== i && !isPastMonth(i)"
-                          [class.hover:bg-gray-50]="currentMonthIndex() !== i && !isPastMonth(i)"
+                          [class.text-content-muted]="currentMonthIndex() !== i && !isPastMonth(i)"
+                          [class.dark:text-content-subtle]="currentMonthIndex() !== i && !isPastMonth(i)"
+                          [class.hover:bg-surface-3]="currentMonthIndex() !== i && !isPastMonth(i)"
                           [class.dark:hover:bg-white/5]="currentMonthIndex() !== i && !isPastMonth(i)"
                           [class.opacity-30]="isPastMonth(i)"
                           [class.cursor-not-allowed]="isPastMonth(i)"
@@ -94,7 +95,7 @@ import { TranslationService } from '../../../core/services/translation.service';
                  <div class="flex gap-3">
                     <button
                         (click)="closeCalendar()"
-                         class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 text-gray-400 dark:text-gray-400 font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-xs"
+                         class="flex-1 py-2.5 rounded-xl border border-divider text-content-subtle dark:text-content-subtle font-medium hover:bg-surface-3 transition-colors text-xs"
                     >
                         Cancel
                     </button>
@@ -111,15 +112,15 @@ import { TranslationService } from '../../../core/services/translation.service';
                         type="button"
                         (click)="changeMonthDayView(-1)"
                         [disabled]="isPastMonth(currentMonthIndex() - 1)" 
-                        class="p-1 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg text-gray-500 dark:text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed"
+                        class="p-1 hover:bg-surface-3 rounded-lg text-content-muted disabled:opacity-30 disabled:cursor-not-allowed"
                     >
-                        <span class="material-icons-outlined">chevron_left</span>
+                        <app-icon name="chevron_left" [size]="24" />
                     </button>
                     
                     <button 
                         type="button" 
                         (click)="setView('months')"
-                        class="font-bold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 px-3 py-1 rounded-lg transition-colors"
+                        class="font-bold text-content hover:bg-surface-3 px-3 py-1 rounded-lg transition-colors"
                     >
                         {{ currentMonthName() }} {{ currentYear() }}
                     </button>
@@ -127,9 +128,9 @@ import { TranslationService } from '../../../core/services/translation.service';
                     <button
                         type="button"
                         (click)="changeMonthDayView(1)"
-                        class="p-1 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg text-gray-500 dark:text-gray-400"
+                        class="p-1 hover:bg-surface-3 rounded-lg text-content-muted"
                     >
-                        <span class="material-icons-outlined">chevron_right</span>
+                        <app-icon name="chevron_right" [size]="24" />
                     </button>
                 </div>
   
@@ -137,7 +138,7 @@ import { TranslationService } from '../../../core/services/translation.service';
                 <div class="grid grid-cols-7 mb-2">
                     @for (day of weekDays; track day) {
                       <div
-                          class="text-xs font-semibold text-center text-gray-400 uppercase"
+                          class="text-xs font-semibold text-center text-content-subtle uppercase"
                       >
                           {{ day }}
                       </div>
@@ -157,13 +158,13 @@ import { TranslationService } from '../../../core/services/translation.service';
                           [disabled]="isDateDisabled(day)"
                           class="h-9 rounded-lg text-sm font-medium flex items-center justify-center transition-colors relative"
                           [class.bg-primary]="isSelected(day)"
-                          [class.text-white]="isSelected(day)"
+                          [class.text-primary-on]="isSelected(day)"
                           [class.shadow-lg]="isSelected(day)"
                           [class.shadow-primary/30]="isSelected(day)"
-                          [class.hover:bg-gray-100]="!isSelected(day) && !isDateDisabled(day)"
+                          [class.hover:bg-surface-3]="!isSelected(day) && !isDateDisabled(day)"
                           [class.dark:hover:bg-white/5]="!isSelected(day) && !isDateDisabled(day)"
-                          [class.text-gray-700]="!isSelected(day) && !isToday(day) && !isDateDisabled(day)"
-                          [class.dark:text-gray-300]="!isSelected(day) && !isToday(day) && !isDateDisabled(day)"
+                          [class.text-content-muted]="!isSelected(day) && !isToday(day) && !isDateDisabled(day)"
+                          [class.dark:text-content-subtle]="!isSelected(day) && !isToday(day) && !isDateDisabled(day)"
                           [class.text-primary]="isToday(day) && !isSelected(day)"
                           [class.font-bold]="isToday(day)"
                           [class.opacity-30]="isDateDisabled(day)"

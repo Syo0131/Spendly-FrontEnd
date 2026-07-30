@@ -2,6 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   Design Tokens
+   RGB channels (space-separated) so Tailwind `/<alpha>` works.
+   Consumed by tailwind.config.js -> colors.{surface,content,...}
+   ============================================================ */
+/* Editorial Warm palette — warm neutrals + terracotta accent.
+   Amounts render in ink by default; color communicates state only. */
+:root {
+  --surface: 247 243 236; /* warm cream  — page canvas */
+  --surface-2: 255 253 249; /* off-white   — elevated cards/sheets */
+  --surface-3: 241 235 224; /* sand        — sunken inputs/wells */
+  --divider: 231 222 208; /* warm border — separators */
+  --content: 43 38 32; /* warm near-black — primary text */
+  --content-muted: 111 100 85; /* taupe    — secondary text */
+  --content-subtle: 168 152 126; /* light taupe — eyebrows/labels */
+  --success: 74 122 74; /* warm green  — income/positive */
+  --expense: 178 58 85; /* berry       — negative/over-budget */
+  --warning: 200 137 46; /* ochre       — warnings */
+
+  /* Brand accent (theme-aware) — terracotta on cream */
+  --primary: 189 90 52; /* #bd5a34 */
+  --primary-hover: 162 77 44; /* #a24d2c */
+  --primary-ink: 162 77 44; /* #a24d2c — accent text/links (AA on cream) */
+  --secondary: 162 77 44; /* #a24d2c — deeper end of the brand gradient */
+  --on-primary: 255 255 255; /* text/icon color on a primary fill */
+
+  /* Chart tokens (consumed by chart.js configs) */
+  --chart-axis: 111 100 85; /* taupe tick/label color */
+  --chart-grid: 43 38 32; /* ink grid lines (low alpha) */
+}
+
+.dark {
+  --surface: 15 21 28; /* cool slate — page canvas */
+  --surface-2: 27 35 46; /* raised slate — cards/sheets */
+  --surface-3: 10 15 22; /* sunken — inputs/wells */
+  --divider: 48 60 74; /* cool slate border */
+  --content: 232 237 243; /* cool light text */
+  --content-muted: 154 167 181; /* slate-gray secondary text */
+  --content-subtle: 107 120 135; /* dim slate */
+  --success: 110 190 140; /* soft green */
+  --expense: 233 122 141; /* soft rose */
+  --warning: 226 176 92; /* soft amber */
+
+  /* Brand accent — lighter, warmer terracotta so it glows on the dark base */
+  --primary: 226 132 92; /* #e2845c */
+  --primary-hover: 236 152 115; /* #ec9873 */
+  --primary-ink: 238 165 137; /* #eea589 — accent text/links on dark */
+  --secondary: 200 120 74; /* #c8784a — keeps the brand gradient luminous in dark */
+  --on-primary: 40 26 18; /* dark ink on the light terracotta fill (AA) */
+
+  --chart-axis: 154 167 181; /* slate-gray */
+  --chart-grid: 232 237 243; /* cool light grid lines (low alpha) */
+}
+
 /* Global Animations */
 .animate-fade-in {
   animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -17,6 +71,22 @@
 
 .animate-slide-up {
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Alias used by the toast component (enters from below, fades in) */
+.animate-slide-in-up {
+  animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
@@ -61,7 +131,7 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-slate-800 font-sans antialiased transition-colors duration-300 dark:bg-slate-900 dark:text-gray-100 overflow-x-hidden;
+    @apply bg-surface text-content font-sans antialiased transition-colors duration-300 overflow-x-hidden;
     /* PWA Native Feel */
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
@@ -69,6 +139,19 @@
     user-select: none;
     /* Touch Action adjustments for better scrolling performance */
     touch-action: pan-x pan-y;
+  }
+
+  /* Editorial display type: serif headings + tabular figures for money. */
+  .font-display {
+    font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+    font-optical-sizing: auto;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  /* Eyebrow label: small uppercase, subtle taupe. */
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-content-subtle;
   }
 
   /* Allow text selection in inputs and selectable areas */
@@ -93,13 +176,20 @@
   }
 }
 
-/* Glassmorphism Utilities */
+/* Editorial surfaces — retired glassmorphism. The `.glass*` class names are
+   kept so existing markup re-skins to the warm editorial card automatically. */
 .glass {
-  @apply bg-white/70 backdrop-blur-lg border border-white/40 shadow-xl dark:bg-white/10 dark:border-white/20;
+  @apply bg-surface-2 border border-divider;
+  box-shadow: 0 1px 2px rgba(43, 38, 32, 0.05);
 }
 
 .glass-card {
-  @apply bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl shadow-lg dark:bg-slate-800/50 dark:border-slate-700/50 dark:shadow-xl;
+  @apply bg-surface-2 border border-divider rounded-2xl;
+  box-shadow: 0 1px 2px rgba(43, 38, 32, 0.05);
+}
+.dark .glass,
+.dark .glass-card {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Hide number input spinners */

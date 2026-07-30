@@ -18,21 +18,23 @@ import { NotificationService } from '../../core/services/notification.service';
 import { ExpenseStateService } from '../../core/services/expense-state.service';
 import { ExpenseResponse, Category } from '../../core/models/api.models';
 import { RouterModule } from '@angular/router';
+import { IconComponent } from '../../shared/components/icon/icon.component';
+import { CategoryIconPipe } from '../../shared/icons/category-icon.pipe';
 
 @Component({
   selector: 'app-expenses',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, CurrencyInputDirective, DatePipe, CurrencyPipe],
+  imports: [ReactiveFormsModule, RouterModule, CurrencyInputDirective, DatePipe, CurrencyPipe, IconComponent, CategoryIconPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6">
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div>
-          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-2xl md:text-3xl font-display font-semibold text-content">
             {{ ts.t()('nav.expenses') }}
           </h1>
-          <p class="text-gray-500 dark:text-gray-400">Track your spending habits</p>
+          <p class="text-content-muted">Track your spending habits</p>
         </div>
 
         <!-- Right Actions: Filter & Add -->
@@ -42,23 +44,21 @@ import { RouterModule } from '@angular/router';
           <div class="relative">
             <button
               (click)="toggleMonthPicker()"
-              class="px-2 py-1.5 md:px-4 md:py-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2"
+              class="px-2 py-1.5 md:px-4 md:py-3 bg-surface-2 border border-divider rounded-xl text-xs md:text-sm font-bold text-content-muted hover:bg-surface-3 transition-all flex items-center gap-2"
             >
-              <span class="material-icons-outlined text-gray-500 dark:text-gray-400"
-                >calendar_today</span
-              >
+              <app-icon name="calendar_today" [size]="20" class="text-content-muted" />
               <span>{{ getDateFilterLabel() }}</span>
-              <span class="material-icons-outlined text-sm">expand_more</span>
+              <app-icon name="expand_more" [size]="16" />
             </button>
 
             @if (isMonthPickerOpen()) {
             <div
-              class="absolute z-40 top-full left-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl shadow-xl overflow-hidden animate-scale-in"
+              class="absolute z-40 top-full left-0 mt-2 w-48 bg-surface-2 border border-divider rounded-xl shadow-xl overflow-hidden animate-scale-in"
             >
               <div class="py-2">
                 <button
                   (click)="selectMonth(null, null)"
-                  class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center gap-2"
+                  class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-surface-3 transition-colors flex items-center gap-2"
                   [class.text-primary]="!currentDateFilter()"
                 >
                   All Time
@@ -66,7 +66,7 @@ import { RouterModule } from '@angular/router';
                 @for (m of getAvailableMonths(); track m.label) {
                 <button
                   (click)="selectMonth(m.month, m.year)"
-                  class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                  class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-surface-3 transition-colors"
                   [class.text-primary]="
                     currentDateFilter()?.month === m.month && currentDateFilter()?.year === m.year
                   "
@@ -83,40 +83,38 @@ import { RouterModule } from '@angular/router';
           <div class="relative">
             <button
               (click)="toggleFilterDropdown()"
-              class="px-2 py-1.5 md:px-4 md:py-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2"
+              class="px-2 py-1.5 md:px-4 md:py-3 bg-surface-2 border border-divider rounded-xl text-xs md:text-sm font-bold text-content-muted hover:bg-surface-3 transition-all flex items-center gap-2"
             >
-              <span class="material-icons-outlined text-gray-500 dark:text-gray-400"
-                >filter_list</span
-              >
+              <app-icon name="filter_list" [size]="20" class="text-content-muted" />
               <span>{{ getFilterLabel() }}</span>
-              <span class="material-icons-outlined text-sm">expand_more</span>
+              <app-icon name="expand_more" [size]="16" />
             </button>
 
             @if (showFilterDropdown()) {
             <div
-              class="absolute z-40 top-full right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl shadow-xl overflow-hidden animate-scale-in"
+              class="absolute z-40 top-full right-0 mt-2 w-56 bg-surface-2 border border-divider rounded-xl shadow-xl overflow-hidden animate-scale-in"
             >
               <div class="max-h-80 overflow-y-auto no-scrollbar">
                 <button
                   (click)="applyFilter(null)"
-                  class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center gap-2"
+                  class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-surface-3 transition-colors flex items-center gap-2"
                   [class.text-primary]="!currentFilter()"
                   [class.bg-primary-light]="!currentFilter()"
                 >
-                  <span class="material-icons-outlined text-lg">apps</span>
+                  <app-icon name="apps" [size]="20" />
                   All Categories
                 </button>
                 @for (cat of categories(); track cat.id) {
                 <button
                   (click)="applyFilter(cat)"
-                  class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center gap-3"
+                  class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-surface-3 transition-colors flex items-center gap-3"
                   [class.text-primary]="currentFilter() === cat.id"
                 >
                   <div
                     class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
                     [style.background-color]="cat.color"
                   >
-                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
+                    <app-icon [name]="cat.name | categoryIcon: cat.icons" [size]="14" />
                   </div>
                   {{ ts.translateCategory(cat.name) }}
                 </button>
@@ -128,9 +126,9 @@ import { RouterModule } from '@angular/router';
 
           <button
             (click)="openModal()"
-            class="px-3 py-1.5 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
+            class="px-3 py-1.5 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-primary-on rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
           >
-            <span class="material-icons-outlined mr-1 md:mr-2 text-lg md:text-2xl">add</span>
+            <app-icon name="add" [size]="22" class="mr-1 md:mr-2" />
             <span class="text-xs md:text-base font-bold">{{ ts.t()('trans.add_expense') }}</span>
           </button>
         </div>
@@ -138,17 +136,17 @@ import { RouterModule } from '@angular/router';
 
       <!-- Tabs -->
       <div
-        class="flex space-x-1 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl w-fit backdrop-blur-sm border border-gray-200 dark:border-white/5"
+        class="flex space-x-1 bg-surface-3 p-1 rounded-xl w-fit backdrop-blur-sm border border-divider"
       >
         <a
           routerLink="/incomes"
-          class="px-6 py-2 rounded-lg text-sm font-medium transition-all text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+          class="px-6 py-2 rounded-lg text-sm font-medium transition-all text-content-muted hover:text-content"
         >
           {{ ts.t()('nav.incomes') }}
         </a>
         <a
           routerLink="/expenses"
-          class="px-6 py-2 rounded-lg text-sm font-medium transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm"
+          class="px-6 py-2 rounded-lg text-sm font-medium transition-all bg-surface-2 text-content shadow-sm"
         >
           {{ ts.t()('nav.expenses') }}
         </a>
@@ -157,23 +155,23 @@ import { RouterModule } from '@angular/router';
       <!-- List -->
       <!-- List -->
       <div
-        class="glass-card overflow-hidden bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 animate-fade-in"
+        class="glass-card overflow-hidden bg-surface-2 border border-divider animate-fade-in"
       >
         <!-- Skeleton Loader (Only initial load) -->
         @if (isLoading() && expenses().length === 0) {
         <div class="animate-pulse">
           <!-- Mobile Skeleton -->
-          <div class="md:hidden divide-y divide-gray-200 dark:divide-white/5">
+          <div class="md:hidden divide-y divide-divider">
             @for (i of [1, 2, 3, 4, 5]; track $index) {
             <div class="p-4 flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-white/10"></div>
+                <div class="w-10 h-10 rounded-full bg-surface-3"></div>
                 <div class="space-y-2">
-                  <div class="h-4 w-24 bg-gray-200 dark:bg-white/10 rounded"></div>
-                  <div class="h-3 w-16 bg-gray-200 dark:bg-white/10 rounded"></div>
+                  <div class="h-4 w-24 bg-surface-3 rounded"></div>
+                  <div class="h-3 w-16 bg-surface-3 rounded"></div>
                 </div>
               </div>
-              <div class="h-5 w-20 bg-gray-200 dark:bg-white/10 rounded"></div>
+              <div class="h-5 w-20 bg-surface-3 rounded"></div>
             </div>
             }
           </div>
@@ -182,10 +180,10 @@ import { RouterModule } from '@angular/router';
             <div class="space-y-4">
               @for (i of [1, 2, 3, 4, 5]; track $index) {
               <div class="flex items-center justify-between">
-                <div class="h-4 w-1/4 bg-gray-200 dark:bg-white/10 rounded"></div>
-                <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
-                <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
-                <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
+                <div class="h-4 w-1/4 bg-surface-3 rounded"></div>
+                <div class="h-4 w-1/6 bg-surface-3 rounded"></div>
+                <div class="h-4 w-1/6 bg-surface-3 rounded"></div>
+                <div class="h-4 w-1/6 bg-surface-3 rounded"></div>
               </div>
               }
             </div>
@@ -201,15 +199,15 @@ import { RouterModule } from '@angular/router';
           [class.pointer-events-none]="isLoading()"
         >
           @if (expenses().length === 0) {
-          <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+          <div class="p-8 text-center text-content-muted">
             {{ ts.t()('trans.no_data') }}
           </div>
           }
-          <div class="divide-y divide-gray-200 dark:divide-white/5">
+          <div class="divide-y divide-divider">
             @for (item of expenses(); track trackById($index, item)) {
             <div
               (click)="openActionMenu(item)"
-              class="animate-fade-in p-3 md:p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer"
+              class="animate-fade-in p-3 md:p-4 flex items-center justify-between active:bg-surface-3 transition-colors cursor-pointer"
             >
               <!-- Left: Icon & Desc -->
               <div class="flex items-center gap-3 overflow-hidden">
@@ -217,17 +215,15 @@ import { RouterModule } from '@angular/router';
                   class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                   [style.background-color]="item.category.color + '20'"
                 >
-                  <span class="material-icons-outlined text-lg" [style.color]="item.category.color">
-                    {{ item.category.icons }}
-                  </span>
+                  <app-icon [name]="item.category.name | categoryIcon: item.category.icons" [size]="20" [style.color]="item.category.color" />
                 </div>
                 <div class="min-w-0">
                   <p
-                    class="font-medium text-sm md:text-base text-gray-900 dark:text-white truncate"
+                    class="font-medium text-sm md:text-base text-content truncate"
                   >
                     {{ item.description }}
                   </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                  <p class="text-xs text-content-muted">
                     {{ ts.translateCategory(item.category.name) || 'General' }}
                   </p>
                 </div>
@@ -235,10 +231,10 @@ import { RouterModule } from '@angular/router';
 
               <!-- Right: Amount & Date -->
               <div class="flex flex-col items-end gap-1 ml-2 shrink-0">
-                <span class="font-bold text-sm md:text-base text-rose-600 dark:text-rose-400">
+                <span class="font-bold text-sm md:text-base text-expense">
                   - {{ item.amount | currency : 'DOP' : 'symbol' : '1.2-2' }}
                 </span>
-                <span class="text-xs text-gray-400">
+                <span class="text-xs text-content-subtle">
                   {{ item.date | date : 'MMM d' }}
                 </span>
               </div>
@@ -260,7 +256,7 @@ import { RouterModule } from '@angular/router';
         >
           <table class="w-full text-left table-fixed">
             <thead
-              class="bg-gray-50/50 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider"
+              class="bg-surface-3 text-content-muted text-xs uppercase tracking-wider"
             >
               <tr>
                 <th class="p-4 font-medium w-5/12">{{ ts.t()('trans.desc') }}</th>
@@ -270,27 +266,27 @@ import { RouterModule } from '@angular/router';
                 <th class="p-4 font-medium text-center w-1/12"></th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-white/5">
+            <tbody class="divide-y divide-divider">
               @for (item of expenses(); track trackById($index, item)) {
               <tr
-                class="animate-fade-in hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
+                class="animate-fade-in hover:bg-surface-3 transition-colors group"
               >
-                <td class="p-4 text-gray-900 dark:text-white font-medium">
+                <td class="p-4 text-content font-medium">
                   <div class="truncate max-w-full" [title]="item.description">
                     {{ item.description }}
                   </div>
                 </td>
-                <td class="p-4 text-gray-500 dark:text-gray-400">
+                <td class="p-4 text-content-muted">
                   <span
-                    class="px-2 py-1 rounded text-xs bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10"
+                    class="px-2 py-1 rounded text-xs bg-surface-3 text-content-muted border border-divider"
                   >
                     {{ ts.translateCategory(item.category.name) || 'General' }}
                   </span>
                 </td>
-                <td class="p-4 text-gray-500 dark:text-gray-400 text-sm">
+                <td class="p-4 text-content-muted text-sm">
                   {{ item.date | date }}
                 </td>
-                <td class="p-4 text-right font-bold text-rose-600 dark:text-rose-400">
+                <td class="p-4 text-right font-bold text-expense">
                   - {{ item.amount | currency : 'DOP' : 'symbol' : '1.2-2' }}
                 </td>
                 <td class="p-4 text-center">
@@ -299,17 +295,17 @@ import { RouterModule } from '@angular/router';
                   >
                     <button
                       (click)="openModal(item)"
-                      class="p-2 text-gray-400 hover:text-primary transition-colors"
+                      class="p-2 text-content-subtle hover:text-primary transition-colors"
                       title="Edit"
                     >
-                      <span class="material-icons-outlined text-lg">edit</span>
+                      <app-icon name="edit" [size]="20" />
                     </button>
                     <button
                       (click)="deleteItem(item)"
-                      class="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                      class="p-2 text-content-subtle hover:text-expense transition-colors"
                       title="Delete"
                     >
-                      <span class="material-icons-outlined text-lg">delete</span>
+                      <app-icon name="delete" [size]="20" />
                     </button>
                   </div>
                 </td>
@@ -319,7 +315,7 @@ import { RouterModule } from '@angular/router';
               <!-- Empty State -->
               @if (expenses().length === 0) {
               <tr>
-                <td colspan="5" class="p-8 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="5" class="p-8 text-center text-content-muted">
                   {{ ts.t()('trans.no_data') }}
                 </td>
               </tr>
@@ -337,17 +333,17 @@ import { RouterModule } from '@angular/router';
 
         <!-- Pagination Controls -->
         <div
-          class="flex items-center justify-between p-4 border-t border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/5"
+          class="flex items-center justify-between p-4 border-t border-divider bg-surface-3"
         >
           <button
             (click)="prevPage()"
             [disabled]="currentPage() === 0"
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="px-4 py-2 text-sm font-medium text-content-muted bg-surface-2 border border-divider rounded-lg hover:bg-surface-3 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {{ ts.t()('trans.prev') }}
           </button>
 
-          <span class="text-sm text-gray-600 dark:text-gray-400">
+          <span class="text-sm text-content-muted">
             {{ ts.t()('trans.page') }} {{ currentPage() + 1 }} {{ ts.t()('trans.of') }}
             {{ totalPages() || 1 }}
           </span>
@@ -355,7 +351,7 @@ import { RouterModule } from '@angular/router';
           <button
             (click)="nextPage()"
             [disabled]="currentPage() >= totalPages() - 1"
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="px-4 py-2 text-sm font-medium text-content-muted bg-surface-2 border border-divider rounded-lg hover:bg-surface-3 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {{ ts.t()('trans.next') }}
           </button>
@@ -369,24 +365,22 @@ import { RouterModule } from '@angular/router';
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
     >
       <div
-        class="glass-card w-full max-w-lg p-8 relative animate-scale-in bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl"
+        class="glass-card w-full max-w-lg p-8 relative animate-scale-in bg-surface-2 border border-divider shadow-2xl"
       >
         <button
           (click)="closeModal()"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full"
+          class="absolute top-4 right-4 text-content-subtle hover:text-content transition-colors p-2 hover:bg-surface-3 rounded-full"
         >
-          <span class="material-icons-outlined">close</span>
+          <app-icon name="close" [size]="24" />
         </button>
 
         <div class="text-center mb-8">
           <div
             class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4"
           >
-            <span class="material-icons-outlined text-3xl text-primary dark:text-primary-light">
-              receipt_long
-            </span>
+            <app-icon name="receipt_long" [size]="30" class="text-primary dark:text-primary-light" />
           </div>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 class="text-2xl font-bold text-content">
             {{ editingId() ? ts.t()('trans.edit_expense') : ts.t()('trans.add_expense') }}
           </h2>
         </div>
@@ -395,13 +389,13 @@ import { RouterModule } from '@angular/router';
           <!-- Description -->
           <div class="space-y-1.5">
             <label
-              class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              class="text-xs font-medium text-content-muted uppercase tracking-wider"
               >{{ ts.t()('trans.desc') }}</label
             >
             <input
               formControlName="description"
               type="text"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400 dark:placeholder-gray-600"
+              class="w-full bg-surface-3 border border-divider text-content rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-content-subtle"
             />
           </div>
 
@@ -409,30 +403,30 @@ import { RouterModule } from '@angular/router';
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
               <label
-                class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                class="text-xs font-medium text-content-muted uppercase tracking-wider"
                 >{{ ts.t()('trans.amount') }}</label
               >
               <div class="relative">
-                <span class="absolute left-3 top-3 text-gray-500 dark:text-gray-400">$</span>
+                <span class="absolute left-3 top-3 text-content-muted">$</span>
                 <input
                   formControlName="amount"
                   type="text"
                   inputmode="decimal"
                   appCurrencyInput
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 pl-7 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400 dark:placeholder-gray-600"
+                  class="w-full bg-surface-3 border border-divider text-content rounded-xl p-3 pl-7 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-content-subtle"
                 />
               </div>
             </div>
             <div class="space-y-1.5">
               <label
-                class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                class="text-xs font-medium text-content-muted uppercase tracking-wider"
                 >{{ ts.t()('trans.date') }}</label
               >
               <div class="relative">
                 <input
                   formControlName="date"
                   type="date"
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all dark:[color-scheme:dark]"
+                  class="w-full bg-surface-3 border border-divider text-content rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all dark:[color-scheme:dark]"
                 />
               </div>
             </div>
@@ -441,7 +435,7 @@ import { RouterModule } from '@angular/router';
           <!-- Category -->
           <div class="space-y-1.5">
             <label
-              class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              class="text-xs font-medium text-content-muted uppercase tracking-wider"
               >{{ ts.t()('trans.category') }}</label
             >
             <div class="relative">
@@ -449,7 +443,7 @@ import { RouterModule } from '@angular/router';
               <button
                 type="button"
                 (click)="toggleDropdown()"
-                class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 text-left transition-colors hover:border-primary/50"
+                class="w-full flex items-center justify-between p-3 bg-surface-3 rounded-xl border border-divider text-left transition-colors hover:border-primary/50"
                 [class.border-red-500]="
                   form.get('categoryId')?.invalid && form.get('categoryId')?.touched
                 "
@@ -460,48 +454,43 @@ import { RouterModule } from '@angular/router';
                     class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
                     [style.background-color]="selected.color"
                   >
-                    <span class="material-icons-outlined text-xs">{{ selected.icons }}</span>
+                    <app-icon [name]="selected.name | categoryIcon: selected.icons" [size]="14" />
                   </div>
-                  <span class="text-gray-900 dark:text-white font-medium">
+                  <span class="text-content font-medium">
                     {{ ts.translateCategory(selected.name) }}
                   </span>
                   } @else {
-                  <span class="text-gray-400">
+                  <span class="text-content-subtle">
                     {{ ts.t()('trans.select_category') }}
                   </span>
                   }
                 </div>
-                <span
-                  class="material-icons-outlined text-gray-400"
-                  [class.rotate-180]="isDropdownOpen()"
-                >
-                  expand_more
-                </span>
+                <app-icon name="expand_more" [size]="24" class="text-content-subtle" [class.rotate-180]="isDropdownOpen()" />
               </button>
 
               <!-- Dropdown Menu -->
               @if (isDropdownOpen()) {
               <div
-                class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-60 overflow-y-auto no-scrollbar animate-scale-in"
+                class="absolute z-50 top-full left-0 right-0 mt-2 bg-surface-2 border border-divider rounded-xl shadow-xl max-h-60 overflow-y-auto no-scrollbar animate-scale-in"
               >
                 @for (cat of categories(); track trackById($index, cat)) {
                 <button
                   type="button"
                   (click)="selectCategory(cat)"
-                  class="w-full flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors border-b border-gray-100 dark:border-white/5 last:border-0"
+                  class="w-full flex items-center gap-3 p-3 hover:bg-surface-3 cursor-pointer transition-colors border-b border-divider last:border-0"
                 >
                   <div
                     class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
                     [style.background-color]="cat.color"
                   >
-                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
+                    <app-icon [name]="cat.name | categoryIcon: cat.icons" [size]="14" />
                   </div>
-                  <span class="text-gray-700 dark:text-gray-200 font-medium">
+                  <span class="text-content font-medium">
                     {{ ts.translateCategory(cat.name) }}
                   </span>
                 </button>
                 } @if (categories().length === 0) {
-                <div class="p-4 text-center text-gray-500 text-sm">
+                <div class="p-4 text-center text-content-muted text-sm">
                   {{ ts.t()('trans.loading_cat') }}
                 </div>
                 }
@@ -513,7 +502,7 @@ import { RouterModule } from '@angular/router';
           <button
             type="submit"
             [disabled]="form.invalid"
-            class="w-full mt-6 bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+            class="w-full mt-6 bg-primary hover:bg-primary-dark text-primary-on py-3.5 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
           >
             {{ editingId() ? 'Update' : ts.t()('trans.save') }}
           </button>
@@ -528,23 +517,23 @@ import { RouterModule } from '@angular/router';
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
     >
       <div
-        class="glass-card w-full max-w-sm p-6 relative animate-scale-in bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl text-center"
+        class="glass-card w-full max-w-sm p-6 relative animate-scale-in bg-surface-2 border border-divider shadow-2xl text-center"
       >
         <div
           class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4"
         >
-          <span class="material-icons-outlined text-3xl text-red-500">warning</span>
+          <app-icon name="warning" [size]="30" class="text-expense" />
         </div>
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+        <h3 class="text-xl font-bold text-content mb-2">
           {{ ts.t()('trans.delete_title') }}
         </h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm">
+        <p class="text-content-muted mb-6 text-sm">
           {{ ts.t()('trans.delete_msg') }}
         </p>
         <div class="flex space-x-3 justify-center">
           <button
             (click)="cancelDelete()"
-            class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+            class="px-5 py-2.5 rounded-xl border border-divider text-content-muted font-medium hover:bg-surface-3 transition-colors"
           >
             {{ ts.t()('trans.cancel') }}
           </button>
@@ -570,16 +559,16 @@ import { RouterModule } from '@angular/router';
 
       <!-- Sheet -->
       <div
-        class="bg-white dark:bg-slate-900 w-full rounded-t-3xl p-6 relative z-10 animate-slide-up border-t border-gray-200 dark:border-white/10 shadow-2xl"
+        class="bg-surface-2 w-full rounded-t-3xl p-6 relative z-10 animate-slide-up border-t border-divider shadow-2xl"
       >
         <!-- Handle -->
-        <div class="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-6"></div>
+        <div class="w-12 h-1.5 bg-surface-3 rounded-full mx-auto mb-6"></div>
 
         <div class="mb-6">
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
+          <h3 class="text-xl font-bold text-content mb-1">
             {{ ts.t()('trans.actions') }}
           </h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <p class="text-sm text-content-muted">
             {{ actionMenuItem()?.description }}
           </p>
         </div>
@@ -587,9 +576,9 @@ import { RouterModule } from '@angular/router';
         <div class="space-y-3">
           <button
             (click)="onEditFromMenu()"
-            class="w-full flex items-center p-4 bg-gray-50 dark:bg-slate-800 rounded-xl text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+            class="w-full flex items-center p-4 bg-surface-3 rounded-xl text-content font-medium hover:bg-surface-3 transition-colors"
           >
-            <span class="material-icons-outlined mr-3 text-primary">edit</span>
+            <app-icon name="edit" [size]="22" class="mr-3 text-primary" />
             {{ ts.t()('trans.edit') || 'Edit' }}
           </button>
 
@@ -597,13 +586,13 @@ import { RouterModule } from '@angular/router';
             (click)="onDeleteFromMenu()"
             class="w-full flex items-center p-4 bg-red-50 dark:bg-red-500/10 rounded-xl text-red-600 dark:text-red-400 font-medium hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
           >
-            <span class="material-icons-outlined mr-3">delete</span>
+            <app-icon name="delete" [size]="22" class="mr-3" />
             {{ ts.t()('trans.delete') }}
           </button>
 
           <button
             (click)="closeActionMenu()"
-            class="w-full p-4 text-center text-gray-500 dark:text-gray-400 font-medium mt-2"
+            class="w-full p-4 text-center text-content-muted font-medium mt-2"
           >
             {{ ts.t()('trans.cancel') }}
           </button>

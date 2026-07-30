@@ -44,6 +44,12 @@ export const routes: Routes = [
       },
       { path: 'transactions', redirectTo: 'expenses' }, // Fallback
       {
+        path: 'categories',
+        title: 'Spending by Category | Spendly',
+        loadComponent: () =>
+          import('./features/categories/categories.component').then((m) => m.CategoriesComponent),
+      },
+      {
         path: 'banks',
         title: 'My Banks | Spendly',
         loadComponent: () =>

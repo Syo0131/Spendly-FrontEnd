@@ -58,6 +58,7 @@ export class TranslationService {
     'nav.incomes': { es: 'Ingresos', en: 'Incomes' },
     'nav.expenses': { es: 'Gastos', en: 'Expenses' },
     'nav.budgets': { es: 'Presupuestos', en: 'Budgets' },
+    'nav.categories': { es: 'Categorías', en: 'Categories' },
     'nav.menu': { es: 'Menú', en: 'Menu' },
     'nav.goals': { es: 'Metas Ahorro', en: 'Savings Goals' },
     'nav.reminders': { es: 'Recordatorios', en: 'Reminders' },

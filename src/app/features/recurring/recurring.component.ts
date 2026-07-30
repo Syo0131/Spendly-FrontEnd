@@ -17,6 +17,11 @@ import { TranslationService } from '../../core/services/translation.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ApiService } from '../../core/services/api.service';
 import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
+import { IconComponent } from '../../shared/components/icon/icon.component';
+import { CategoryIconPipe } from '../../shared/icons/category-icon.pipe';
+import { UiCardComponent } from '../../shared/components/ui/ui-card.component';
+import { UiButtonComponent } from '../../shared/components/ui/ui-button.component';
+import { UiEmptyStateComponent } from '../../shared/components/ui/ui-empty-state.component';
 
 @Component({
   selector: 'app-recurring',
@@ -28,6 +33,11 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
     DatePipe,
     DecimalPipe,
     NgClass,
+    IconComponent,
+    CategoryIconPipe,
+    UiCardComponent,
+    UiButtonComponent,
+    UiEmptyStateComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -35,18 +45,18 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between md:items-end gap-6">
         <div>
-          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+          <h1 class="text-2xl md:text-3xl font-display font-semibold text-content tracking-tight">
             {{ ts.t()('recurring.title') }}
           </h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">
+          <p class="text-sm text-content-muted mt-1 font-medium">
             {{ ts.t()('recurring.subtitle') }}
           </p>
         </div>
         <button
           (click)="openModal()"
-          class="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm md:text-base tracking-wide"
+          class="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-primary-on rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm md:text-base tracking-wide"
         >
-          <span class="material-icons-outlined mr-2 text-lg md:text-xl">add_circle</span>
+          <app-icon name="add_circle" [size]="20" class="mr-2" />
           {{ ts.t()('recurring.new') }}
         </button>
       </div>
@@ -55,18 +65,18 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
       @if (state.isLoading() && state.recurringExpenses().length === 0) {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
         @for (i of [1, 2, 3, 4, 5, 6]; track i) {
-        <div class="p-5 border border-gray-200 dark:border-white/5 rounded-2xl bg-white/5">
+        <div class="p-5 border border-divider rounded-2xl bg-white/5">
           <div class="flex justify-between items-start mb-4">
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-xl bg-gray-200 dark:bg-white/10"></div>
+              <div class="w-12 h-12 rounded-xl bg-surface-3"></div>
               <div class="space-y-2">
-                <div class="h-4 w-32 bg-gray-200 dark:bg-white/10 rounded"></div>
-                <div class="h-3 w-16 bg-gray-200 dark:bg-white/10 rounded"></div>
+                <div class="h-4 w-32 bg-surface-3 rounded"></div>
+                <div class="h-3 w-16 bg-surface-3 rounded"></div>
               </div>
             </div>
           </div>
           <div class="flex justify-between items-end mt-4">
-            <div class="h-6 w-24 bg-gray-200 dark:bg-white/10 rounded"></div>
+            <div class="h-6 w-24 bg-surface-3 rounded"></div>
           </div>
         </div>
         }
@@ -75,26 +85,14 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
 
       <!-- Empty State -->
       @if (!state.isLoading() && state.recurringExpenses().length === 0) {
-      <div
-        class="glass-card p-12 text-center border border-gray-200 dark:border-white/10 rounded-2xl"
-      >
-        <div
-          class="w-16 h-16 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center mx-auto mb-4"
-        >
-          <span class="material-icons-outlined text-3xl text-gray-300 dark:text-gray-600"
-            >replay</span
-          >
-        </div>
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
-          {{ ts.t()('recurring.empty') }}
-        </h3>
-        <button
-          (click)="openModal()"
-          class="text-primary hover:text-primary-light font-bold text-sm"
-        >
-          {{ ts.t()('recurring.create_now') }}
-        </button>
-      </div>
+      <ui-card [padded]="false">
+        <ui-empty-state icon="replay" [title]="ts.t()('recurring.empty')">
+          <ui-button (click)="openModal()">
+            <app-icon name="add_circle" [size]="18" />
+            {{ ts.t()('recurring.create_now') }}
+          </ui-button>
+        </ui-empty-state>
+      </ui-card>
       }
 
       <!-- Grid -->
@@ -102,7 +100,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         @for (expense of state.recurringExpenses(); track expense.id) {
         <div
-          class="glass-card p-5 border border-gray-100 dark:border-white/5 hover:shadow-xl hover:border-primary/20 transition-all duration-300 rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 group"
+          class="glass-card p-5 border border-divider hover:shadow-xl hover:border-primary/20 transition-all duration-300 rounded-2xl bg-surface-2 group"
         >
           <div class="flex justify-between items-start mb-4">
             <div class="flex items-center gap-3">
@@ -110,25 +108,21 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 class="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm"
                 [style.background-color]="expense.category.color + '20'"
               >
-                <span
-                  class="material-icons-outlined text-xl"
-                  [style.color]="expense.category.color"
-                  >{{ expense.category.icons }}</span
-                >
+                <app-icon [name]="expense.category.name | categoryIcon: expense.category.icons" [size]="24" [style.color]="expense.category.color" />
               </div>
               <div>
-                <h3 class="text-base font-bold text-gray-900 dark:text-white leading-tight mb-1">
+                <h3 class="text-base font-bold text-content leading-tight mb-1">
                   {{ expense.description }}
                 </h3>
                 <div class="flex items-center gap-2">
                   <span
-                    class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded border border-gray-200 dark:border-white/5"
+                    class="text-[10px] font-bold text-content-subtle uppercase tracking-wider bg-surface-3 px-2 py-0.5 rounded border border-divider"
                   >
                     {{ expense.frequency }}
                   </span>
                   @if (!expense.isActive) {
                   <span
-                    class="text-[10px] font-bold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded"
+                    class="text-[10px] font-bold text-expense bg-expense/12 px-2 py-0.5 rounded"
                     >{{ ts.t()('recurring.inactive') }}</span
                   >
                   }
@@ -141,29 +135,29 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             >
               <button
                 (click)="openModal(expense)"
-                class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-primary hover:bg-primary/10 transition-all"
+                class="w-8 h-8 flex items-center justify-center rounded-full text-content-subtle hover:text-primary hover:bg-primary/10 transition-all"
               >
-                <span class="material-icons-outlined text-lg">edit</span>
+                <app-icon name="edit" [size]="20" />
               </button>
               <button
                 (click)="confirmDelete(expense)"
-                class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
+                class="w-8 h-8 flex items-center justify-center rounded-full text-content-subtle hover:text-expense hover:bg-expense/10 transition-all"
               >
-                <span class="material-icons-outlined text-lg">delete</span>
+                <app-icon name="delete" [size]="20" />
               </button>
             </div>
           </div>
 
           <div class="flex justify-between items-end mt-4">
             <div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">
+              <p class="text-xs text-content-muted font-medium">
                 {{ ts.t()('recurring.next_payment') }}
               </p>
-              <p class="text-sm font-bold text-gray-900 dark:text-white">
+              <p class="text-sm font-bold text-content">
                 {{ expense.nextExecutionDate | date : 'mediumDate' }}
               </p>
             </div>
-            <span class="text-xl font-bold text-gray-900 dark:text-white"
+            <span class="text-xl font-bold text-content"
               >DOP {{ expense.amount | number : '1.2-2' }}</span
             >
           </div>
@@ -180,34 +174,32 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
     >
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeModal()"></div>
       <div
-        class="glass-card w-full max-w-md p-6 relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-2xl animate-scale-in"
+        class="glass-card w-full max-w-md p-6 relative bg-surface-2 border border-divider shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-2xl animate-scale-in"
       >
         <button
           (click)="closeModal()"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full"
+          class="absolute top-4 right-4 text-content-subtle hover:text-content transition-colors p-2 hover:bg-surface-3 rounded-full"
         >
-          <span class="material-icons-outlined text-lg">close</span>
+          <app-icon name="close" [size]="20" />
         </button>
 
         <div class="text-center mb-6">
           <div
             class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4"
           >
-            <span class="material-icons-outlined text-3xl text-primary">{{
-              editingId() ? 'edit_calendar' : 'update'
-            }}</span>
+            <app-icon [name]="editingId() ? 'edit_calendar' : 'update'" [size]="30" class="text-primary" />
           </div>
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+          <h2 class="text-xl font-bold text-content">
             {{ editingId() ? ts.t()('recurring.edit_title') : ts.t()('recurring.new_title') }}
           </h2>
-          <p class="text-gray-500 text-xs mt-1">{{ ts.t()('recurring.modal_desc') }}</p>
+          <p class="text-content-muted text-xs mt-1">{{ ts.t()('recurring.modal_desc') }}</p>
         </div>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
           <!-- Description -->
           <div class="space-y-1.5">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
             >
               {{ ts.t()('trans.desc') }}
             </label>
@@ -215,20 +207,20 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
               type="text"
               formControlName="description"
               placeholder="e.g. Netflix, Rent"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-semibold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder-gray-300"
+              class="w-full bg-surface-3 border border-divider text-content text-sm font-semibold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-content-subtle"
             />
           </div>
 
           <!-- Amount -->
           <div class="space-y-1.5">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
             >
               {{ ts.t()('trans.amount') }}
             </label>
             <div class="relative group">
               <span
-                class="absolute left-4 top-3.5 text-gray-500 dark:text-gray-400 font-bold text-lg"
+                class="absolute left-4 top-3.5 text-content-muted font-bold text-lg"
                 >$</span
               >
               <input
@@ -237,7 +229,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 appCurrencyInput
                 formControlName="amount"
                 placeholder="0.00"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-lg font-bold rounded-xl p-3 pl-8 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder-gray-300"
+                class="w-full bg-surface-3 border border-divider text-content text-lg font-bold rounded-xl p-3 pl-8 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-content-subtle"
               />
             </div>
           </div>
@@ -245,14 +237,14 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
           <!-- Category -->
           <div class="space-y-1.5">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
             >
               {{ ts.t()('trans.category') }}
             </label>
             <div class="relative">
               <div
                 (click)="toggleCategoryDropdown()"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all group"
+                class="w-full bg-surface-3 border border-divider rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all group"
               >
                 <div class="flex items-center gap-2">
                   @if (getSelectedCategory(); as cat) {
@@ -260,42 +252,38 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                     class="w-6 h-6 rounded-md flex items-center justify-center text-white"
                     [style.background-color]="cat.color"
                   >
-                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
+                    <app-icon [name]="cat.name | categoryIcon: cat.icons" [size]="14" />
                   </div>
-                  <span class="text-gray-900 dark:text-white font-bold text-sm">{{
+                  <span class="text-content font-bold text-sm">{{
                     ts.translateCategory(cat.name)
                   }}</span>
                   } @else {
-                  <span class="material-icons-outlined text-gray-400 text-lg">category</span>
-                  <span class="text-gray-400 text-sm font-medium">{{
+                  <app-icon name="category" [size]="20" class="text-content-subtle" />
+                  <span class="text-content-subtle text-sm font-medium">{{
                     ts.t()('trans.select_category')
                   }}</span>
                   }
                 </div>
-                <span
-                  class="material-icons-outlined text-gray-400 group-hover:text-primary transition-colors text-lg"
-                >
-                  expand_more
-                </span>
+                <app-icon name="expand_more" [size]="20" class="text-content-subtle group-hover:text-primary transition-colors" />
               </div>
 
               <!-- Category Dropdown -->
               @if (showCategoryDropdown()) {
               <div
-                class="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/10 rounded-xl shadow-xl max-h-52 overflow-y-auto custom-scrollbar animate-scale-in"
+                class="absolute z-50 top-full left-0 right-0 mt-2 bg-surface-2 border border-divider rounded-xl shadow-xl max-h-52 overflow-y-auto custom-scrollbar animate-scale-in"
               >
                 @for (cat of categories(); track cat.id) {
                 <div
                   (click)="selectCategory(cat)"
-                  class="p-2.5 flex items-center gap-2.5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer transition-colors border-b border-gray-50 dark:border-white/5 last:border-0"
+                  class="p-2.5 flex items-center gap-2.5 hover:bg-surface-3 rounded-lg cursor-pointer transition-colors border-b border-divider dark:border-white/5 last:border-0"
                 >
                   <div
                     class="w-6 h-6 rounded-md flex items-center justify-center text-white shadow-sm"
                     [style.background-color]="cat.color"
                   >
-                    <span class="material-icons-outlined text-xs">{{ cat.icons }}</span>
+                    <app-icon [name]="cat.name | categoryIcon: cat.icons" [size]="14" />
                   </div>
-                  <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{
+                  <span class="text-sm font-bold text-content">{{
                     ts.translateCategory(cat.name)
                   }}</span>
                 </div>
@@ -309,13 +297,13 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
           <div class="grid grid-cols-2 gap-3">
             <div class="space-y-1.5">
               <label
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+                class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
               >
                 {{ ts.t()('recurring.freq') }}
               </label>
               <select
                 formControlName="frequency"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 cursor-pointer"
+                class="w-full bg-surface-3 border border-divider text-content text-sm font-bold rounded-xl p-3 cursor-pointer"
               >
                 <option value="DAILY">Daily</option>
                 <option value="WEEKLY">Weekly</option>
@@ -328,7 +316,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             @if (form.get('frequency')?.value === 'MONTHLY') {
             <div class="space-y-1.5">
               <label
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+                class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
               >
                 {{ ts.t()('recurring.day_month') }}
               </label>
@@ -337,7 +325,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 min="1"
                 max="31"
                 formControlName="dayOfMonth"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                class="w-full bg-surface-3 border border-divider text-content text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               />
             </div>
             }
@@ -346,13 +334,13 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             @if (form.get('frequency')?.value === 'WEEKLY') {
             <div class="space-y-1.5">
               <label
-                class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+                class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
               >
                 {{ ts.t()('recurring.day_week') }}
               </label>
               <select
                 formControlName="dayOfWeek"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 cursor-pointer"
+                class="w-full bg-surface-3 border border-divider text-content text-sm font-bold rounded-xl p-3 cursor-pointer"
               >
                 <option [ngValue]="1">Monday</option>
                 <option [ngValue]="2">Tuesday</option>
@@ -369,11 +357,11 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
           <!-- Duration -->
           <div class="space-y-3 pt-2">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
             >
               {{ ts.t()('recurring.duration') }}
             </label>
-            <div class="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
+            <div class="flex bg-surface-3 p-1 rounded-xl">
               <button
                 type="button"
                 (click)="setDurationMode('indefinite')"
@@ -381,7 +369,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 [ngClass]="
                   durationMode() === 'indefinite'
                     ? 'bg-white dark:bg-white/10 text-primary shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+                    : 'text-content-muted hover:text-content-muted'
                 "
               >
                 {{ ts.t()('recurring.indefinite') }}
@@ -393,7 +381,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                 [ngClass]="
                   durationMode() === 'fixed'
                     ? 'bg-white dark:bg-white/10 text-primary shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+                    : 'text-content-muted hover:text-content-muted'
                 "
               >
                 {{ ts.t()('recurring.fixed') }}
@@ -402,7 +390,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
 
             @if (durationMode() === 'fixed') {
             <div class="animate-fade-in space-y-1.5">
-              <p class="text-[10px] text-gray-400 ml-1">
+              <p class="text-[10px] text-content-subtle ml-1">
                 {{ ts.t()('recurring.how_many') }}
               </p>
               <div class="relative">
@@ -411,9 +399,9 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
                   min="1"
                   formControlName="totalOccurrences"
                   placeholder="e.g. 12"
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  class="w-full bg-surface-3 border border-divider text-content text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
-                <span class="absolute right-4 top-3.5 text-xs font-bold text-gray-400">{{
+                <span class="absolute right-4 top-3.5 text-xs font-bold text-content-subtle">{{
                   ts.t()('recurring.times')
                 }}</span>
               </div>
@@ -426,9 +414,9 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             [disabled]="
               form.invalid || (durationMode() === 'fixed' && !form.get('totalOccurrences')?.value)
             "
-            class="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm"
+            class="w-full bg-primary hover:bg-primary-dark text-primary-on py-3 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm"
           >
-            <span class="material-icons-outlined text-lg">check</span>
+            <app-icon name="check" [size]="20" />
             {{ editingId() ? ts.t()('recurring.update_btn') : ts.t()('recurring.create_btn') }}
           </button>
         </form>
@@ -441,19 +429,19 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
     <div class="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in">
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="cancelDelete()"></div>
       <div
-        class="glass-card w-full max-w-sm p-6 text-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl rounded-2xl relative animate-scale-in"
+        class="glass-card w-full max-w-sm p-6 text-center bg-surface-2 border border-divider shadow-2xl rounded-2xl relative animate-scale-in"
       >
         <div
-          class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mx-auto mb-3 text-red-500"
+          class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mx-auto mb-3 text-expense"
         >
-          <span class="material-icons-outlined text-2xl">delete_forever</span>
+          <app-icon name="delete_forever" [size]="28" />
         </div>
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1">
+        <h3 class="text-lg font-bold text-content mb-1">
           {{ ts.t()('recurring.delete_title') }}
         </h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm leading-relaxed">
+        <p class="text-content-muted mb-6 text-sm leading-relaxed">
           {{ ts.t()('recurring.delete_confirm') }}
-          <span class="font-bold text-gray-900 dark:text-white">{{
+          <span class="font-bold text-content">{{
             expenseToDelete()?.description
           }}</span
           >? This action cannot be undone.
@@ -461,7 +449,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
         <div class="flex gap-3">
           <button
             (click)="cancelDelete()"
-            class="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors text-sm"
+            class="flex-1 px-4 py-2.5 bg-surface-3 text-content-muted font-bold rounded-xl hover:bg-surface-3 transition-colors text-sm"
           >
             {{ ts.t()('trans.cancel') }}
           </button>

@@ -22,46 +22,47 @@ import { ThemeService } from '../../core/services/theme.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { UpdateUserDto } from '../../core/models/api.models';
 import { UpdateService } from '../../core/services/update.service';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="p-8 animate-fade-in max-w-4xl mx-auto space-y-6">
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-3xl font-display font-semibold text-content">
             {{ ts.t()('nav.settings') }}
           </h1>
-          <p class="text-gray-500 dark:text-gray-400">{{ ts.t()('settings.profile.title') }}</p>
+          <p class="text-content-muted">{{ ts.t()('settings.profile.title') }}</p>
         </div>
       </div>
 
       <!-- Navigation Tabs -->
       <div
-        class="grid grid-cols-3 gap-1 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl w-full md:w-fit backdrop-blur-sm border border-gray-200 dark:border-white/5"
+        class="grid grid-cols-3 gap-1 bg-surface-3 p-1 rounded-xl w-full md:w-fit backdrop-blur-sm border border-divider"
       >
         <button
           *ngFor="let tab of tabs"
           (click)="activeTab.set($any(tab.id))"
           [class]="
             activeTab() === tab.id
-              ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              ? 'bg-surface-2 text-primary shadow-sm'
+              : 'text-content-muted hover:text-content'
           "
           class="flex items-center justify-center px-2 md:px-6 py-2.5 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap gap-1 md:gap-2"
         >
-          <span class="material-icons-outlined text-lg">{{ tab.icon }}</span>
+          <app-icon [name]="tab.icon" [size]="18" />
           <span class="truncate">{{ ts.t()('settings.tabs.' + tab.id) }}</span>
         </button>
       </div>
 
       <!-- Content Area -->
       <div
-        class="glass-card p-6 md:p-8 bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 relative overflow-hidden"
+        class="glass-card p-6 md:p-8 bg-surface-2 border border-divider relative overflow-hidden"
       >
         <!-- Profile Section -->
         <div *ngIf="activeTab() === 'profile'" class="animate-fade-in-up space-y-6">
@@ -72,49 +73,49 @@ import { UpdateService } from '../../core/services/update.service';
               {{ authService.currentUserStr()?.charAt(0)?.toUpperCase() || 'U' }}
             </div>
             <div>
-              <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+              <h3 class="text-xl font-bold text-content">
                 {{ authService.currentUserStr() }}
               </h3>
-              <p class="text-sm text-gray-500">{{ ts.t()('settings.profile.title') }}</p>
+              <p class="text-sm text-content-muted">{{ ts.t()('settings.profile.title') }}</p>
             </div>
           </div>
 
           <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="space-y-4 max-w-lg">
             <div>
               <label
-                class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
+                class="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1.5"
                 >{{ ts.t()('settings.profile.name') }}</label
               >
               <input
                 formControlName="name"
                 type="text"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400"
+                class="w-full bg-surface-3 border border-divider text-content rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-content-subtle"
                 placeholder="Your Name"
               />
             </div>
 
             <div>
               <label
-                class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
+                class="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1.5"
                 >{{ ts.t()('settings.profile.email') }}</label
               >
               <input
                 formControlName="email"
                 type="email"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400"
+                class="w-full bg-surface-3 border border-divider text-content rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-content-subtle"
                 placeholder="name@example.com"
               />
             </div>
 
             <div>
               <label
-                class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
+                class="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1.5"
                 >{{ ts.t()('settings.profile.username') }}</label
               >
               <input
                 formControlName="username"
                 type="text"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400"
+                class="w-full bg-surface-3 border border-divider text-content rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-content-subtle"
                 placeholder="username"
               />
             </div>
@@ -123,11 +124,14 @@ import { UpdateService } from '../../core/services/update.service';
               <button
                 type="submit"
                 [disabled]="profileForm.invalid || isLoading()"
-                class="px-8 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center min-w-[120px]"
+                class="px-8 py-3 bg-primary hover:bg-primary-dark text-primary-on rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center min-w-[120px]"
               >
-                <span *ngIf="isLoading()" class="material-icons-outlined animate-spin text-lg mr-2"
-                  >sync</span
-                >
+                <app-icon
+                  *ngIf="isLoading()"
+                  name="sync"
+                  [size]="18"
+                  class="animate-spin mr-2"
+                />
                 {{ ts.t()('settings.profile.save') }}
               </button>
             </div>
@@ -150,58 +154,54 @@ import { UpdateService } from '../../core/services/update.service';
           <form [formGroup]="securityForm" (ngSubmit)="changePassword()" class="space-y-4 max-w-lg">
             <div>
               <label
-                class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
+                class="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1.5"
                 >{{ ts.t()('settings.security.new_password') }}</label
               >
               <div class="relative">
                 <input
                   formControlName="password"
                   [type]="showPassword() ? 'text' : 'password'"
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 pr-10 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  class="w-full bg-surface-3 border border-divider text-content rounded-xl p-3 pr-10 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   (click)="$event.preventDefault(); showPassword.set(!showPassword())"
-                  class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none cursor-pointer"
+                  class="absolute right-3 top-3 text-content-subtle hover:text-content-muted focus:outline-none cursor-pointer"
                 >
-                  <span class="material-icons-outlined text-lg">{{
-                    showPassword() ? 'visibility' : 'visibility_off'
-                  }}</span>
+                  <app-icon [name]="showPassword() ? 'visibility' : 'visibility_off'" [size]="20" />
                 </button>
               </div>
-              <p class="text-[10px] text-gray-400 mt-1">
+              <p class="text-[10px] text-content-subtle mt-1">
                 {{ ts.t()('settings.security.password_hint') }}
               </p>
             </div>
 
             <div>
               <label
-                class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
+                class="block text-xs font-medium text-content-muted uppercase tracking-wider mb-1.5"
                 >{{ ts.t()('settings.security.confirm_password') }}</label
               >
               <div class="relative">
                 <input
                   formControlName="confirmPassword"
                   [type]="showConfirmPassword() ? 'text' : 'password'"
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 pr-10 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  class="w-full bg-surface-3 border border-divider text-content rounded-xl p-3 pr-10 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   (click)="$event.preventDefault(); showConfirmPassword.set(!showConfirmPassword())"
-                  class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none cursor-pointer"
+                  class="absolute right-3 top-3 text-content-subtle hover:text-content-muted focus:outline-none cursor-pointer"
                 >
-                  <span class="material-icons-outlined text-lg">{{
-                    showConfirmPassword() ? 'visibility' : 'visibility_off'
-                  }}</span>
+                  <app-icon [name]="showConfirmPassword() ? 'visibility' : 'visibility_off'" [size]="20" />
                 </button>
               </div>
               <p
                 *ngIf="
                   securityForm.hasError('mismatch') && securityForm.get('confirmPassword')?.touched
                 "
-                class="text-red-500 text-xs mt-1"
+                class="text-expense text-xs mt-1"
               >
                 {{ ts.t()('settings.security.mismatch') }}
               </p>
@@ -211,11 +211,14 @@ import { UpdateService } from '../../core/services/update.service';
               <button
                 type="submit"
                 [disabled]="securityForm.invalid || isLoading()"
-                class="px-8 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center min-w-[120px]"
+                class="px-8 py-3 bg-primary hover:bg-primary-dark text-primary-on rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center min-w-[120px]"
               >
-                <span *ngIf="isLoading()" class="material-icons-outlined animate-spin text-lg mr-2"
-                  >sync</span
-                >
+                <app-icon
+                  *ngIf="isLoading()"
+                  name="sync"
+                  [size]="18"
+                  class="animate-spin mr-2"
+                />
                 {{ ts.t()('settings.security.btn_update') }}
               </button>
             </div>
@@ -227,19 +230,19 @@ import { UpdateService } from '../../core/services/update.service';
           <div class="max-w-xl space-y-4">
             <!-- Theme Toggle -->
             <div
-              class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-white/5 rounded-xl"
+              class="flex items-center justify-between p-4 bg-surface-3 border border-divider rounded-xl"
             >
               <div class="flex items-center gap-3">
                 <div
                   class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400"
                 >
-                  <span class="material-icons-outlined">dark_mode</span>
+                  <app-icon name="dark_mode" [size]="24" />
                 </div>
                 <div>
-                  <p class="text-gray-900 dark:text-white font-medium">
+                  <p class="text-content font-medium">
                     {{ ts.t()('settings.pref.dark_mode') }}
                   </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                  <p class="text-xs text-content-muted">
                     {{ ts.t()('settings.pref.dark_desc') }}
                   </p>
                 </div>
@@ -248,7 +251,7 @@ import { UpdateService } from '../../core/services/update.service';
               <button
                 (click)="themeService.toggleTheme()"
                 class="w-14 h-7 rounded-full relative transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                [class.bg-gray-200]="!themeService.darkMode()"
+                [class.bg-surface-3]="!themeService.darkMode()"
                 [class.bg-primary]="themeService.darkMode()"
               >
                 <div
@@ -261,19 +264,19 @@ import { UpdateService } from '../../core/services/update.service';
 
             <!-- Language -->
             <div
-              class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-white/5 rounded-xl"
+              class="flex items-center justify-between p-4 bg-surface-3 border border-divider rounded-xl"
             >
               <div class="flex items-center gap-3">
                 <div
                   class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400"
                 >
-                  <span class="material-icons-outlined">translate</span>
+                  <app-icon name="translate" [size]="24" />
                 </div>
                 <div>
-                  <p class="text-gray-900 dark:text-white font-medium">
+                  <p class="text-content font-medium">
                     {{ ts.t()('settings.pref.lang') }}
                   </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                  <p class="text-xs text-content-muted">
                     {{ ts.t()('settings.pref.lang_desc') }}
                   </p>
                 </div>
@@ -282,14 +285,14 @@ import { UpdateService } from '../../core/services/update.service';
                 <button
                   (click)="ts.setLang('en')"
                   [class.ring-2]="ts.currentLang() === 'en'"
-                  class="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 text-xs font-bold border border-gray-200 dark:border-white/10 ring-primary/50 transition-all"
+                  class="px-3 py-1 rounded-lg bg-surface-2 text-xs font-bold border border-divider ring-primary/50 transition-all"
                 >
                   EN
                 </button>
                 <button
                   (click)="ts.setLang('es')"
                   [class.ring-2]="ts.currentLang() === 'es'"
-                  class="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 text-xs font-bold border border-gray-200 dark:border-white/10 ring-primary/50 transition-all"
+                  class="px-3 py-1 rounded-lg bg-surface-2 text-xs font-bold border border-divider ring-primary/50 transition-all"
                 >
                   ES
                 </button>
@@ -297,10 +300,10 @@ import { UpdateService } from '../../core/services/update.service';
             </div>
 
             <!-- Delete Account -->
-            <div class="mt-8 pt-8 border-t border-gray-200 dark:border-white/10">
-              <h4 class="text-red-500 font-bold mb-2">{{ ts.t()('settings.danger.title') }}</h4>
+            <div class="mt-8 pt-8 border-t border-divider">
+              <h4 class="text-expense font-bold mb-2">{{ ts.t()('settings.danger.title') }}</h4>
               <div class="flex items-center justify-between">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
+                <p class="text-sm text-content-muted">
                   {{ ts.t()('settings.danger.desc') }}
                 </p>
                 <button

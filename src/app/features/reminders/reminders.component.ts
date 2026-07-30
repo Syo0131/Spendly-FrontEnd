@@ -9,22 +9,33 @@ import {
   UpdateRemindersDto,
   RemindersResponseDto,
 } from '../../core/models/api.models';
+import { IconComponent } from '../../shared/components/icon/icon.component';
+import { UiCardComponent } from '../../shared/components/ui/ui-card.component';
+import { UiButtonComponent } from '../../shared/components/ui/ui-button.component';
+import { UiEmptyStateComponent } from '../../shared/components/ui/ui-empty-state.component';
 
 @Component({
   selector: 'app-reminders',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IconComponent,
+    UiCardComponent,
+    UiButtonComponent,
+    UiEmptyStateComponent,
+  ],
   template: `
     <div class="p-6 pb-24 md:pb-6 space-y-6 animate-fade-in-up">
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between md:items-end gap-6">
         <div>
           <h1
-            class="text-xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3"
+            class="text-xl md:text-3xl font-display font-semibold text-content tracking-tight flex items-center gap-3"
           >
             {{ ts.t()('reminders.title') }}
           </h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">
+          <p class="text-sm text-content-muted mt-1 font-medium">
             {{ ts.t()('reminders.desc') }}
           </p>
         </div>
@@ -32,7 +43,7 @@ import {
           (click)="openModal()"
           class="w-full md:w-auto px-3 py-1.5 md:px-6 md:py-3 bg-primary hover:bg-primary-700 text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm md:text-base tracking-wide"
         >
-          <span class="material-icons-outlined mr-2 text-lg md:text-xl">add_circle</span>
+          <app-icon name="add_circle" [size]="20" class="mr-2" />
           {{ ts.t()('forms.add') }}
         </button>
       </div>
@@ -42,7 +53,7 @@ import {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
         @for (i of [1,2,3]; track i) {
         <div
-          class="p-5 border border-gray-200 dark:border-white/5 rounded-2xl bg-white/5 h-32"
+          class="p-5 border border-divider rounded-2xl bg-white/5 h-32"
         ></div>
         }
       </div>
@@ -50,36 +61,25 @@ import {
 
       <!-- Empty State -->
       @if (!state.isLoading() && !state.reminders().length) {
-      <div
-        class="glass-card p-12 text-center border border-gray-200 dark:border-white/10 rounded-2xl"
-      >
-        <div
-          class="w-16 h-16 rounded-full bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mx-auto mb-4"
+      <ui-card [padded]="false">
+        <ui-empty-state
+          icon="notifications_off"
+          [title]="ts.t()('goals.empty_title')"
+          [description]="ts.t()('goals.empty_desc')"
         >
-          <span class="material-icons-outlined text-3xl text-primary-300 dark:text-primary-600"
-            >notifications_off</span
-          >
-        </div>
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
-          {{ ts.t()('goals.empty_title') }}
-        </h3>
-        <p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-6 text-sm">
-          {{ ts.t()('goals.empty_desc') }}
-        </p>
-        <button
-          (click)="openModal()"
-          class="text-primary hover:text-primary-700 dark:text-primary-400 font-bold text-sm"
-        >
-          {{ ts.t()('forms.add') }}
-        </button>
-      </div>
+          <ui-button (click)="openModal()">
+            <app-icon name="add_circle" [size]="18" />
+            {{ ts.t()('forms.add') }}
+          </ui-button>
+        </ui-empty-state>
+      </ui-card>
       }
 
       <!-- List -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         @for (item of state.reminders(); track item.id) {
         <div
-          class="glass-card p-4 md:p-5 border border-gray-100 dark:border-white/5 hover:shadow-xl hover:border-indigo-500/20 transition-all duration-300 rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 group"
+          class="glass-card p-4 md:p-5 border border-divider hover:shadow-xl hover:border-indigo-500/20 transition-all duration-300 rounded-2xl bg-surface-2 group"
         >
           <!-- Card Content -->
           <div class="flex justify-between items-start mb-4">
@@ -87,15 +87,15 @@ import {
               <div
                 class="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center shrink-0 shadow-sm"
               >
-                <span class="material-icons-outlined text-primary">campaign</span>
+                <app-icon name="campaign" [size]="24" class="text-primary" />
               </div>
               <div>
                 <h3
-                  class="text-sm md:text-base font-bold text-gray-900 dark:text-white leading-tight mb-1 line-clamp-1 break-all"
+                  class="text-sm md:text-base font-bold text-content leading-tight mb-1 line-clamp-1 break-all"
                 >
                   {{ item.title }}
                 </h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+                <p class="text-xs text-content-muted line-clamp-1">
                   {{ item.message }}
                 </p>
               </div>
@@ -107,31 +107,31 @@ import {
             >
               <button
                 (click)="edit(item)"
-                class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all"
+                class="w-8 h-8 flex items-center justify-center rounded-full text-content-subtle hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all"
               >
-                <span class="material-icons-outlined text-lg">edit</span>
+                <app-icon name="edit" [size]="20" />
               </button>
               <button
                 (click)="delete(item.id)"
-                class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
+                class="w-8 h-8 flex items-center justify-center rounded-full text-content-subtle hover:text-expense hover:bg-expense/10 transition-all"
               >
-                <span class="material-icons-outlined text-lg">delete</span>
+                <app-icon name="delete" [size]="20" />
               </button>
             </div>
           </div>
 
           <div class="flex justify-between items-end mt-4">
             <div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">
+              <p class="text-xs text-content-muted font-medium">
                 {{ ts.t()('trans.date') }}
               </p>
-              <p class="text-sm font-bold text-gray-900 dark:text-white">
+              <p class="text-sm font-bold text-content">
                 {{ item.remindAt | date : 'medium' }}
               </p>
             </div>
 
             @if (item.amount) {
-            <span class="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+            <span class="text-lg font-bold text-success">
               {{ item.amount | currency : 'DOP' : 'symbol' : '1.0-0' }}
             </span>
             }
@@ -151,41 +151,39 @@ import {
 
       <!-- Dialog -->
       <div
-        class="glass-card w-full max-w-md p-6 relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-2xl animate-scale-in"
+        class="glass-card w-full max-w-md p-6 relative bg-surface-2 border border-divider shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-2xl animate-scale-in"
       >
         <button
           (click)="closeModal()"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full"
+          class="absolute top-4 right-4 text-content-subtle hover:text-content transition-colors p-2 hover:bg-surface-3 rounded-full"
         >
-          <span class="material-icons-outlined text-lg">close</span>
+          <app-icon name="close" [size]="20" />
         </button>
 
         <div class="text-center mb-6">
           <div
             class="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mx-auto mb-4"
           >
-            <span class="material-icons-outlined text-3xl text-primary">{{
-              isEditing ? 'edit_notifications' : 'notification_add'
-            }}</span>
+            <app-icon [name]="isEditing ? 'edit_notifications' : 'notification_add'" [size]="30" class="text-primary" />
           </div>
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+          <h2 class="text-xl font-bold text-content">
             {{ isEditing ? ts.t()('trans.edit') : ts.t()('goals.new_title') }}
           </h2>
-          <p class="text-gray-500 text-xs mt-1">{{ ts.t()('reminders.setup') }}</p>
+          <p class="text-content-muted text-xs mt-1">{{ ts.t()('reminders.setup') }}</p>
         </div>
 
         <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
           <!-- Title -->
           <div class="space-y-1.5">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
             >
               {{ ts.t()('trans.title') }}
             </label>
             <input
               type="text"
               formControlName="title"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-semibold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder-gray-300"
+              class="w-full bg-surface-3 border border-divider text-content text-sm font-semibold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-content-subtle"
               [placeholder]="ts.t()('trans.title')"
             />
           </div>
@@ -193,14 +191,14 @@ import {
           <!-- Message -->
           <div class="space-y-1.5">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
             >
               {{ ts.t()('trans.desc') }}
             </label>
             <input
               type="text"
               formControlName="message"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-semibold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder-gray-300"
+              class="w-full bg-surface-3 border border-divider text-content text-sm font-semibold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-content-subtle"
               [placeholder]="ts.t()('trans.desc')"
             />
           </div>
@@ -208,19 +206,19 @@ import {
           <!-- Amount (Optional) -->
           <div class="space-y-1.5">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
             >
               {{ ts.t()('trans.amount') }}
             </label>
             <div class="relative group">
               <span
-                class="absolute left-4 top-3.5 text-gray-500 dark:text-gray-400 font-bold text-lg"
+                class="absolute left-4 top-3.5 text-content-muted font-bold text-lg"
                 >$</span
               >
               <input
                 type="number"
                 formControlName="amount"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-lg font-bold rounded-xl p-3 pl-8 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder-gray-300"
+                class="w-full bg-surface-3 border border-divider text-content text-lg font-bold rounded-xl p-3 pl-8 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-content-subtle"
                 placeholder="0.00"
               />
             </div>
@@ -229,14 +227,14 @@ import {
           <!-- Date -->
           <div class="space-y-1.5">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
+              class="text-[10px] font-bold text-content-muted uppercase tracking-wider ml-1"
             >
               {{ ts.t()('trans.date') }}
             </label>
             <input
               type="datetime-local"
               formControlName="remindAt"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              class="w-full bg-surface-3 border border-divider text-content text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             />
           </div>
 
@@ -246,7 +244,7 @@ import {
             [disabled]="form.invalid || state.isLoading()"
             class="w-full bg-primary hover:bg-primary-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm"
           >
-            <span class="material-icons-outlined text-lg">check</span>
+            <app-icon name="check" [size]="20" />
             {{ isEditing ? ts.t()('action.save') : ts.t()('forms.add') }}
           </button>
         </form>

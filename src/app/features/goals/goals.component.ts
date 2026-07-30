@@ -7,29 +7,41 @@ import { NotificationService } from '../../core/services/notification.service';
 import { SavingGoalsResponse, ContributionResponse } from '../../core/models/api.models';
 import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
 import { GoalStateService } from '../../core/services/goal-state.service';
+import { IconComponent } from '../../shared/components/icon/icon.component';
+import { UiCardComponent } from '../../shared/components/ui/ui-card.component';
+import { UiButtonComponent } from '../../shared/components/ui/ui-button.component';
+import { UiEmptyStateComponent } from '../../shared/components/ui/ui-empty-state.component';
 
 @Component({
   selector: 'app-goals',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DatePickerComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    DatePickerComponent,
+    IconComponent,
+    UiCardComponent,
+    UiButtonComponent,
+    UiEmptyStateComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="p-6 pb-24 md:pb-6 animate-fade-in-up">
       <!-- Header -->
       <div class="flex justify-between items-center mb-6">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-3xl font-display font-semibold text-content">
             {{ ts.t()('goals.title') }}
           </h1>
-          <p class="text-gray-500 dark:text-gray-400">
+          <p class="text-content-muted">
             {{ ts.t()('goals.subtitle') }}
           </p>
         </div>
         <button
           (click)="openModal()"
-          class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-medium shadow-lg shadow-primary/30 transition-all hover:scale-105 flex items-center gap-2"
+          class="bg-primary hover:bg-primary-dark text-primary-on px-4 py-2 rounded-xl font-medium shadow-lg shadow-primary/30 transition-all hover:scale-105 flex items-center gap-2"
         >
-          <span class="material-icons-outlined">add</span>
+          <app-icon name="add" [size]="24" />
           <span class="hidden md:inline">{{ ts.t()('goals.add') }}</span>
         </button>
       </div>
@@ -38,19 +50,25 @@ import { GoalStateService } from '../../core/services/goal-state.service';
       <div *ngIf="isLoading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
           *ngFor="let i of [1, 2, 3]"
-          class="h-48 rounded-2xl bg-gray-100 dark:bg-white/5 animate-pulse"
+          class="h-48 rounded-2xl bg-surface-3 animate-pulse"
         ></div>
       </div>
 
       <!-- Empty State -->
-      <div
-        *ngIf="!isLoading() && goals().length === 0"
-        class="glass-card p-12 text-center text-gray-500 dark:text-gray-400"
-      >
-        <span class="material-icons-outlined text-6xl mb-4 text-primary opacity-50">flag</span>
-        <h3 class="text-xl font-bold mb-2">{{ ts.t()('goals.empty_title') }}</h3>
-        <p>{{ ts.t()('goals.empty_desc') }}</p>
-      </div>
+      @if (!isLoading() && goals().length === 0) {
+      <ui-card [padded]="false">
+        <ui-empty-state
+          icon="flag"
+          [title]="ts.t()('goals.empty_title')"
+          [description]="ts.t()('goals.empty_desc')"
+        >
+          <ui-button (click)="openModal()">
+            <app-icon name="add" [size]="18" />
+            {{ ts.t()('goals.add') }}
+          </ui-button>
+        </ui-empty-state>
+      </ui-card>
+      }
 
       <!-- Goals Grid -->
       <div
@@ -59,49 +77,49 @@ import { GoalStateService } from '../../core/services/goal-state.service';
       >
         <div
           *ngFor="let goal of goals()"
-          class="glass-card p-6 relative group border border-gray-200 dark:border-white/10"
+          class="glass-card p-6 relative group border border-divider"
         >
           <!-- Menu Button -->
           <button
             (click)="editGoal(goal)"
-            class="absolute top-4 right-4 p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
+            class="absolute top-4 right-4 p-2 text-content-subtle hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
           >
-            <span class="material-icons-outlined">edit</span>
+            <app-icon name="edit" [size]="24" />
           </button>
 
           <!-- History Button -->
           <button
             (click)="openHistory(goal)"
-            class="absolute top-4 right-14 p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors"
+            class="absolute top-4 right-14 p-2 text-content-subtle hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors"
             title="History"
           >
-            <span class="material-icons-outlined">history</span>
+            <app-icon name="history" [size]="24" />
           </button>
 
           <div class="mb-4">
             <div
               class="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-4 text-orange-500"
             >
-              <span class="material-icons-outlined text-2xl">savings</span>
+              <app-icon name="savings" [size]="28" />
             </div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">{{ goal.name }}</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <h3 class="text-xl font-bold text-content mb-1">{{ goal.name }}</h3>
+            <p class="text-sm text-content-muted">
               {{ ts.t()('goals.target') }}: {{ goal.targetDate | date }}
             </p>
           </div>
 
           <!-- Progress -->
           <div class="mb-2 flex justify-between items-end">
-            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+            <span class="text-xs font-medium text-content-muted">
               {{ calcProgress(goal) | number : '1.0-0' }}%
             </span>
-            <span class="text-sm font-bold text-gray-900 dark:text-gray-100">
+            <span class="text-sm font-bold text-content">
               DOP {{ goal.currentAmount | number : '1.2-2' }} /
               {{ goal.targetAmount | number : '1.2-2' }}
             </span>
           </div>
 
-          <div class="w-full bg-gray-200 dark:bg-white/10 rounded-full h-3 mb-6 overflow-hidden">
+          <div class="w-full bg-surface-3 rounded-full h-3 mb-6 overflow-hidden">
             <div
               class="bg-primary h-3 rounded-full transition-all duration-1000 ease-out"
               [style.width.%]="calcProgress(goal)"
@@ -110,7 +128,7 @@ import { GoalStateService } from '../../core/services/goal-state.service';
 
           <!-- Actions Footer -->
           <div
-            class="flex items-center gap-3 mt-auto pt-4 border-t border-gray-100 dark:border-white/5"
+            class="flex items-center gap-3 mt-auto pt-4 border-t border-divider"
           >
             <button
               (click)="addFunds(goal)"
@@ -120,9 +138,9 @@ import { GoalStateService } from '../../core/services/goal-state.service';
             </button>
             <button
               (click)="deleteGoal(goal)"
-              class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+              class="p-2 text-expense hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
             >
-              <span class="material-icons-outlined text-lg">delete</span>
+              <app-icon name="delete" [size]="20" />
             </button>
           </div>
         </div>
@@ -137,53 +155,53 @@ import { GoalStateService } from '../../core/services/goal-state.service';
       (click)="closeHistoryModal()"
     >
       <div
-        class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-lg md:max-w-2xl max-h-[80vh] flex flex-col animate-scale-in"
+        class="bg-surface-2 rounded-2xl shadow-2xl border border-divider w-full max-w-lg md:max-w-2xl max-h-[80vh] flex flex-col animate-scale-in"
         (click)="$event.stopPropagation()"
       >
         <div
-          class="p-6 border-b border-gray-200 dark:border-white/10 flex justify-between items-center"
+          class="p-6 border-b border-divider flex justify-between items-center"
         >
           <div>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Contribution History</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ selectedGoalName() }}</p>
+            <h2 class="text-xl font-bold text-content">Contribution History</h2>
+            <p class="text-sm text-content-muted">{{ selectedGoalName() }}</p>
           </div>
           <button
             (click)="closeHistoryModal()"
-            class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-content-muted hover:text-content-muted"
           >
-            <span class="material-icons-outlined">close</span>
+            <app-icon name="close" [size]="24" />
           </button>
         </div>
 
         <div class="p-6 overflow-y-auto no-scrollbar">
           <div
             *ngIf="contributions().length === 0"
-            class="text-center py-8 text-gray-500 dark:text-gray-400"
+            class="text-center py-8 text-content-muted"
           >
-            <span class="material-icons-outlined text-4xl mb-2 opacity-50">history</span>
+            <app-icon name="history" [size]="40" class="mb-2 opacity-50 mx-auto" />
             <p>No contributions yet.</p>
           </div>
 
           <div class="space-y-4">
             <div
               *ngFor="let item of contributions()"
-              class="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-primary/30 transition-colors group"
+              class="flex items-center justify-between p-4 rounded-xl bg-surface-3 border border-divider hover:border-primary/30 transition-colors group"
             >
               <div class="flex items-center gap-4">
                 <div
                   class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400"
                 >
-                  <span class="material-icons-outlined text-lg">arrow_upward</span>
+                  <app-icon name="arrow_upward" [size]="20" />
                 </div>
                 <div>
-                  <p class="font-bold text-gray-900 dark:text-white">
+                  <p class="font-bold text-content">
                     + {{ item.amount | number : '1.2-2' }}
                   </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                  <p class="text-xs text-content-muted">
                     {{ item.createdAt | date : 'mediumDate' }} •
                     {{ item.createdAt | date : 'shortTime' }}
                   </p>
-                  <p *ngIf="item.description" class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                  <p *ngIf="item.description" class="text-sm text-content-muted mt-1">
                     {{ item.description }}
                   </p>
                 </div>
@@ -191,10 +209,10 @@ import { GoalStateService } from '../../core/services/goal-state.service';
 
               <button
                 (click)="deleteContributionCheck(item)"
-                class="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                class="opacity-0 group-hover:opacity-100 p-2 text-expense hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                 title="Delete Contribution"
               >
-                <span class="material-icons-outlined">delete_outline</span>
+                <app-icon name="delete_outline" [size]="24" />
               </button>
             </div>
           </div>
@@ -211,20 +229,20 @@ import { GoalStateService } from '../../core/services/goal-state.service';
       (click)="closeModal()"
     >
       <div
-        class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-md animate-scale-in"
+        class="bg-surface-2 rounded-2xl shadow-2xl border border-divider w-full max-w-md animate-scale-in"
         (click)="$event.stopPropagation()"
       >
         <div
-          class="p-6 border-b border-gray-200 dark:border-white/10 flex justify-between items-center"
+          class="p-6 border-b border-divider flex justify-between items-center"
         >
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+          <h2 class="text-xl font-bold text-content">
             {{ getModalTitle() }}
           </h2>
           <button
             (click)="closeModal()"
-            class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-content-muted hover:text-content-muted"
           >
-            <span class="material-icons-outlined">close</span>
+            <app-icon name="close" [size]="24" />
           </button>
         </div>
 
@@ -232,19 +250,19 @@ import { GoalStateService } from '../../core/services/goal-state.service';
           <!-- Add Funds Mode -->
           <ng-container *ngIf="modalMode() === 'add_funds'">
             <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl flex items-center gap-3 mb-2">
-              <span class="material-icons-outlined text-blue-500 text-2xl">savings</span>
+              <app-icon name="savings" [size]="28" class="text-blue-500" />
               <div>
                 <p
-                  class="text-xs text-uppercase text-gray-500 dark:text-gray-400 font-bold tracking-wider"
+                  class="text-xs text-uppercase text-content-muted font-bold tracking-wider"
                 >
                   META
                 </p>
-                <p class="font-bold text-gray-900 dark:text-white">{{ selectedGoalName() }}</p>
+                <p class="font-bold text-content">{{ selectedGoalName() }}</p>
               </div>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-content-muted mb-1">
                 {{ ts.t()('trans.amount') }} (RD$)
               </label>
               <input
@@ -253,19 +271,19 @@ import { GoalStateService } from '../../core/services/goal-state.service';
                 placeholder="0.00"
                 (keypress)="validateNumber($event)"
                 (blur)="formatAmount('contributionAmount')"
-                class="no-spinner w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-2xl font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 text-center"
+                class="no-spinner w-full bg-surface-3 border border-divider rounded-xl px-4 py-3 text-2xl font-bold text-content focus:ring-2 focus:ring-primary/50 text-center"
               />
             </div>
 
             <div class="mt-4">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-content-muted mb-1">
                 {{ ts.t()('forms.description_optional') }}
               </label>
               <input
                 type="text"
                 formControlName="contributionDescription"
                 placeholder="e.g. Weekly Savings"
-                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50"
+                class="w-full bg-surface-3 border border-divider rounded-xl px-4 py-2.5 text-content focus:ring-2 focus:ring-primary/50"
               />
             </div>
           </ng-container>
@@ -274,19 +292,19 @@ import { GoalStateService } from '../../core/services/goal-state.service';
           <ng-container *ngIf="modalMode() !== 'add_funds'">
             <!-- Name -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-content-muted mb-1">
                 {{ ts.t()('goals.field_name') }}
               </label>
               <input
                 type="text"
                 formControlName="name"
-                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50"
+                class="w-full bg-surface-3 border border-divider rounded-xl px-4 py-2.5 text-content focus:ring-2 focus:ring-primary/50"
               />
             </div>
 
             <!-- Target Amount -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-content-muted mb-1">
                 {{ ts.t()('goals.field_target') }}
               </label>
               <input
@@ -294,13 +312,13 @@ import { GoalStateService } from '../../core/services/goal-state.service';
                 formControlName="targetAmount"
                 (keypress)="validateNumber($event)"
                 (blur)="formatAmount('targetAmount')"
-                class="no-spinner w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50"
+                class="no-spinner w-full bg-surface-3 border border-divider rounded-xl px-4 py-2.5 text-content focus:ring-2 focus:ring-primary/50"
               />
             </div>
 
             <!-- Target Date -->
             <div class="z-20 relative">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-content-muted mb-1">
                 {{ ts.t()('goals.field_date') }}
               </label>
               <app-date-picker formControlName="targetDate"></app-date-picker>
@@ -311,7 +329,7 @@ import { GoalStateService } from '../../core/services/goal-state.service';
             <button
               type="button"
               (click)="closeModal()"
-              class="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-700 font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+              class="flex-1 py-3 rounded-xl border border-divider font-medium hover:bg-surface-3 transition-colors"
             >
               {{ ts.t()('action.cancel') }}
             </button>
@@ -324,7 +342,7 @@ import { GoalStateService } from '../../core/services/goal-state.service';
                   (!form.get('contributionAmount')?.value ||
                     form.get('contributionAmount')?.value <= 0))
               "
-              class="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all disabled:opacity-50"
+              class="flex-1 py-3 rounded-xl bg-primary text-primary-on font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all disabled:opacity-50"
             >
               {{ isSubmitting() ? '...' : ts.t()('action.save') }}
             </button>
@@ -342,19 +360,19 @@ import { GoalStateService } from '../../core/services/goal-state.service';
       (click)="closeDeleteModal()"
     >
       <div
-        class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-sm p-6 animate-scale-in text-center"
+        class="bg-surface-2 rounded-2xl shadow-2xl border border-divider w-full max-w-sm p-6 animate-scale-in text-center"
         (click)="$event.stopPropagation()"
       >
         <div
-          class="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4 text-red-500"
+          class="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4 text-expense"
         >
-          <span class="material-icons-outlined text-3xl">delete_forever</span>
+          <app-icon name="delete_forever" [size]="30" />
         </div>
 
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+        <h3 class="text-xl font-bold text-content mb-2">
           {{ deleteMode() === 'goal' ? ts.t()('goals.delete_title') : 'Delete Contribution' }}
         </h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6">
+        <p class="text-content-muted mb-6">
           {{
             deleteMode() === 'goal'
               ? ts.t()('goals.confirm_delete')
@@ -365,7 +383,7 @@ import { GoalStateService } from '../../core/services/goal-state.service';
         <div class="flex gap-3">
           <button
             (click)="closeDeleteModal()"
-            class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+            class="flex-1 py-2.5 rounded-xl border border-divider font-medium hover:bg-surface-3 transition-colors"
           >
             {{ ts.t()('action.cancel') }}
           </button>

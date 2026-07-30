@@ -3,127 +3,55 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, IconComponent],
   template: `
     <aside
-      class="fixed inset-y-0 left-0 z-50 w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r border-gray-200 dark:border-white/10 hidden lg:block transition-colors duration-300"
+      class="fixed inset-y-0 left-0 z-50 w-64 bg-surface-2 border-r border-divider hidden lg:block transition-colors duration-300"
     >
       <!-- Logo -->
-      <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-white/5">
+      <div class="h-16 flex items-center px-6 border-b border-divider">
         <div
           class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center mr-3 shadow-lg shadow-primary/20"
         >
-          <span class="text-white font-bold text-lg">S</span>
+          <span class="text-primary-on font-bold text-lg">S</span>
         </div>
-        <span
-          class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary dark:from-white dark:to-gray-400"
-          >Spendly</span
-        >
+        <span class="font-display text-xl font-semibold tracking-tight text-content">Spendly</span>
       </div>
 
       <!-- Nav -->
       <nav class="p-4 space-y-1">
+        @for (item of navItems; track item.link) {
         <a
-          routerLink="/dashboard"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
+          [routerLink]="item.link"
+          routerLinkActive="bg-primary/10 text-primary-ink font-semibold"
+          class="flex items-center px-4 py-3 text-content-muted rounded-xl hover:bg-surface-3 hover:text-content transition-all font-medium"
         >
-          <span class="material-icons-outlined mr-3">dashboard</span>
-          {{ ts.t()('nav.dashboard') }}
+          <app-icon [name]="item.icon" class="mr-3" [size]="22" />
+          {{ ts.t()(item.label) }}
         </a>
-
-        <a
-          routerLink="/incomes"
-          routerLinkActive="bg-teal-50 text-teal-600 dark:bg-teal-500/20 dark:text-teal-300"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-teal-600 dark:hover:text-white transition-all group"
-        >
-          <span class="material-icons-outlined mr-3">trending_up</span>
-          {{ ts.t()('nav.incomes') }}
-        </a>
-
-        <a
-          routerLink="/expenses"
-          routerLinkActive="bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-rose-600 dark:hover:text-white transition-all group"
-        >
-          <span class="material-icons-outlined mr-3">trending_down</span>
-          {{ ts.t()('nav.expenses') }}
-        </a>
-
-        <a
-          routerLink="/banks"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
-        >
-          <span class="material-icons-outlined mr-3">account_balance</span>
-          {{ ts.t()('nav.banks') }}
-        </a>
-
-        <a
-          routerLink="/budgets"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
-        >
-          <span class="material-icons-outlined mr-3">pie_chart</span>
-          {{ ts.t()('nav.budgets') }}
-        </a>
-
-        <a
-          routerLink="/goals"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
-        >
-          <span class="material-icons-outlined mr-3">flag</span>
-          {{ ts.t()('nav.goals') }}
-        </a>
-
-        <a
-          routerLink="/reminders"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
-        >
-          <span class="material-icons-outlined mr-3">notifications</span>
-          {{ ts.t()('nav.reminders') }}
-        </a>
-
-        <a
-          routerLink="/recurring"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
-        >
-          <span class="material-icons-outlined mr-3">replay</span>
-          {{ ts.t()('nav.recurring') }}
-        </a>
-
-        <a
-          routerLink="/settings"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
-        >
-          <span class="material-icons-outlined mr-3">settings</span>
-          {{ ts.t()('nav.settings') }}
-        </a>
+        }
       </nav>
 
       <!-- User Profile (Bottom) -->
-      <div class="absolute bottom-0 w-full p-4 border-t border-gray-200 dark:border-white/5">
-        <div class="flex items-center p-3 rounded-xl bg-gray-50 dark:bg-white/5 space-x-3">
+      <div class="absolute bottom-0 w-full p-4 border-t border-divider">
+        <div class="flex items-center p-3 rounded-xl bg-surface-3 space-x-3">
           <div
-            class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center text-gray-700 dark:text-white font-semibold"
+            class="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-primary-ink font-display font-semibold"
           >
             {{ (authService.currentUserStr() || 'U').charAt(0).toUpperCase() }}
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+            <p class="text-sm font-medium text-content truncate">
               {{ authService.currentUserStr() || 'User' }}
             </p>
             <button
               (click)="authService.logout()"
-              class="text-xs text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300"
+              class="text-xs text-expense hover:opacity-80 transition-opacity"
             >
               {{ ts.t()('nav.logout') }}
             </button>
@@ -135,5 +63,18 @@ import { TranslationService } from '../../core/services/translation.service';
   styles: [],
 })
 export class SidebarComponent {
+  readonly navItems = [
+    { link: '/dashboard', icon: 'dashboard', label: 'nav.dashboard' },
+    { link: '/incomes', icon: 'trending_up', label: 'nav.incomes' },
+    { link: '/expenses', icon: 'trending_down', label: 'nav.expenses' },
+    { link: '/categories', icon: 'category', label: 'nav.categories' },
+    { link: '/banks', icon: 'account_balance', label: 'nav.banks' },
+    { link: '/budgets', icon: 'pie_chart', label: 'nav.budgets' },
+    { link: '/goals', icon: 'flag', label: 'nav.goals' },
+    { link: '/reminders', icon: 'notifications', label: 'nav.reminders' },
+    { link: '/recurring', icon: 'replay', label: 'nav.recurring' },
+    { link: '/settings', icon: 'settings', label: 'nav.settings' },
+  ];
+
   constructor(public authService: AuthService, public ts: TranslationService) {}
 }

@@ -2,6 +2,7 @@ import { Component, inject, signal, HostListener } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule, NgClass } from '@angular/common';
 import { SidebarComponent } from '../sidebar/sidebar.component';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 import { TranslationService } from '../../core/services/translation.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -25,10 +26,11 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
     RouterLink,
     RouterLinkActive,
     ToastComponent,
+    IconComponent,
   ],
   template: `
     <div
-      class="min-h-screen bg-gray-50 dark:bg-slate-900 flex text-slate-900 dark:text-white font-sans relative transition-colors duration-300 overflow-x-hidden"
+      class="min-h-screen bg-surface flex text-content font-sans relative transition-colors duration-300 overflow-x-hidden"
     >
       <!-- Desktop Sidebar -->
       <app-sidebar></app-sidebar>
@@ -45,10 +47,10 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
 
         <!-- Topbar for Mobile -->
         <header
-          class="lg:hidden flex items-center justify-between px-4 py-2 pt-safe min-h-[3.5rem] border-b border-gray-200 dark:border-white/5 bg-white/80 dark:bg-slate-900/50 backdrop-blur sticky top-0 z-30 transition-colors duration-300"
+          class="lg:hidden flex items-center justify-between px-4 py-2 pt-safe min-h-[3.5rem] border-b border-divider bg-surface-2/80 backdrop-blur sticky top-0 z-30 transition-colors duration-300"
         >
           <span
-            class="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary"
+            class="font-display font-semibold text-lg bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary"
             >Spendly</span
           >
           <div class="flex items-center space-x-2">
@@ -60,47 +62,49 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
           <div class="relative">
             <button
                 (click)="toggleNotifications()"
-                class="flex items-center justify-center w-10 h-10 rounded-full bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 border border-gray-200 dark:border-white/5 backdrop-blur-md transition-all text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white shadow-sm"
+                class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-2 hover:bg-surface-3 border border-divider backdrop-blur-md transition-all text-content-muted hover:text-primary shadow-sm"
             >
-                <span class="material-icons-outlined text-xl">notifications</span>
+                <app-icon name="notifications" [size]="22" />
                 @if (ns.unreadCount() > 0) {
-                  <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+                  <span class="absolute top-0 right-0 w-3 h-3 bg-expense rounded-full border-2 border-surface-2"></span>
                 }
             </button>
 
             <!-- Notification Dropdown -->
             @if (showNotifications) {
-              <div class="absolute right-0 top-12 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-200 dark:border-white/10 py-2 z-50 animate-fade-in-up origin-top-right overflow-hidden">
-                <div class="px-4 py-2 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                    <h3 class="font-bold text-sm text-gray-900 dark:text-white">{{ ts.t()('notif.title') }}</h3>
+              <div class="absolute right-0 top-12 w-80 bg-surface-2 rounded-2xl shadow-xl border border-divider py-2 z-50 animate-fade-in-up origin-top-right overflow-hidden">
+                <div class="px-4 py-2 border-b border-divider flex justify-between items-center bg-surface-3">
+                    <h3 class="font-bold text-sm text-content">{{ ts.t()('notif.title') }}</h3>
                     @if (ns.unreadCount() > 0) {
                       <button (click)="ns.markAllAsRead()" class="text-xs text-primary hover:underline">{{ ts.t()('notif.mark_read') }}</button>
                     }
                     @if (ns.unreadCount() === 0 && ns.history().length > 0) {
-                      <button (click)="ns.clearHistory()" class="text-xs text-red-500 hover:underline">{{ ts.t()('notif.clear') }}</button>
+                      <button (click)="ns.clearHistory()" class="text-xs text-expense hover:underline">{{ ts.t()('notif.clear') }}</button>
                     }
                 </div>
                 
                 <div class="max-h-80 overflow-y-auto">
                     @if (!ns.history().length) {
-                      <div class="p-8 text-center text-gray-400 text-sm">
+                      <div class="p-8 text-center text-content-subtle text-sm">
                           {{ ts.t()('notif.empty') }}
                       </div>
                     }
                     
                     @for (item of ns.history(); track item.timestamp) {
-                      <div class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/5 border-b border-gray-100 dark:border-white/5 last:border-0 transition-colors flex gap-3" [class.bg-blue-50]="!item.read && false" [class.dark:bg-blue-900/10]="!item.read && false">
+                      <div class="px-4 py-3 hover:bg-surface-3 border-b border-divider last:border-0 transition-colors flex gap-3">
                            <div class="mt-0.5 shrink-0">
-                              <span class="material-icons-outlined text-lg" [ngClass]="{'text-green-500': item.type === 'success', 'text-red-500': item.type === 'error', 'text-blue-500': item.type === 'info'}">
-                                  {{ item.type === 'success' ? 'check_circle' : item.type === 'error' ? 'error' : 'info' }}
-                              </span>
+                              <app-icon
+                                [size]="18"
+                                [ngClass]="{'text-success': item.type === 'success', 'text-expense': item.type === 'error', 'text-primary-ink': item.type === 'info'}"
+                                [name]="item.type === 'success' ? 'check_circle' : item.type === 'error' ? 'error' : 'info'"
+                              />
                            </div>
                            <div class="flex-1 min-w-0">
-                               <p class="text-sm text-gray-800 dark:text-gray-200 leading-snug">{{ ts.translate(item.message) }}</p>
-                               <p class="text-xs text-gray-400 mt-1">{{ formatDate(item.timestamp) }}</p>
+                               <p class="text-sm text-content leading-snug">{{ ts.translate(item.message) }}</p>
+                               <p class="text-xs text-content-subtle mt-1">{{ formatDate(item.timestamp) }}</p>
                            </div>
                            @if (!item.read) {
-                             <div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
+                             <div class="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0"></div>
                            }
                       </div>
                     }
@@ -122,15 +126,15 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
 
       <!-- Bottom Navigation (Mobile Only) -->
       <div
-        class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 z-50 pb-safe transition-colors duration-300"
+        class="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-2/90 backdrop-blur-xl border-t border-divider z-50 pb-safe transition-colors duration-300"
       >
         <div class="h-16 grid grid-cols-6 items-center px-1">
         <a
           routerLink="/dashboard"
           routerLinkActive="text-primary"
-          class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-gray-300 transition-colors"
+          class="flex flex-col items-center justify-center w-full h-full text-content-subtle hover:text-primary transition-colors"
         >
-          <span class="material-icons-outlined text-2xl mb-0.5">dashboard</span>
+          <app-icon name="dashboard" [size]="26" class="mb-0.5" />
           <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
             ts.t()('nav.dashboard')
           }}</span>
@@ -139,10 +143,10 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
         
         <a
         routerLink="/incomes"
-        routerLinkActive="text-teal-500 dark:text-teal-400"
-        class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-teal-500 dark:hover:text-gray-300 transition-colors"
+        routerLinkActive="text-primary-ink"
+        class="flex flex-col items-center justify-center w-full h-full text-content-subtle hover:text-primary transition-colors"
         >
-        <span class="material-icons-outlined text-2xl mb-0.5">trending_up</span>
+        <app-icon name="trending_up" [size]="26" class="mb-0.5" />
         <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
           ts.t()('nav.incomes')
         }}</span>
@@ -150,10 +154,10 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
         
         <a
         routerLink="/expenses"
-        routerLinkActive="text-rose-500 dark:text-rose-400"
-        class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-rose-500 dark:hover:text-gray-300 transition-colors"
+        routerLinkActive="text-primary-ink"
+        class="flex flex-col items-center justify-center w-full h-full text-content-subtle hover:text-primary transition-colors"
         >
-        <span class="material-icons-outlined text-2xl mb-0.5">trending_down</span>
+        <app-icon name="trending_down" [size]="26" class="mb-0.5" />
         <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
           ts.t()('nav.expenses')
         }}</span>
@@ -162,9 +166,9 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
         <a
           routerLink="/banks"
           routerLinkActive="text-primary"
-          class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-gray-300 transition-colors"
+          class="flex flex-col items-center justify-center w-full h-full text-content-subtle hover:text-primary transition-colors"
         >
-          <span class="material-icons-outlined text-2xl mb-0.5">account_balance</span>
+          <app-icon name="account_balance" [size]="26" class="mb-0.5" />
           <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
             ts.t()('nav.banks')
           }}</span>
@@ -172,9 +176,9 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
         <a
         routerLink="/budgets"
         routerLinkActive="text-primary"
-        class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-gray-300 transition-colors"
+        class="flex flex-col items-center justify-center w-full h-full text-content-subtle hover:text-primary transition-colors"
         >
-        <span class="material-icons-outlined text-2xl mb-0.5">pie_chart</span>
+        <app-icon name="pie_chart" [size]="26" class="mb-0.5" />
         <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
           ts.t()('nav.budgets')
         }}</span>
@@ -183,9 +187,9 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
         <!-- Menu Button (Replaces Settings) -->
         <button
           (click)="toggleMobileMenu()"
-          class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-gray-300 transition-colors"
+          class="flex flex-col items-center justify-center w-full h-full text-content-subtle hover:text-primary transition-colors"
         >
-          <span class="material-icons-outlined text-2xl mb-0.5">menu</span>
+          <app-icon name="menu" [size]="26" class="mb-0.5" />
           <span class="text-[9px] font-medium truncate w-full text-center px-0.5">{{
             ts.t()('nav.menu')
           }}</span>
@@ -208,72 +212,82 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
   
           <!-- Drawer -->
           <div
-            class="absolute right-0 top-0 bottom-0 w-3/4 max-w-sm bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-300 transform flex flex-col"
+            class="absolute right-0 top-0 bottom-0 w-3/4 max-w-sm bg-surface-2 shadow-2xl transition-transform duration-300 transform flex flex-col"
           >
             <div
-              class="p-6 border-b border-gray-100 dark:border-white/5 flex justify-between items-center"
+              class="p-6 border-b border-divider flex justify-between items-center"
             >
-              <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+              <h2 class="text-lg font-bold text-content">
                 {{ ts.t()('nav.menu') }}
               </h2>
               <button
                 (click)="closeMobileMenu()"
-                class="p-2 -mr-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+                class="p-2 -mr-2 text-content-muted hover:text-content transition-colors"
               >
-                <span class="material-icons-outlined">close</span>
+                <app-icon name="close" [size]="24" />
               </button>
             </div>
   
             <nav class="flex-1 overflow-y-auto p-4 space-y-2">
               <!-- New Features -->
               <a
+                routerLink="/categories"
+                (click)="closeMobileMenu()"
+                routerLinkActive="bg-primary/10 text-primary-ink font-semibold"
+                class="flex items-center px-4 py-3 text-content-muted rounded-xl hover:bg-surface-3 transition-colors"
+              >
+                <app-icon name="category" [size]="22" class="mr-3" />
+                <span class="font-medium">{{ ts.t()('nav.categories') }}</span>
+              </a>
+
+              <a
                 routerLink="/goals"
                 (click)="closeMobileMenu()"
-                routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-                class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                routerLinkActive="bg-primary/10 text-primary-ink font-semibold"
+                class="flex items-center px-4 py-3 text-content-muted rounded-xl hover:bg-surface-3 transition-colors"
               >
-                <span class="material-icons-outlined mr-3">flag</span>
+                <app-icon name="flag" [size]="22" class="mr-3" />
                 <span class="font-medium">{{ ts.t()('nav.goals') }}</span>
               </a>
   
               <a
                 routerLink="/reminders"
                 (click)="closeMobileMenu()"
-                routerLinkActive="bg-purple-50 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300"
-                class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                routerLinkActive="bg-primary/10 text-primary-ink font-semibold"
+                class="flex items-center px-4 py-3 text-content-muted rounded-xl hover:bg-surface-3 transition-colors"
               >
-                <span class="material-icons-outlined mr-3">notifications</span>
+                <app-icon name="notifications" [size]="22" class="mr-3" />
                 <span class="font-medium">{{ ts.t()('nav.reminders') }}</span>
               </a>
   
               <a
                 routerLink="/recurring"
                 (click)="closeMobileMenu()"
-                routerLinkActive="bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300"
-                class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                routerLinkActive="bg-primary/10 text-primary-ink font-semibold"
+                class="flex items-center px-4 py-3 text-content-muted rounded-xl hover:bg-surface-3 transition-colors"
               >
-                <span class="material-icons-outlined mr-3">replay</span>
+                <app-icon name="replay" [size]="22" class="mr-3" />
                 <span class="font-medium">{{ ts.t()('nav.recurring') }}</span>
               </a>
   
-              <div class="my-4 border-t border-gray-100 dark:border-white/5"></div>
+              <div class="my-4 border-t border-divider"></div>
   
               <a
                 routerLink="/settings"
                 (click)="closeMobileMenu()"
-                routerLinkActive="bg-gray-100 text-gray-900 dark:bg-white/10 dark:text-white"
-                class="flex items-center px-4 py-3 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                routerLinkActive="bg-surface-3 text-content font-semibold"
+                class="flex items-center px-4 py-3 text-content-muted rounded-xl hover:bg-surface-3 transition-colors"
               >
-                <span class="material-icons-outlined mr-3">settings</span>
+                <app-icon name="settings" [size]="22" class="mr-3" />
                 <span class="font-medium">{{ ts.t()('nav.settings') }}</span>
               </a>
   
               <!-- Logout Button -->
               <button
                 (click)="authService.logout(); closeMobileMenu()"
-                class="w-full flex items-center px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors mt-4"
+                class="w-full flex items-center px-4 py-3 text-expense hover:bg-expense/10 rounded-xl transition-colors mt-4"
               >
-                <span class="material-icons-outlined mr-3">logout</span>
+                <app-icon name="logout" [size]="22" class="mr-3" />
                 <span class="font-medium">{{ ts.t()('nav.logout') || 'Logout' }}</span>
               </button>
             </nav>
@@ -288,27 +302,27 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
         <div
           class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
         >
-          <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 max-w-sm w-full border border-gray-100 dark:border-white/10 relative overflow-hidden">
+          <div class="bg-surface-2 rounded-2xl shadow-2xl p-6 max-w-sm w-full border border-divider relative overflow-hidden">
               <!-- Decorators -->
-              <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-12 -mt-12"></div>
+              <div class="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl -mr-12 -mt-12"></div>
  
               <div class="flex flex-col items-center text-center gap-4">
-                <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-full">
-                  <span class="material-icons-outlined text-3xl text-blue-500">system_update</span>
+                <div class="p-3 bg-primary/10 rounded-full">
+                  <app-icon name="system_update" [size]="30" class="text-primary-ink" />
                 </div>
                 
                 <div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                    <h3 class="text-xl font-bold text-content mb-1">
                       {{ ts.translate('notif.update_available') }}
                     </h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                    <p class="text-sm text-content-muted">
                       Latest version is ready to install.
                     </p>
                 </div>
  
                 <button
                   (click)="updateService.reloadApp()"
-                  class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-500/20"
+                  class="w-full py-3 bg-primary hover:bg-primary-dark text-primary-on font-semibold rounded-xl transition-all active:scale-95 shadow-lg shadow-primary/20"
                 >
                   Refresh Now
                 </button>

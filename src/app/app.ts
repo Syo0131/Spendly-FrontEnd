@@ -9,7 +9,7 @@ import { Title } from '@angular/platform-browser';
   selector: 'app-root',
   imports: [RouterOutlet],
   templateUrl: './app.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './app.css',
 })
 export class App implements OnInit {

@@ -120,7 +120,7 @@ import { UiInputDirective } from '../../../shared/components/ui/ui-input.directi
       </form>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       .animate-fade-in {

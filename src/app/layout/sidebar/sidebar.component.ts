@@ -60,7 +60,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
       </div>
     </aside>
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [],
 })
 export class SidebarComponent {

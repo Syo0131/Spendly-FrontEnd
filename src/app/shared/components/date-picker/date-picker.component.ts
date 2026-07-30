@@ -190,7 +190,7 @@ import { IconComponent } from '../icon/icon.component';
        }
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [],
 })
 export class DatePickerComponent implements ControlValueAccessor {

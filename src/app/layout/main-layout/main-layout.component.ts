@@ -333,7 +333,7 @@ import { AlertService } from '../../core/services/alert.service'; // Added Alert
 
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [],
 })
 export class MainLayoutComponent {

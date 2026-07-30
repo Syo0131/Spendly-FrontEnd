@@ -252,7 +252,7 @@ import { UiEmptyStateComponent } from '../../shared/components/ui/ui-empty-state
     </div>
     }
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [],
 })
 export class RemindersComponent {

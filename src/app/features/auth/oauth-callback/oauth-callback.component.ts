@@ -67,7 +67,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
       </div>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [],
 })
 export class OAuthCallbackComponent implements OnInit {

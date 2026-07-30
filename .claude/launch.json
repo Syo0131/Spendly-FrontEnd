@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["start"],
       "port": 4200
+    },
+    {
+      "name": "spendly-pwa-prod",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["http-server", "dist/spendly-pwa/browser", "-p", "4300", "-c-1"],
+      "port": 4300
     }
   ]
 }

@@ -277,7 +277,7 @@ import { CategoryIconPipe } from '../../shared/icons/category-icon.pipe';
       </div>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       .animate-scale-in {

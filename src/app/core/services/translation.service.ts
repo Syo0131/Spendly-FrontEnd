@@ -145,6 +145,28 @@ export class TranslationService {
       es: 'No se pudo desconectar el banco.',
       en: 'Failed to disconnect bank.',
     },
+    'banks.whatsapp_cta': {
+      es: 'Escríbeme por WhatsApp para activar Premium',
+      en: 'Message on WhatsApp to activate Premium',
+    },
+    'banks.whatsapp_msg': {
+      es: 'Hola Daybel, quiero activar Spendly Premium en mi cuenta para conectar mis bancos.',
+      en: 'Hi Daybel, I want to activate Spendly Premium on my account to connect my banks.',
+    },
+    'banks.disconnect_title': { es: '¿Desconectar Banco?', en: 'Disconnect Bank?' },
+    'banks.disconnect_confirm': {
+      es: '¿Estás seguro de que deseas desconectar',
+      en: 'Are you sure you want to disconnect',
+    },
+    'banks.disconnect_desc': {
+      es: 'Esto detendrá las actualizaciones automáticas de transacciones.',
+      en: 'This will stop automatic transaction updates.',
+    },
+    'banks.disconnect_btn': { es: 'Desconectar', en: 'Disconnect' },
+    'banks.disconnect_success': {
+      es: 'Banco desconectado con éxito',
+      en: 'Bank disconnected successfully',
+    },
 
     'settings.security.note_title': { es: 'Nota de Seguridad', en: 'Security Note' },
     'settings.security.note_desc': {

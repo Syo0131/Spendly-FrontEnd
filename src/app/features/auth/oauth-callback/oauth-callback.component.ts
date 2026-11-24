@@ -104,7 +104,6 @@ export class OAuthCallbackComponent implements OnInit {
   ngOnInit() {
     this.route.queryParams.subscribe({
       next: (params) => {
-        console.log('OAuth Callback Params:', params);
         // Simulate a small delay for better UX so the spinner is seen
         setTimeout(() => {
           this.loading.set(false);

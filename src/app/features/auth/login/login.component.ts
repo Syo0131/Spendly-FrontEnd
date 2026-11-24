@@ -139,15 +139,12 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    console.log('Form Status:', this.loginForm.status, 'Errors:', this.loginForm.errors); // Debug
     if (this.loginForm.valid) {
       this.isLoading.set(true);
       this.error.set('');
 
-      console.log('Attempting login with:', this.loginForm.value.username);
       this.authService.login(this.loginForm.value).subscribe({
         next: () => {
-          console.log('Login successful');
           this.router.navigate(['/dashboard']);
         },
         error: (err) => {

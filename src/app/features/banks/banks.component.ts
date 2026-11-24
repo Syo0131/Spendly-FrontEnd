@@ -231,8 +231,6 @@ export class BanksComponent implements OnInit {
 
     this.apiService.getBankStatus().subscribe({
       next: (res) => {
-        console.log('Bank Status Response:', res); // DEBUG
-
         let connected: string[] = [];
         if (Array.isArray(res)) {
           connected = res;

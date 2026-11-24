@@ -80,7 +80,6 @@ export class ExpenseStateService {
           );
         }),
         tap((data) => {
-          console.log('[ExpenseService] Loaded all items:', data.content.length);
           this.cache.set(key, data);
         }),
         catchError((err) => {

@@ -20,8 +20,6 @@ export class DataPreloadService {
   private remindersState = inject(RemindersStateService);
 
   preloadAll() {
-    console.log('[DataPreload] Starting aggressive preloading...');
-
     // Heavy Sections: Load only first page (6 items)
     // This allows instant display without waiting for the full "Download All" forkJoin logic
     this.expenseState.preload();
@@ -40,12 +38,10 @@ export class DataPreloadService {
     const month = now.getMonth() + 1;
 
     this.api.getExpensesMonthTotal(year, month).subscribe({
-      next: () => console.log('Month Total prefetched'),
       error: () => {},
     });
 
     this.api.getExpensesByCategory(year, month).subscribe({
-      next: () => console.log('Category Stats prefetched'),
       error: () => {},
     });
   }

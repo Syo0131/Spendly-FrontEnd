@@ -34,7 +34,6 @@ export class AuthService {
       // Token exists but is expired
       this.logout();
     }
-    console.log('AuthService: Initialized. Authenticated:', this.isAuthenticated());
   }
 
   private isTokenExpired(token: string): boolean {
@@ -51,7 +50,6 @@ export class AuthService {
     if (!this.isAuthenticated()) return;
     this.apiService.checkPremiumStatus().subscribe({
       next: (res) => {
-        console.log('AuthService: Premium status verified:', res.isPremium);
         this.isPremium.set(res.isPremium);
         localStorage.setItem('spendly_premium', String(res.isPremium));
       },
@@ -61,7 +59,6 @@ export class AuthService {
 
   login(credentials: LoginRequest): Observable<TokenResponse> {
     const url = `${this.apiUrl}/login`;
-    console.log(`AuthService: calling POST ${url}`, credentials);
     return this.http
       .post<TokenResponse>(url, credentials)
       .pipe(tap((response) => this.handleAuthSuccess(response)));
@@ -72,7 +69,6 @@ export class AuthService {
   }
 
   logout(): void {
-    console.log('AuthService: Logout called. Clearing token.');
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem('spendly_user');
     localStorage.removeItem('spendly_premium');
@@ -93,10 +89,6 @@ export class AuthService {
   }
 
   private handleAuthSuccess(response: TokenResponse): void {
-    console.log(
-      'AuthService: Auth Success. Saving token:',
-      response.token.substring(0, 10) + '...'
-    );
     localStorage.setItem(this.tokenKey, response.token);
     this.isAuthenticated.set(true);
     if (response.username) {

@@ -1,9 +1,17 @@
 import { Routes } from '@angular/router';
+import { isDevMode } from '@angular/core';
 import { AuthLayoutComponent } from './layout/auth-layout/auth-layout.component';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { authGuard, publicGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
+  {
+    path: '__ui',
+    title: 'UI Component Showcase | Spendly',
+    canMatch: [() => isDevMode()],
+    loadComponent: () =>
+      import('./shared/ui/showcase/ui-showcase.component').then((m) => m.UiShowcaseComponent),
+  },
   {
     path: 'auth',
     component: AuthLayoutComponent,

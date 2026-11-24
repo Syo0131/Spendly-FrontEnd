@@ -42,15 +42,16 @@ export class ButtonComponent {
   variant = input<ButtonVariant>('primary');
   size = input<ButtonSize>('md');
   loading = input<boolean>(false);
+  disabled = input<boolean>(false);
 
   @HostBinding('attr.aria-busy')
   get ariaBusy(): boolean | null {
     return this.loading() ? true : null;
   }
 
-  @HostBinding('attr.disabled')
-  get disabledAttr(): boolean | null {
-    return this.loading() ? true : null;
+  @HostBinding('disabled')
+  get isDisabled(): boolean {
+    return this.disabled() || this.loading();
   }
 
   spinnerSize = computed<'sm' | 'md' | 'lg'>(() => {

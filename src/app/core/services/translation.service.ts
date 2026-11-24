@@ -318,6 +318,17 @@ export class TranslationService {
     'recurring.deleted': { es: 'Gasto eliminado', en: 'Expense deleted' },
     'recurring.fail': { es: 'Operación fallida', en: 'Operation failed' },
     'recurring.inactive': { es: 'INACTIVO', en: 'INACTIVE' },
+    'recurring.freq_daily': { es: 'Diario', en: 'Daily' },
+    'recurring.freq_weekly': { es: 'Semanal', en: 'Weekly' },
+    'recurring.freq_monthly': { es: 'Mensual', en: 'Monthly' },
+    'recurring.freq_yearly': { es: 'Anual', en: 'Yearly' },
+    'weekdays.mon': { es: 'Lunes', en: 'Monday' },
+    'weekdays.tue': { es: 'Martes', en: 'Tuesday' },
+    'weekdays.wed': { es: 'Miércoles', en: 'Wednesday' },
+    'weekdays.thu': { es: 'Jueves', en: 'Thursday' },
+    'weekdays.fri': { es: 'Viernes', en: 'Friday' },
+    'weekdays.sat': { es: 'Sábado', en: 'Saturday' },
+    'weekdays.sun': { es: 'Domingo', en: 'Sunday' },
 
     'reminders.setup': {
       es: 'Configura los detalles de tu alerta',

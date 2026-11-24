@@ -3,8 +3,6 @@ import {
   forwardRef,
   signal,
   computed,
-  ElementRef,
-  HostListener,
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -14,7 +12,7 @@ import { TranslationService } from '../../../core/services/translation.service';
 @Component({
   selector: 'app-date-picker',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -23,187 +21,181 @@ import { TranslationService } from '../../../core/services/translation.service';
     },
   ],
   template: `
-    <div class="relative">
-      <!-- Input Field -->
-      <div
-        class="flex items-center justify-between w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 cursor-pointer hover:border-primary/50 transition-colors group"
+    <div class="relative w-full">
+      <!-- Input Field Trigger -->
+      <button
+        type="button"
+        class="flex items-center justify-between w-full h-10 bg-surface border border-border rounded-md px-3 text-sm cursor-pointer hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring transition-colors group"
         (click)="toggleCalendar()"
       >
-        <span [class.text-gray-400]="!value()" [class.text-gray-900]="value()" [class.dark:text-white]="value()">
-          {{ formattedDate() || 'Select Date' }}
+        <span [class.text-ink-subtle]="!value()" [class.text-ink]="value()" class="font-medium">
+          {{ formattedDate() || (ts.currentLang() === 'es' ? 'Seleccionar fecha' : 'Select Date') }}
         </span>
-        <span class="material-icons-outlined text-gray-400 group-hover:text-primary ml-3">calendar_today</span>
-      </div>
+        <span class="material-icons-outlined text-ink-muted group-hover:text-accent ml-2 text-lg">calendar_today</span>
+      </button>
 
       <!-- Calendar Dropdown -->
       @if (isOpen()) {
         <div
-          class="absolute top-full left-0 mt-2 w-full min-w-[300px] bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-200 dark:border-white/10 p-4 z-50 animate-scale-in origin-top-left"
+          class="absolute top-full left-0 mt-2 w-full min-w-[300px] bg-surface-raised rounded-2xl shadow-xl border border-border p-4 z-50 animate-scale-in origin-top-left"
         >
           <!-- MONTH VIEW (Year Selector + Month Grid) -->
           @if (view() === 'months') {
-            <ng-container>
-                <!-- Year Header -->
-                <div class="flex items-center justify-between mb-4 px-2">
-                    <button
-                        type="button"
-                        (click)="changeYear(-1)"
-                        [disabled]="isPastYear(currentYear() - 1)"
-                        class="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full text-white dark:text-white disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                        <span class="material-icons-outlined text-sm font-bold">chevron_left</span>
-                    </button>
-  
-                    <span class="text-xl font-bold text-gray-900 dark:text-white">
-                        {{ currentYear() }}
-                    </span>
-  
-                    <button
-                        type="button"
-                        (click)="changeYear(1)"
-                        class="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full text-white dark:text-white"
-                    >
-                        <span class="material-icons-outlined text-sm font-bold">chevron_right</span>
-                    </button>
-                </div>
-  
-                <!-- Months Grid -->
-                <div class="grid grid-cols-3 gap-3 mb-4">
-                    @for (month of months; track $index; let i = $index) {
-                      <button
-                          (click)="selectMonth(i)"
-                          [disabled]="isPastMonth(i)"
-                          class="p-3 rounded-xl text-sm font-medium transition-all relative overflow-hidden"
-                          [class.bg-primary]="currentMonthIndex() === i"
-                          [class.text-white]="currentMonthIndex() === i"
-                          [class.shadow-lg]="currentMonthIndex() === i"
-                          [class.shadow-primary/40]="currentMonthIndex() === i"
-                          [class.text-gray-500]="currentMonthIndex() !== i && !isPastMonth(i)"
-                          [class.dark:text-gray-400]="currentMonthIndex() !== i && !isPastMonth(i)"
-                          [class.hover:bg-gray-50]="currentMonthIndex() !== i && !isPastMonth(i)"
-                          [class.dark:hover:bg-white/5]="currentMonthIndex() !== i && !isPastMonth(i)"
-                          [class.opacity-30]="isPastMonth(i)"
-                          [class.cursor-not-allowed]="isPastMonth(i)"
-                      >
-                          {{ month }}
-                      </button>
-                    }
-                </div>
-  
-                <!-- Actions (Optional, but helps to verify feeling) -->
-                 <div class="flex gap-3">
-                    <button
-                        (click)="closeCalendar()"
-                         class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 text-gray-400 dark:text-gray-400 font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-xs"
-                    >
-                        Cancel
-                    </button>
-                </div>
-            </ng-container>
+            <div>
+              <!-- Year Header -->
+              <div class="flex items-center justify-between mb-4 px-1">
+                <button
+                  type="button"
+                  (click)="changeYear(-1)"
+                  [disabled]="isPastYear(currentYear() - 1)"
+                  class="w-8 h-8 flex items-center justify-center hover:bg-surface-sunken rounded-lg text-ink-muted hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <span class="material-icons-outlined text-lg">chevron_left</span>
+                </button>
+
+                <span class="text-base font-bold text-ink">
+                  {{ currentYear() }}
+                </span>
+
+                <button
+                  type="button"
+                  (click)="changeYear(1)"
+                  class="w-8 h-8 flex items-center justify-center hover:bg-surface-sunken rounded-lg text-ink-muted hover:text-ink transition-colors"
+                >
+                  <span class="material-icons-outlined text-lg">chevron_right</span>
+                </button>
+              </div>
+
+              <!-- Months Grid -->
+              <div class="grid grid-cols-3 gap-2 mb-4">
+                @for (month of months; track $index; let i = $index) {
+                  <button
+                    type="button"
+                    (click)="selectMonth(i)"
+                    [disabled]="isPastMonth(i)"
+                    class="p-2.5 rounded-lg text-xs font-semibold transition-all"
+                    [class.bg-accent]="currentMonthIndex() === i"
+                    [class.text-accent-fg]="currentMonthIndex() === i"
+                    [class.shadow-sm]="currentMonthIndex() === i"
+                    [class.text-ink-muted]="currentMonthIndex() !== i && !isPastMonth(i)"
+                    [class.hover:bg-surface-sunken]="currentMonthIndex() !== i && !isPastMonth(i)"
+                    [class.hover:text-ink]="currentMonthIndex() !== i && !isPastMonth(i)"
+                    [class.opacity-30]="isPastMonth(i)"
+                    [class.cursor-not-allowed]="isPastMonth(i)"
+                  >
+                    {{ month }}
+                  </button>
+                }
+              </div>
+
+              <!-- Actions -->
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  (click)="closeCalendar()"
+                  class="w-full py-2 rounded-lg border border-border text-ink-muted font-medium hover:bg-surface-sunken transition-colors text-xs"
+                >
+                  {{ ts.currentLang() === 'es' ? 'Cerrar' : 'Close' }}
+                </button>
+              </div>
+            </div>
           }
-  
+
           <!-- DAY VIEW -->
           @if (view() === 'days') {
-            <ng-container>
-                <!-- Header -->
-                <div class="flex items-center justify-between mb-4">
-                    <button
-                        type="button"
-                        (click)="changeMonthDayView(-1)"
-                        [disabled]="isPastMonth(currentMonthIndex() - 1)" 
-                        class="p-1 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg text-gray-500 dark:text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                        <span class="material-icons-outlined">chevron_left</span>
-                    </button>
-                    
-                    <button 
-                        type="button" 
-                        (click)="setView('months')"
-                        class="font-bold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 px-3 py-1 rounded-lg transition-colors"
-                    >
-                        {{ currentMonthName() }} {{ currentYear() }}
-                    </button>
-  
-                    <button
-                        type="button"
-                        (click)="changeMonthDayView(1)"
-                        class="p-1 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg text-gray-500 dark:text-gray-400"
-                    >
-                        <span class="material-icons-outlined">chevron_right</span>
-                    </button>
-                </div>
-  
-                <!-- Week Days -->
-                <div class="grid grid-cols-7 mb-2">
-                    @for (day of weekDays; track day) {
-                      <div
-                          class="text-xs font-semibold text-center text-gray-400 uppercase"
-                      >
-                          {{ day }}
-                      </div>
+            <div>
+              <!-- Header -->
+              <div class="flex items-center justify-between mb-3 px-1">
+                <button
+                  type="button"
+                  (click)="changeMonthDayView(-1)"
+                  [disabled]="isPastMonth(currentMonthIndex() - 1)"
+                  class="w-8 h-8 flex items-center justify-center hover:bg-surface-sunken rounded-lg text-ink-muted hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <span class="material-icons-outlined text-lg">chevron_left</span>
+                </button>
+
+                <button
+                  type="button"
+                  (click)="setView('months')"
+                  class="font-bold text-sm text-ink hover:text-accent transition-colors"
+                >
+                  {{ currentMonthName() }} {{ currentYear() }}
+                </button>
+
+                <button
+                  type="button"
+                  (click)="changeMonthDayView(1)"
+                  class="w-8 h-8 flex items-center justify-center hover:bg-surface-sunken rounded-lg text-ink-muted hover:text-ink transition-colors"
+                >
+                  <span class="material-icons-outlined text-lg">chevron_right</span>
+                </button>
+              </div>
+
+              <!-- Week Days -->
+              <div class="grid grid-cols-7 mb-1.5">
+                @for (day of weekDays; track day) {
+                  <div class="text-[11px] font-semibold text-center text-ink-subtle uppercase">
+                    {{ day }}
+                  </div>
+                }
+              </div>
+
+              <!-- Days Grid -->
+              <div class="grid grid-cols-7 gap-1">
+                @for (empty of emptyDays(); track $index) {
+                  <div></div>
+                }
+
+                @for (day of daysInMonth(); track day) {
+                  <button
+                    type="button"
+                    (click)="selectDate(day)"
+                    [disabled]="isDateDisabled(day)"
+                    class="h-8 rounded-md text-xs font-medium flex items-center justify-center transition-colors relative"
+                    [class.bg-accent]="isSelected(day)"
+                    [class.text-accent-fg]="isSelected(day)"
+                    [class.shadow-sm]="isSelected(day)"
+                    [class.hover:bg-surface-sunken]="!isSelected(day) && !isDateDisabled(day)"
+                    [class.text-ink]="!isSelected(day) && !isToday(day) && !isDateDisabled(day)"
+                    [class.text-accent]="isToday(day) && !isSelected(day)"
+                    [class.font-bold]="isToday(day)"
+                    [class.opacity-30]="isDateDisabled(day)"
+                    [class.cursor-not-allowed]="isDateDisabled(day)"
+                    [class.line-through]="isDateDisabled(day)"
+                  >
+                    {{ day }}
+                    @if (isToday(day) && !isSelected(day)) {
+                      <span class="absolute bottom-1 w-1 h-1 rounded-full bg-accent"></span>
                     }
-                </div>
-  
-                <!-- Days Grid -->
-                <div class="grid grid-cols-7 gap-1">
-                    @for (empty of emptyDays(); track $index) {
-                      <div></div>
-                    }
-  
-                    @for (day of daysInMonth(); track day) {
-                      <button
-                          type="button"
-                          (click)="selectDate(day)"
-                          [disabled]="isDateDisabled(day)"
-                          class="h-9 rounded-lg text-sm font-medium flex items-center justify-center transition-colors relative"
-                          [class.bg-primary]="isSelected(day)"
-                          [class.text-white]="isSelected(day)"
-                          [class.shadow-lg]="isSelected(day)"
-                          [class.shadow-primary/30]="isSelected(day)"
-                          [class.hover:bg-gray-100]="!isSelected(day) && !isDateDisabled(day)"
-                          [class.dark:hover:bg-white/5]="!isSelected(day) && !isDateDisabled(day)"
-                          [class.text-gray-700]="!isSelected(day) && !isToday(day) && !isDateDisabled(day)"
-                          [class.dark:text-gray-300]="!isSelected(day) && !isToday(day) && !isDateDisabled(day)"
-                          [class.text-primary]="isToday(day) && !isSelected(day)"
-                          [class.font-bold]="isToday(day)"
-                          [class.opacity-30]="isDateDisabled(day)"
-                          [class.cursor-not-allowed]="isDateDisabled(day)"
-                          [class.line-through]="isDateDisabled(day)"
-                      >
-                          {{ day }}
-                          @if (isToday(day)) {
-                            <span class="absolute bottom-1 w-1 h-1 rounded-full bg-primary" [class.bg-white]="isSelected(day)"></span>
-                          }
-                      </button>
-                    }
-                </div>
-            </ng-container>
+                  </button>
+                }
+              </div>
+            </div>
           }
         </div>
       }
 
-       <!-- Backdrop -->
-       @if (isOpen()) {
-         <div class="fixed inset-0 z-40" (click)="closeCalendar()"></div>
-       }
+      <!-- Backdrop -->
+      @if (isOpen()) {
+        <div class="fixed inset-0 z-40" (click)="closeCalendar()"></div>
+      }
     </div>
   `,
-  styles: [],
 })
 export class DatePickerComponent implements ControlValueAccessor {
   value = signal<string | null>(null); // YYYY-MM-DD
   isOpen = signal(false);
-  view = signal<'days' | 'months'>('months'); // Default to 'months'
+  view = signal<'days' | 'months'>('months');
 
   // Calendar State
-  displayDate = signal(new Date()); // Controls which month is shown
+  displayDate = signal(new Date());
 
   ts = inject(TranslationService);
 
   weekDays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
   months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  // Methods to calculate days
   currentYear = computed(() => this.displayDate().getFullYear());
   currentMonthName = computed(() => {
     return this.displayDate().toLocaleString(this.ts.currentLang() === 'es' ? 'es-ES' : 'en-US', {
@@ -238,7 +230,6 @@ export class DatePickerComponent implements ControlValueAccessor {
     });
   });
 
-  // ControlValueAccessor
   onChange: any = () => {};
   onTouched: any = () => {};
 
@@ -247,6 +238,8 @@ export class DatePickerComponent implements ControlValueAccessor {
       this.value.set(val);
       const [y, m, d] = val.split('-');
       this.displayDate.set(new Date(parseInt(y), parseInt(m) - 1, parseInt(d)));
+    } else {
+      this.value.set(null);
     }
   }
 
@@ -258,7 +251,6 @@ export class DatePickerComponent implements ControlValueAccessor {
     this.onTouched = fn;
   }
 
-  // Logic
   toggleCalendar() {
     this.isOpen.update((v) => !v);
     if (this.isOpen()) {
@@ -268,75 +260,36 @@ export class DatePickerComponent implements ControlValueAccessor {
 
   closeCalendar() {
     this.isOpen.set(false);
-    this.onTouched();
   }
 
-  setView(v: 'days' | 'months') {
-    this.view.set(v);
-  }
-
-  selectMonth(index: number) {
-    const newDate = new Date(this.displayDate());
-    newDate.setMonth(index);
-    this.displayDate.set(newDate);
-    this.view.set('days');
-  }
-
-  changeMonthDayView(delta: number) {
-    this.changeMonth(delta);
-  }
-
-  changeMonth(delta: number) {
-    const newDate = new Date(this.displayDate());
-    newDate.setMonth(newDate.getMonth() + delta);
-    this.displayDate.set(newDate);
+  setView(view: 'days' | 'months') {
+    this.view.set(view);
   }
 
   changeYear(delta: number) {
-    const newDate = new Date(this.displayDate());
-    const newYear = newDate.getFullYear() + delta;
-
-    const currentYear = new Date().getFullYear();
-
-    if (newYear < currentYear) return;
-    if (newYear > currentYear + 10) return;
-
-    newDate.setFullYear(newYear);
-
-    // Prevent landing in a past month when changing year (e.g. going back to current year)
-    const today = new Date();
-    if (newYear === currentYear && newDate.getMonth() < today.getMonth()) {
-      newDate.setMonth(today.getMonth());
-    }
-
-    this.displayDate.set(newDate);
+    const current = this.displayDate();
+    this.displayDate.set(new Date(current.getFullYear() + delta, current.getMonth(), 1));
   }
 
-  isPastYear(year: number): boolean {
-    return year < new Date().getFullYear();
+  changeMonthDayView(delta: number) {
+    const current = this.displayDate();
+    this.displayDate.set(new Date(current.getFullYear(), current.getMonth() + delta, 1));
   }
 
-  isPastMonth(monthIndex?: number): boolean {
-    const today = new Date();
-    const currentDisplayYear = this.displayDate().getFullYear();
-    const checkMonth = monthIndex !== undefined ? monthIndex : this.displayDate().getMonth();
-
-    if (currentDisplayYear < today.getFullYear()) return true;
-    if (currentDisplayYear === today.getFullYear() && checkMonth < today.getMonth()) return true;
-
-    return false;
+  selectMonth(monthIndex: number) {
+    const current = this.displayDate();
+    this.displayDate.set(new Date(current.getFullYear(), monthIndex, 1));
+    this.view.set('days');
   }
 
   selectDate(day: number) {
     const year = this.currentYear();
-    const month = this.displayDate().getMonth() + 1;
+    const month = (this.currentMonthIndex() + 1).toString().padStart(2, '0');
+    const d = day.toString().padStart(2, '0');
+    const dateString = `${year}-${month}-${d}`;
 
-    const paddedMonth = month.toString().padStart(2, '0');
-    const paddedDay = day.toString().padStart(2, '0');
-    const isoDate = `${year}-${paddedMonth}-${paddedDay}`;
-
-    this.value.set(isoDate);
-    this.onChange(isoDate);
+    this.value.set(dateString);
+    this.onChange(dateString);
     this.closeCalendar();
   }
 
@@ -344,26 +297,39 @@ export class DatePickerComponent implements ControlValueAccessor {
     if (!this.value()) return false;
     const [y, m, d] = this.value()!.split('-');
     return (
-      parseInt(d) === day &&
-      parseInt(m) === this.displayDate().getMonth() + 1 &&
-      parseInt(y) === this.currentYear()
+      parseInt(y) === this.currentYear() &&
+      parseInt(m) - 1 === this.currentMonthIndex() &&
+      parseInt(d) === day
     );
-  }
-
-  isDateDisabled(day: number): boolean {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const checkDate = new Date(this.currentYear(), this.displayDate().getMonth(), day);
-    return checkDate < today;
   }
 
   isToday(day: number): boolean {
     const today = new Date();
     return (
-      day === today.getDate() &&
-      this.displayDate().getMonth() === today.getMonth() &&
-      this.displayDate().getFullYear() === today.getFullYear()
+      today.getFullYear() === this.currentYear() &&
+      today.getMonth() === this.currentMonthIndex() &&
+      today.getDate() === day
     );
+  }
+
+  isPastYear(year: number): boolean {
+    const today = new Date();
+    return year < today.getFullYear();
+  }
+
+  isPastMonth(monthIndex: number): boolean {
+    const today = new Date();
+    if (this.currentYear() < today.getFullYear()) return true;
+    if (this.currentYear() === today.getFullYear()) {
+      return monthIndex < today.getMonth();
+    }
+    return false;
+  }
+
+  isDateDisabled(day: number): boolean {
+    const today = new Date();
+    const date = new Date(this.currentYear(), this.currentMonthIndex(), day);
+    today.setHours(0, 0, 0, 0);
+    return date < today;
   }
 }

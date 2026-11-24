@@ -1,5 +1,12 @@
-import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  OnInit,
+  signal,
+  inject,
+  ChangeDetectionStrategy,
+  HostListener,
+} from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { TranslationService } from '../../core/services/translation.service';
@@ -7,377 +14,390 @@ import { NotificationService } from '../../core/services/notification.service';
 import { SavingGoalsResponse, ContributionResponse } from '../../core/models/api.models';
 import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
 import { GoalStateService } from '../../core/services/goal-state.service';
+import {
+  ButtonComponent,
+  AmountComponent,
+  IconComponent,
+  SkeletonComponent,
+  ProgressBarComponent,
+  EmptyStateComponent,
+  PageHeaderComponent,
+  FormFieldComponent,
+  CurrencyInputComponent,
+  DialogShellComponent,
+  UiDialogService,
+} from '../../shared/ui';
 
 @Component({
   selector: 'app-goals',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DatePickerComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    DatePipe,
+    DatePickerComponent,
+    ButtonComponent,
+    AmountComponent,
+    IconComponent,
+    SkeletonComponent,
+    ProgressBarComponent,
+    EmptyStateComponent,
+    PageHeaderComponent,
+    FormFieldComponent,
+    CurrencyInputComponent,
+    DialogShellComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="p-6 pb-24 md:pb-6 animate-fade-in-up">
-      <!-- Header -->
-      <div class="flex justify-between items-center mb-6">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            {{ ts.t()('goals.title') }}
-          </h1>
-          <p class="text-gray-500 dark:text-gray-400">
-            {{ ts.t()('goals.subtitle') }}
-          </p>
+    <div class="space-y-6">
+      <!-- Page Header -->
+      <ui-page-header
+        [title]="ts.t()('goals.title')"
+        [subtitle]="ts.t()('goals.subtitle')"
+      >
+        <div uiHeaderActions class="flex items-center gap-2">
+          <button
+            uiButton
+            variant="primary"
+            size="sm"
+            type="button"
+            (click)="openModal()"
+            class="h-9 whitespace-nowrap"
+          >
+            <ui-icon name="add" size="sm" class="mr-1" />
+            <span>{{ ts.t()('goals.add') }}</span>
+          </button>
         </div>
-        <button
-          (click)="openModal()"
-          class="bg-primary text-white px-4 py-2 rounded-xl font-medium shadow-lg shadow-primary/30 transition-all hover:scale-105 flex items-center gap-2"
-        >
-          <span class="material-icons-outlined">add</span>
-          <span class="hidden md:inline">{{ ts.t()('goals.add') }}</span>
-        </button>
-      </div>
+      </ui-page-header>
 
       <!-- Loading State -->
-      <div *ngIf="isLoading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          *ngFor="let i of [1, 2, 3]"
-          class="h-48 rounded-2xl bg-gray-100 dark:bg-white/5 animate-pulse"
-        ></div>
-      </div>
-
-      <!-- Empty State -->
-      <div
-        *ngIf="!isLoading() && goals().length === 0"
-        class="glass-card p-12 text-center text-gray-500 dark:text-gray-400"
-      >
-        <span class="material-icons-outlined text-6xl mb-4 text-primary opacity-50">flag</span>
-        <h3 class="text-xl font-bold mb-2">{{ ts.t()('goals.empty_title') }}</h3>
-        <p>{{ ts.t()('goals.empty_desc') }}</p>
-      </div>
-
-      <!-- Goals Grid -->
-      <div
-        *ngIf="!isLoading() && goals().length > 0"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        <div
-          *ngFor="let goal of goals()"
-          class="glass-card p-6 relative group border border-gray-200 dark:border-white/10"
-        >
-          <!-- Menu Button -->
-          <button
-            (click)="editGoal(goal)"
-            class="absolute top-4 right-4 p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
-          >
-            <span class="material-icons-outlined">edit</span>
-          </button>
-
-          <!-- History Button -->
-          <button
-            (click)="openHistory(goal)"
-            class="absolute top-4 right-14 p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors"
-            title="History"
-          >
-            <span class="material-icons-outlined">history</span>
-          </button>
-
-          <div class="mb-4">
+      @if (isLoading() && goals().length === 0) {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          @for (i of [1, 2, 3]; track i) {
             <div
-              class="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-4 text-orange-500"
+              class="p-5 rounded-2xl bg-surface border border-border flex flex-col justify-between h-56 space-y-4"
             >
-              <span class="material-icons-outlined text-2xl">savings</span>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <ui-skeleton shape="circle" customClass="w-10 h-10" />
+                  <div class="space-y-1.5">
+                    <ui-skeleton shape="line" customClass="h-4 w-28" />
+                    <ui-skeleton shape="line" customClass="h-3 w-20" />
+                  </div>
+                </div>
+                <ui-skeleton shape="line" customClass="h-6 w-16" />
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <ui-skeleton shape="line" customClass="h-4 w-12" />
+                  <ui-skeleton shape="line" customClass="h-4 w-24" />
+                </div>
+                <ui-skeleton shape="line" customClass="h-2 w-full" />
+              </div>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">{{ goal.name }}</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              {{ ts.t()('goals.target') }}: {{ goal.targetDate | date }}
-            </p>
-          </div>
-
-          <!-- Progress -->
-          <div class="mb-2 flex justify-between items-end">
-            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-              {{ calcProgress(goal) | number : '1.0-0' }}%
-            </span>
-            <span class="text-sm font-bold text-gray-900 dark:text-gray-100">
-              DOP {{ goal.currentAmount | number : '1.2-2' }} /
-              {{ goal.targetAmount | number : '1.2-2' }}
-            </span>
-          </div>
-
-          <div class="w-full bg-gray-200 dark:bg-white/10 rounded-full h-3 mb-6 overflow-hidden">
-            <div
-              class="bg-primary h-3 rounded-full transition-all duration-1000 ease-out"
-              [style.width.%]="calcProgress(goal)"
-            ></div>
-          </div>
-
-          <!-- Actions Footer -->
-          <div
-            class="flex items-center gap-3 mt-auto pt-4 border-t border-gray-100 dark:border-white/5"
+          }
+        </div>
+      } @else if (goals().length === 0) {
+        <!-- Empty State -->
+        <ui-empty-state
+          icon="flag"
+          [title]="ts.t()('goals.empty_title')"
+          [description]="ts.t()('goals.empty_desc')"
+        >
+          <button
+            uiButton
+            variant="primary"
+            uiEmptyAction
+            type="button"
+            (click)="openModal()"
           >
-            <button
-              (click)="addFunds(goal)"
-              class="flex-1 py-2 text-sm font-medium text-primary bg-primary/10 dark:bg-primary/20 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
+            <ui-icon name="add" size="sm" class="mr-1" />
+            <span>{{ ts.t()('goals.add') }}</span>
+          </button>
+        </ui-empty-state>
+      } @else {
+        <!-- Goals Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          @for (goal of goals(); track goal.id) {
+            <div
+              class="p-5 rounded-2xl bg-surface border border-border flex flex-col justify-between shadow-sm hover:border-accent/40 transition-colors"
             >
-              + {{ ts.t()('goals.add_funds') }}
-            </button>
-            <button
-              (click)="deleteGoal(goal)"
-              class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-            >
-              <span class="material-icons-outlined text-lg">delete</span>
-            </button>
-          </div>
+              <!-- Card Header -->
+              <div>
+                <div class="flex items-start justify-between gap-3 mb-3">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div
+                      class="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center font-bold shrink-0"
+                    >
+                      <ui-icon name="flag" size="md" />
+                    </div>
+                    <div class="min-w-0">
+                      <h3 class="font-bold text-ink text-base truncate" [title]="goal.name">
+                        {{ goal.name }}
+                      </h3>
+                      <p class="text-xs text-ink-muted">
+                        {{ ts.t()('goals.target') }}: {{ goal.targetDate | date: 'mediumDate' }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      uiButton
+                      variant="ghost"
+                      size="sm"
+                      class="h-8 w-8 p-0"
+                      (click)="openHistory(goal)"
+                      [attr.aria-label]="ts.t()('goals.history_title')"
+                      [title]="ts.t()('goals.history_title')"
+                    >
+                      <ui-icon name="history" size="sm" class="text-ink-muted hover:text-ink" />
+                    </button>
+                    <button
+                      type="button"
+                      uiButton
+                      variant="ghost"
+                      size="sm"
+                      class="h-8 w-8 p-0"
+                      (click)="editGoal(goal)"
+                      [attr.aria-label]="ts.t()('trans.edit')"
+                      [title]="ts.t()('trans.edit')"
+                    >
+                      <ui-icon name="edit" size="sm" class="text-ink-muted hover:text-accent" />
+                    </button>
+                    <button
+                      type="button"
+                      uiButton
+                      variant="ghost"
+                      size="sm"
+                      class="h-8 w-8 p-0"
+                      (click)="deleteGoal(goal)"
+                      [attr.aria-label]="ts.t()('trans.delete')"
+                      [title]="ts.t()('trans.delete')"
+                    >
+                      <ui-icon
+                        name="delete"
+                        size="sm"
+                        class="text-ink-muted hover:text-expense"
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Amounts & Progress -->
+                <div class="mt-4 space-y-2">
+                  <div class="flex items-center justify-between text-xs sm:text-sm">
+                    <span class="font-mono font-bold tabular-nums text-ink text-base">
+                      {{ calcProgress(goal) }}%
+                    </span>
+                    <span class="text-ink-muted text-xs">
+                      <ui-amount [value]="goal.currentAmount" tone="income" size="sm" />
+                      <span class="mx-1">/</span>
+                      <ui-amount [value]="goal.targetAmount" tone="neutral" size="sm" />
+                    </span>
+                  </div>
+
+                  <ui-progress-bar
+                    [label]="goal.name"
+                    [percent]="calcProgress(goal)"
+                    status="ok"
+                    thickness="regular"
+                  />
+                </div>
+              </div>
+
+              <!-- Card Action Footer -->
+              <div class="pt-4 mt-4 border-t border-border">
+                <button
+                  type="button"
+                  uiButton
+                  variant="secondary"
+                  size="sm"
+                  class="w-full justify-center font-semibold"
+                  (click)="addFunds(goal)"
+                >
+                  <ui-icon name="add" size="sm" class="mr-1" />
+                  <span>{{ ts.t()('goals.add_funds') }}</span>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Create / Edit / Add Funds Modal -->
+    @if (showModal()) {
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+        (click)="closeModal()"
+      >
+        <div class="w-full max-w-md" (click)="$event.stopPropagation()">
+          <ui-dialog-shell
+            [title]="getModalTitle()"
+            [closeLabel]="ts.t()('trans.cancel')"
+            (closed)="closeModal()"
+          >
+            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+              <!-- Add Funds Mode -->
+              @if (modalMode() === 'add_funds') {
+                <div class="p-3.5 rounded-xl bg-accent/10 border border-accent/20 flex items-center gap-3">
+                  <ui-icon name="savings" size="md" class="text-accent" />
+                  <div>
+                    <p class="text-[10px] uppercase font-bold tracking-wider text-ink-muted">
+                      {{ ts.t()('goals.target') }}
+                    </p>
+                    <p class="font-bold text-ink text-sm">{{ selectedGoalName() }}</p>
+                  </div>
+                </div>
+
+                <ui-form-field
+                  [label]="ts.t()('trans.amount')"
+                  fieldId="contribution-amount"
+                >
+                  <ui-currency-input
+                    inputId="contribution-amount"
+                    formControlName="contributionAmount"
+                  />
+                </ui-form-field>
+
+                <ui-form-field
+                  [label]="ts.t()('trans.desc')"
+                  fieldId="contribution-desc"
+                >
+                  <input
+                    id="contribution-desc"
+                    type="text"
+                    formControlName="contributionDescription"
+                    placeholder="e.g. Weekly savings, bonus, etc."
+                    class="w-full h-10 px-3 bg-surface border border-border text-ink text-sm rounded-md shadow-sm placeholder:text-ink-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:border-accent"
+                  />
+                </ui-form-field>
+              } @else {
+                <!-- Create / Edit Mode -->
+                <ui-form-field
+                  [label]="ts.t()('goals.field_name')"
+                  fieldId="goal-name"
+                >
+                  <input
+                    id="goal-name"
+                    type="text"
+                    formControlName="name"
+                    placeholder="e.g. Emergency Fund, Trip, Laptop"
+                    class="w-full h-10 px-3 bg-surface border border-border text-ink text-sm rounded-md shadow-sm placeholder:text-ink-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:border-accent"
+                  />
+                </ui-form-field>
+
+                <ui-form-field
+                  [label]="ts.t()('goals.field_target')"
+                  fieldId="goal-target-amount"
+                >
+                  <ui-currency-input
+                    inputId="goal-target-amount"
+                    formControlName="targetAmount"
+                  />
+                </ui-form-field>
+
+                <ui-form-field
+                  [label]="ts.t()('goals.field_date')"
+                  fieldId="goal-target-date"
+                >
+                  <app-date-picker formControlName="targetDate" />
+                </ui-form-field>
+              }
+
+              <!-- Dialog Footer Buttons -->
+              <div uiDialogFooter class="flex items-center justify-end gap-2.5">
+                <button type="button" uiButton variant="secondary" (click)="closeModal()">
+                  {{ ts.t()('trans.cancel') }}
+                </button>
+                <button
+                  type="submit"
+                  uiButton
+                  variant="primary"
+                  [disabled]="isSubmitting() || isSubmitDisabled()"
+                  [loading]="isSubmitting()"
+                >
+                  {{ ts.t()('trans.save') }}
+                </button>
+              </div>
+            </form>
+          </ui-dialog-shell>
         </div>
       </div>
-    </div>
+    }
 
     <!-- History Modal -->
-    @defer (when showHistoryModal()) {
-    <div
-      *ngIf="showHistoryModal()"
-      class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-      (click)="closeHistoryModal()"
-    >
+    @if (showHistoryModal()) {
       <div
-        class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-lg md:max-w-2xl max-h-[80vh] flex flex-col animate-scale-in"
-        (click)="$event.stopPropagation()"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+        (click)="closeHistoryModal()"
       >
-        <div
-          class="p-6 border-b border-gray-200 dark:border-white/10 flex justify-between items-center"
-        >
-          <div>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Contribution History</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ selectedGoalName() }}</p>
-          </div>
-          <button
-            (click)="closeHistoryModal()"
-            class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+        <div class="w-full max-w-lg md:max-w-xl" (click)="$event.stopPropagation()">
+          <ui-dialog-shell
+            [title]="ts.t()('goals.history_title')"
+            [closeLabel]="ts.t()('trans.cancel')"
+            (closed)="closeHistoryModal()"
           >
-            <span class="material-icons-outlined">close</span>
-          </button>
-        </div>
+            <div class="space-y-4">
+              <p class="text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                {{ selectedGoalName() }}
+              </p>
 
-        <div class="p-6 overflow-y-auto no-scrollbar">
-          <div
-            *ngIf="contributions().length === 0"
-            class="text-center py-8 text-gray-500 dark:text-gray-400"
-          >
-            <span class="material-icons-outlined text-4xl mb-2 opacity-50">history</span>
-            <p>No contributions yet.</p>
-          </div>
-
-          <div class="space-y-4">
-            <div
-              *ngFor="let item of contributions()"
-              class="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-primary/30 transition-colors group"
-            >
-              <div class="flex items-center gap-4">
-                <div
-                  class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400"
-                >
-                  <span class="material-icons-outlined text-lg">arrow_upward</span>
+              @if (contributions().length === 0) {
+                <div class="text-center py-8 text-ink-muted">
+                  <ui-icon name="history" size="lg" class="mx-auto mb-2 opacity-50" />
+                  <p class="text-sm">{{ ts.t()('goals.no_contributions') }}</p>
                 </div>
-                <div>
-                  <p class="font-bold text-gray-900 dark:text-white">
-                    + {{ item.amount | number : '1.2-2' }}
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ item.createdAt | date : 'mediumDate' }} •
-                    {{ item.createdAt | date : 'shortTime' }}
-                  </p>
-                  <p *ngIf="item.description" class="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                    {{ item.description }}
-                  </p>
+              } @else {
+                <div class="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+                  @for (item of contributions(); track item.id) {
+                    <div
+                      class="flex items-center justify-between p-3.5 rounded-xl bg-surface-raised border border-border transition-colors hover:border-accent/30"
+                    >
+                      <div class="flex items-center gap-3 min-w-0">
+                        <div
+                          class="w-9 h-9 rounded-full bg-income/10 text-income flex items-center justify-center shrink-0"
+                        >
+                          <ui-icon name="arrow_upward" size="sm" />
+                        </div>
+                        <div class="min-w-0">
+                          <p class="font-bold text-ink text-sm">
+                            <ui-amount [value]="item.amount" tone="income" size="sm" />
+                          </p>
+                          <p class="text-xs text-ink-muted">
+                            {{ item.createdAt | date: 'mediumDate' }}
+                          </p>
+                          @if (item.description) {
+                            <p class="text-xs text-ink-muted mt-0.5 truncate">
+                              {{ item.description }}
+                            </p>
+                          }
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        uiButton
+                        variant="ghost"
+                        size="sm"
+                        class="h-8 w-8 p-0 shrink-0"
+                        (click)="deleteContributionCheck(item)"
+                        [attr.aria-label]="ts.t()('goals.delete_contribution_title')"
+                        [title]="ts.t()('goals.delete_contribution_title')"
+                      >
+                        <ui-icon name="delete" size="sm" class="text-ink-muted hover:text-expense" />
+                      </button>
+                    </div>
+                  }
                 </div>
-              </div>
-
-              <button
-                (click)="deleteContributionCheck(item)"
-                class="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
-                title="Delete Contribution"
-              >
-                <span class="material-icons-outlined">delete_outline</span>
-              </button>
+              }
             </div>
-          </div>
+          </ui-dialog-shell>
         </div>
       </div>
-    </div>
-    }
-
-    <!-- Create/Edit Modal -->
-    @defer (when showModal()) {
-    <div
-      *ngIf="showModal()"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-      (click)="closeModal()"
-    >
-      <div
-        class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-md animate-scale-in"
-        (click)="$event.stopPropagation()"
-      >
-        <div
-          class="p-6 border-b border-gray-200 dark:border-white/10 flex justify-between items-center"
-        >
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-            {{ getModalTitle() }}
-          </h2>
-          <button
-            (click)="closeModal()"
-            class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-          >
-            <span class="material-icons-outlined">close</span>
-          </button>
-        </div>
-
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
-          <!-- Add Funds Mode -->
-          <ng-container *ngIf="modalMode() === 'add_funds'">
-            <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl flex items-center gap-3 mb-2">
-              <span class="material-icons-outlined text-blue-500 text-2xl">savings</span>
-              <div>
-                <p
-                  class="text-xs text-uppercase text-gray-500 dark:text-gray-400 font-bold tracking-wider"
-                >
-                  META
-                </p>
-                <p class="font-bold text-gray-900 dark:text-white">{{ selectedGoalName() }}</p>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {{ ts.t()('trans.amount') }} (RD$)
-              </label>
-              <input
-                type="number"
-                formControlName="contributionAmount"
-                placeholder="0.00"
-                (keypress)="validateNumber($event)"
-                (blur)="formatAmount('contributionAmount')"
-                class="no-spinner w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-2xl font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 text-center"
-              />
-            </div>
-
-            <div class="mt-4">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {{ ts.t()('forms.description_optional') }}
-              </label>
-              <input
-                type="text"
-                formControlName="contributionDescription"
-                placeholder="e.g. Weekly Savings"
-                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-          </ng-container>
-
-          <!-- Create/Edit Mode -->
-          <ng-container *ngIf="modalMode() !== 'add_funds'">
-            <!-- Name -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {{ ts.t()('goals.field_name') }}
-              </label>
-              <input
-                type="text"
-                formControlName="name"
-                class="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-
-            <!-- Target Amount -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {{ ts.t()('goals.field_target') }}
-              </label>
-              <input
-                type="number"
-                formControlName="targetAmount"
-                (keypress)="validateNumber($event)"
-                (blur)="formatAmount('targetAmount')"
-                class="no-spinner w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-
-            <!-- Target Date -->
-            <div class="z-20 relative">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {{ ts.t()('goals.field_date') }}
-              </label>
-              <app-date-picker formControlName="targetDate"></app-date-picker>
-            </div>
-          </ng-container>
-
-          <div class="flex gap-3 pt-4 relative z-0">
-            <button
-              type="button"
-              (click)="closeModal()"
-              class="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-700 font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-            >
-              {{ ts.t()('action.cancel') }}
-            </button>
-            <button
-              type="submit"
-              [disabled]="
-                isSubmitting() ||
-                (modalMode() !== 'add_funds' && form.invalid) ||
-                (modalMode() === 'add_funds' &&
-                  (!form.get('contributionAmount')?.value ||
-                    form.get('contributionAmount')?.value <= 0))
-              "
-              class="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 transition-all disabled:opacity-50"
-            >
-              {{ isSubmitting() ? '...' : ts.t()('action.save') }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-    }
-
-    <!-- Delete Confirmation Modal (Common) -->
-    @defer (when showDeleteModal()) {
-    <div
-      *ngIf="showDeleteModal()"
-      class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-      (click)="closeDeleteModal()"
-    >
-      <div
-        class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-sm p-6 animate-scale-in text-center"
-        (click)="$event.stopPropagation()"
-      >
-        <div
-          class="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4 text-red-500"
-        >
-          <span class="material-icons-outlined text-3xl">delete_forever</span>
-        </div>
-
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-          {{ deleteMode() === 'goal' ? ts.t()('goals.delete_title') : 'Delete Contribution' }}
-        </h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6">
-          {{
-            deleteMode() === 'goal'
-              ? ts.t()('goals.confirm_delete')
-              : 'Are you sure you want to delete this contribution? This will decrease your saved amount.'
-          }}
-        </p>
-
-        <div class="flex gap-3">
-          <button
-            (click)="closeDeleteModal()"
-            class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-          >
-            {{ ts.t()('action.cancel') }}
-          </button>
-          <button
-            (click)="confirmDelete()"
-            class="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-bold shadow-lg shadow-red-500/30 hover:bg-red-600 transition-all"
-          >
-            {{ ts.t()('trans.delete') }}
-          </button>
-        </div>
-      </div>
-    </div>
     }
   `,
 })
@@ -386,6 +406,7 @@ export class GoalsComponent implements OnInit {
   apiService = inject(ApiService);
   ts = inject(TranslationService);
   ns = inject(NotificationService);
+  dialogService = inject(UiDialogService);
   fb = inject(FormBuilder);
 
   // State Signals
@@ -405,11 +426,6 @@ export class GoalsComponent implements OnInit {
   contributions = signal<ContributionResponse[]>([]);
   selectedGoalIdForHistory = signal<number | null>(null);
 
-  // Delete State
-  showDeleteModal = signal(false);
-  deleteMode = signal<'goal' | 'contribution'>('goal');
-  itemToDelete = signal<any>(null); // Can be goal or contribution
-
   form: FormGroup;
 
   constructor() {
@@ -417,56 +433,41 @@ export class GoalsComponent implements OnInit {
       name: ['', Validators.required],
       targetAmount: [0, [Validators.required, Validators.min(1)]],
       targetDate: ['', Validators.required],
-      contributionAmount: [0], // Only for add_funds mode
-      contributionDescription: [''], // New field
+      contributionAmount: [0],
+      contributionDescription: [''],
     });
   }
 
   ngOnInit() {
-    // Load Goals (Cached)
     this.state.load(0, 50);
   }
 
-  getModalTitle() {
+  getModalTitle(): string {
     if (this.modalMode() === 'add_funds') return this.ts.t()('goals.add_funds');
     if (this.modalMode() === 'edit') return this.ts.t()('goals.edit_title');
     return this.ts.t()('goals.new_title');
   }
 
-  // Prevent non-numeric chars (e, +, -, etc)
-  validateNumber(event: KeyboardEvent) {
-    const charCode = event.which ? event.which : event.keyCode;
-    if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 46) {
-      event.preventDefault();
-      return false;
-    }
-    return true;
-  }
-
-  formatAmount(controlName: string) {
-    const control = this.form.get(controlName);
-    if (!control || !control.value) return;
-    let value = control.value.toString();
-    const num = parseFloat(value);
-
-    // Explicitly set null first then the number to force angular to update the view
-    // even if the numeric value is technically the same (e.g. "0500" -> 500)
-    if (!isNaN(num)) {
-      control.setValue(null, { emitEvent: false });
-      control.setValue(num, { emitEvent: false });
-    }
-  }
-
   calcProgress(goal: SavingGoalsResponse): number {
     if (!goal.targetAmount || goal.targetAmount === 0) return 0;
-    return Math.min(100, (goal.currentAmount / goal.targetAmount) * 100);
+    return Math.round(Math.min(100, (goal.currentAmount / goal.targetAmount) * 100));
+  }
+
+  isSubmitDisabled(): boolean {
+    if (this.modalMode() === 'add_funds') {
+      const amt = this.form.get('contributionAmount')?.value;
+      return !amt || amt <= 0;
+    }
+    return this.form.invalid;
   }
 
   openModal() {
     this.modalMode.set('create');
     this.editingId.set(null);
     this.form.reset({
+      name: '',
       targetAmount: 0,
+      targetDate: new Date().toISOString().split('T')[0],
       contributionAmount: 0,
       contributionDescription: '',
     });
@@ -516,7 +517,6 @@ export class GoalsComponent implements OnInit {
   loadContributions(goalId: number) {
     this.apiService.getGoalContributions(goalId).subscribe({
       next: (res) => {
-        // Sort by date desc
         const sorted = (res.content || []).sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
@@ -526,84 +526,54 @@ export class GoalsComponent implements OnInit {
     });
   }
 
-  deleteContributionCheck(contribution: ContributionResponse) {
-    this.deleteMode.set('contribution');
-    this.itemToDelete.set(contribution);
-    this.showDeleteModal.set(true);
-  }
+  async deleteContributionCheck(contribution: ContributionResponse) {
+    const confirmed = await this.dialogService.confirm({
+      title: this.ts.t()('goals.delete_contribution_title'),
+      message: this.ts.t()('goals.delete_contribution_msg'),
+      confirmLabel: this.ts.t()('trans.delete'),
+      cancelLabel: this.ts.t()('trans.cancel'),
+      tone: 'danger',
+    });
 
-  closeDeleteModal() {
-    this.showDeleteModal.set(false);
-    this.itemToDelete.set(null);
-  }
-
-  deleteGoal(goal: SavingGoalsResponse) {
-    this.deleteMode.set('goal');
-    this.itemToDelete.set(goal);
-    this.showDeleteModal.set(true);
-  }
-
-  confirmDelete() {
-    const item = this.itemToDelete();
-    if (!item) return;
-
-    // Optimistic Logic: Close modal first
-    if (this.deleteMode() === 'goal') {
-      this.closeDeleteModal();
-    } else {
-      this.closeDeleteModal();
-    }
-    // We can simplify this:
-    // this.closeDeleteModal();
-    // But we need to keep the logic branching for the API call.
-
-    if (this.deleteMode() === 'goal') {
-      const goal = item as SavingGoalsResponse;
-      this.state.delete(goal.id).subscribe({
-        next: () => {
-          this.ns.show('Goal deleted', 'success');
-        },
-        error: () => {
-          this.ns.show('Failed to delete goal', 'error');
-        },
-      });
-    } else {
-      // Delete Contribution
-      const contribution = item as ContributionResponse;
+    if (confirmed) {
       const goalId = this.selectedGoalIdForHistory();
       if (!goalId) return;
 
       this.state.deleteContribution(goalId, contribution.id).subscribe({
         next: () => {
-          this.ns.show('Contribution deleted', 'success');
-          // Remove from history list
+          this.ns.show('goals.contribution_deleted', 'success');
           this.contributions.update((c) => c.filter((x) => x.id !== contribution.id));
         },
         error: () => {
-          this.ns.show('Failed to delete contribution', 'error');
+          this.ns.show('notif.operation_failed', 'error');
+        },
+      });
+    }
+  }
+
+  async deleteGoal(goal: SavingGoalsResponse) {
+    const confirmed = await this.dialogService.confirm({
+      title: this.ts.t()('goals.delete_title'),
+      message: this.ts.t()('goals.confirm_delete'),
+      confirmLabel: this.ts.t()('trans.delete'),
+      cancelLabel: this.ts.t()('trans.cancel'),
+      tone: 'danger',
+    });
+
+    if (confirmed) {
+      this.state.delete(goal.id).subscribe({
+        next: () => {
+          this.ns.show('goals.goal_deleted', 'success');
+        },
+        error: () => {
+          this.ns.show('notif.operation_failed', 'error');
         },
       });
     }
   }
 
   onSubmit() {
-    // Determine validation based on mode
-    if (this.modalMode() !== 'add_funds') {
-      // Validate main fields
-      if (
-        this.form.get('name')?.invalid ||
-        this.form.get('targetAmount')?.invalid ||
-        this.form.get('targetDate')?.invalid
-      ) {
-        return;
-      }
-    } else {
-      // Validate contribution
-      if (!this.form.value.contributionAmount || this.form.value.contributionAmount <= 0) {
-        this.ns.show('Invalid amount', 'error');
-        return;
-      }
-    }
+    if (this.isSubmitDisabled()) return;
 
     this.isSubmitting.set(true);
     const data = this.form.value;
@@ -614,10 +584,10 @@ export class GoalsComponent implements OnInit {
 
     if (this.modalMode() === 'add_funds') {
       this.state
-        .addContribution(id, data.contributionAmount, data.contributionDescription)
+        .addContribution(id, Number(data.contributionAmount), data.contributionDescription)
         .subscribe({
           next: () => {
-            this.ns.show('Contribution added!', 'success');
+            this.ns.show('goals.contribution_added', 'success');
             this.isSubmitting.set(false);
           },
           error: () => this.isSubmitting.set(false),
@@ -627,7 +597,7 @@ export class GoalsComponent implements OnInit {
 
     const formattedData = {
       name: data.name,
-      targetAmount: data.targetAmount,
+      targetAmount: Number(data.targetAmount),
       targetDate: new Date(data.targetDate).toISOString().split('T')[0],
     };
 
@@ -638,11 +608,34 @@ export class GoalsComponent implements OnInit {
 
     action$.subscribe({
       next: () => {
-        const msg = this.modalMode() === 'edit' ? 'Goal updated' : 'Goal created';
+        const msg = this.modalMode() === 'edit' ? 'goals.goal_updated' : 'goals.goal_created';
         this.ns.show(msg, 'success');
         this.isSubmitting.set(false);
       },
       error: () => this.isSubmitting.set(false),
     });
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      if (this.showHistoryModal()) {
+        this.closeHistoryModal();
+        return;
+      }
+      if (this.showModal()) {
+        this.closeModal();
+      }
+    } else if (event.key === 'Enter') {
+      if (this.showModal() && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        this.onSubmit();
+      }
+    } else if ((event.altKey && event.key === 'n') || (event.altKey && event.key === 'N')) {
+      if (!this.showModal() && !this.showHistoryModal()) {
+        event.preventDefault();
+        this.openModal();
+      }
+    }
   }
 }

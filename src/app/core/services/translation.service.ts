@@ -249,6 +249,18 @@ export class TranslationService {
     'goals.field_current': { es: 'Monto Actual', en: 'Current Amount' },
     'goals.field_date': { es: 'Fecha Objetivo', en: 'Target Date' },
     'goals.delete_title': { es: '¿Eliminar Meta?', en: 'Delete Goal?' },
+    'goals.history_title': { es: 'Historial de Aportes', en: 'Contribution History' },
+    'goals.no_contributions': { es: 'No hay aportes aún.', en: 'No contributions yet.' },
+    'goals.delete_contribution_title': { es: '¿Eliminar Aporte?', en: 'Delete Contribution?' },
+    'goals.delete_contribution_msg': {
+      es: '¿Estás seguro de que deseas eliminar este aporte? Esto disminuirá el monto ahorrado.',
+      en: 'Are you sure you want to delete this contribution? This will decrease your saved amount.',
+    },
+    'goals.contribution_deleted': { es: 'Aporte eliminado', en: 'Contribution deleted' },
+    'goals.contribution_added': { es: '¡Aporte agregado!', en: 'Contribution added!' },
+    'goals.goal_deleted': { es: 'Meta eliminada', en: 'Goal deleted' },
+    'goals.goal_created': { es: 'Meta creada', en: 'Goal created' },
+    'goals.goal_updated': { es: 'Meta actualizada', en: 'Goal updated' },
 
     // General Actions
     'action.save': { es: 'Guardar', en: 'Save' },

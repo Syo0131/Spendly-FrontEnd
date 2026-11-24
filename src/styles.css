@@ -1,6 +1,7 @@
 @import '@fontsource-variable/plus-jakarta-sans/index.css';
 @import '@fontsource-variable/jetbrains-mono/index.css';
 @import '@fontsource/material-icons-outlined/index.css';
+@import '@angular/cdk/overlay-prebuilt.css';
 
 @tailwind base;
 @tailwind components;

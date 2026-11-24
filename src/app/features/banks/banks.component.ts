@@ -231,8 +231,6 @@ export class BanksComponent implements OnInit {
 
     this.apiService.getBankStatus().subscribe({
       next: (res) => {
-        console.log('Bank Status Response:', res); // DEBUG
-
         let connected: string[] = [];
         if (Array.isArray(res)) {
           connected = res;
@@ -290,12 +288,12 @@ export class BanksComponent implements OnInit {
         if (res.authUrl) {
           window.location.href = res.authUrl;
         } else {
-          alert('Unexpected response from server.');
+          this.ns.show('banks.unexpected_response', 'error');
           this.connectingBank.set(null);
         }
       },
       error: (err) => {
-        alert('❌ Failed to connect to bank. Please try again.');
+        this.ns.show('banks.connect_failed', 'error');
         console.error(err);
         this.connectingBank.set(null);
       },
@@ -324,7 +322,7 @@ export class BanksComponent implements OnInit {
         this.refreshData();
       },
       error: () => {
-        alert('Failed to disconnect'); // In optimistic UI, we might accept this or re-open
+        this.ns.show('banks.disconnect_failed', 'error'); // In optimistic UI, we might accept this or re-open
         // But for consistency with others:
         // this.cancelDisconnect(); // Already closed
       },

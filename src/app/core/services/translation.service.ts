@@ -108,6 +108,18 @@ export class TranslationService {
     },
     'banks.premium_btn': { es: 'Notificarme', en: 'Notify Me' },
     'banks.restore': { es: 'Restaurar Compra', en: 'Restore Purchase' },
+    'banks.unexpected_response': {
+      es: 'Respuesta inesperada del servidor.',
+      en: 'Unexpected response from server.',
+    },
+    'banks.connect_failed': {
+      es: 'No se pudo conectar el banco. Inténtalo de nuevo.',
+      en: 'Failed to connect to bank. Please try again.',
+    },
+    'banks.disconnect_failed': {
+      es: 'No se pudo desconectar el banco.',
+      en: 'Failed to disconnect bank.',
+    },
 
     'settings.security.note_title': { es: 'Nota de Seguridad', en: 'Security Note' },
     'settings.security.note_desc': {
@@ -144,6 +156,21 @@ export class TranslationService {
     'budgets.desc': {
       es: '¡Gestión de presupuestos pronto!',
       en: 'Budget management coming soon!',
+    },
+    'budgets.period': { es: 'Período', en: 'Period' },
+    'budgets.period_monthly': { es: 'Mensual', en: 'Monthly' },
+    'budgets.period_yearly': { es: 'Anual', en: 'Yearly' },
+    'budgets.updated': { es: 'Presupuesto actualizado', en: 'Budget updated successfully' },
+    'budgets.update_failed': {
+      es: 'No se pudo actualizar el presupuesto',
+      en: 'Failed to update budget',
+    },
+    'budgets.created': { es: 'Presupuesto creado', en: 'Budget created successfully' },
+    'budgets.create_failed': { es: 'No se pudo crear el presupuesto', en: 'Failed to create budget' },
+    'budgets.deleted': { es: 'Presupuesto eliminado', en: 'Budget deleted' },
+    'budgets.delete_failed': {
+      es: 'No se pudo eliminar el presupuesto',
+      en: 'Failed to delete budget',
     },
     'budgets.advanced_options': { es: 'Opciones Avanzadas', en: 'Advanced Options' },
     'budgets.recurring_title': { es: 'Presupuesto Recurrente', en: 'Recurring Budget' },
@@ -206,6 +233,12 @@ export class TranslationService {
       es: '¡Recordatorios de facturas y alertas pronto!',
       en: 'Bill reminders and alerts coming soon!',
     },
+    'reminders.empty_title': { es: 'Aún no tienes recordatorios', en: 'No reminders yet' },
+    'reminders.empty_desc': {
+      es: 'Crea un recordatorio para no olvidar ningún pago.',
+      en: 'Create a reminder so you never miss a payment.',
+    },
+    'reminders.new_title': { es: 'Nuevo Recordatorio', en: 'New Reminder' },
     'recurring.title': { es: 'Gastos Recurrentes', en: 'Recurring Expenses' },
     'recurring.desc': {
       es: '¡Administra suscripciones y facturas recurrentes pronto!',
@@ -284,6 +317,7 @@ export class TranslationService {
     'notif.income_updated': { es: 'Ingreso actualizado', en: 'Income updated' },
     'notif.income_deleted': { es: 'Ingreso eliminado', en: 'Income deleted' },
     'notif.income_delete_fail': { es: 'Error al eliminar ingreso', en: 'Failed to delete income' },
+    'notif.operation_failed': { es: 'La operación falló', en: 'Operation failed' },
     'alert.reminder_due': { es: 'Recordatorio', en: 'Reminder Due' },
     'notif.profile_updated': {
       es: 'Perfil actualizado exitosamente!',
@@ -344,6 +378,10 @@ export class TranslationService {
       en: 'Permanently delete your account and all data.',
     },
     'settings.danger.btn': { es: 'Eliminar Cuenta', en: 'Delete Account' },
+    'settings.session_invalid': {
+      es: 'Tu sesión no es válida. Vuelve a iniciar sesión.',
+      en: 'Your session is invalid. Please sign in again.',
+    },
     // Categories (Normalized keys: cat.{lowercase_name})
     'cat.food': { es: 'Comida', en: 'Food' },
     'cat.comida': { es: 'Comida', en: 'Food' },

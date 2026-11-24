@@ -61,10 +61,10 @@ import {
           >
         </div>
         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
-          {{ ts.t()('goals.empty_title') }}
+          {{ ts.t()('reminders.empty_title') }}
         </h3>
         <p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-6 text-sm">
-          {{ ts.t()('goals.empty_desc') }}
+          {{ ts.t()('reminders.empty_desc') }}
         </p>
         <button
           (click)="openModal()"
@@ -112,7 +112,7 @@ import {
                 <span class="material-icons-outlined text-lg">edit</span>
               </button>
               <button
-                (click)="delete(item.id)"
+                (click)="requestDelete(item.id)"
                 class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
               >
                 <span class="material-icons-outlined text-lg">delete</span>
@@ -169,7 +169,7 @@ import {
             }}</span>
           </div>
           <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-            {{ isEditing ? ts.t()('trans.edit') : ts.t()('goals.new_title') }}
+            {{ isEditing ? ts.t()('trans.edit') : ts.t()('reminders.new_title') }}
           </h2>
           <p class="text-gray-500 text-xs mt-1">{{ ts.t()('reminders.setup') }}</p>
         </div>
@@ -253,6 +253,49 @@ import {
       </div>
     </div>
     }
+
+    <!-- Delete Confirmation Modal -->
+    @if (deleteTargetId() !== null) {
+    <div
+      class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      (click)="cancelDelete()"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-sm p-6 animate-scale-in text-center"
+        (click)="$event.stopPropagation()"
+      >
+        <div
+          class="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4 text-red-500"
+        >
+          <span class="material-icons-outlined text-3xl">delete_forever</span>
+        </div>
+
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          {{ ts.t()('trans.delete') }}
+        </h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-6">
+          {{ ts.t()('trans.delete_msg') }}
+        </p>
+
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="cancelDelete()"
+            class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+          >
+            {{ ts.t()('action.cancel') }}
+          </button>
+          <button
+            type="button"
+            (click)="confirmDelete()"
+            class="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-bold shadow-lg shadow-red-500/30 hover:bg-red-600 transition-all"
+          >
+            {{ ts.t()('trans.delete') }}
+          </button>
+        </div>
+      </div>
+    </div>
+    }
   `,
   styles: [],
 })
@@ -265,6 +308,7 @@ export class RemindersComponent {
   showModal = false;
   isEditing = false;
   editingId: number | null = null;
+  deleteTargetId = signal<number | null>(null);
 
   form: FormGroup = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
@@ -344,16 +388,30 @@ export class RemindersComponent {
     }
   }
 
+  requestDelete(id: number) {
+    this.deleteTargetId.set(id);
+  }
+
+  cancelDelete() {
+    this.deleteTargetId.set(null);
+  }
+
+  confirmDelete() {
+    const id = this.deleteTargetId();
+    if (id === null) return;
+    this.deleteTargetId.set(null);
+
+    this.state
+      .delete(id)
+      .then(() => {
+        this.ns.show(this.ts.translate('reminders.deleted'), 'success');
+      })
+      .catch((err: any) => {
+        this.ns.show(this.ts.translate('reminders.fail_delete'), 'error');
+      });
+  }
+
   delete(id: number) {
-    if (confirm(this.ts.translate('trans.delete_msg'))) {
-      this.state
-        .delete(id)
-        .then(() => {
-          this.ns.show(this.ts.translate('reminders.deleted'), 'success');
-        })
-        .catch((err: any) => {
-          this.ns.show(this.ts.translate('reminders.fail_delete'), 'error');
-        });
-    }
+    this.requestDelete(id);
   }
 }

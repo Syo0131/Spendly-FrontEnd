@@ -34,7 +34,6 @@ export class AuthService {
       // Token exists but is expired
       this.logout();
     }
-    console.log('AuthService: Initialized. Authenticated:', this.isAuthenticated());
   }
 
   private isTokenExpired(token: string): boolean {
@@ -51,7 +50,6 @@ export class AuthService {
     if (!this.isAuthenticated()) return;
     this.apiService.checkPremiumStatus().subscribe({
       next: (res) => {
-        console.log('AuthService: Premium status verified:', res.isPremium);
         this.isPremium.set(res.isPremium);
         localStorage.setItem('spendly_premium', String(res.isPremium));
       },
@@ -61,7 +59,6 @@ export class AuthService {
 
   login(credentials: LoginRequest): Observable<TokenResponse> {
     const url = `${this.apiUrl}/login`;
-    console.log(`AuthService: calling POST ${url}`, credentials);
     return this.http
       .post<TokenResponse>(url, credentials)
       .pipe(tap((response) => this.handleAuthSuccess(response)));
@@ -72,7 +69,6 @@ export class AuthService {
   }
 
   logout(): void {
-    console.log('AuthService: Logout called. Clearing token.');
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem('spendly_user');
     localStorage.removeItem('spendly_premium');
@@ -88,15 +84,34 @@ export class AuthService {
     return token;
   }
 
+  getUserId(): number | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const parts = token.split('.');
+      if (parts.length < 2) return null;
+      let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      while (base64.length % 4) {
+        base64 += '=';
+      }
+      const payload = JSON.parse(atob(base64));
+      if (payload && typeof payload.userId === 'number') {
+        return payload.userId;
+      }
+      if (payload && payload.userId && !isNaN(Number(payload.userId))) {
+        return Number(payload.userId);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
   readPremiumFromStorage(): string | null {
     return localStorage.getItem('spendly_premium');
   }
 
   private handleAuthSuccess(response: TokenResponse): void {
-    console.log(
-      'AuthService: Auth Success. Saving token:',
-      response.token.substring(0, 10) + '...'
-    );
     localStorage.setItem(this.tokenKey, response.token);
     this.isAuthenticated.set(true);
     if (response.username) {

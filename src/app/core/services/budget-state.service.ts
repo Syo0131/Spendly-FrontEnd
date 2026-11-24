@@ -38,19 +38,7 @@ export class BudgetStateService {
         return of({ content: cached }).pipe(finalize(() => this._isLoading.set(false)));
       }
 
-      // Fetch both Budgets and Expense Stats
-      return forkJoin({
-        budgets: this.api.getMonthlyBudgets(year, month),
-        stats: this.api.getExpensesByCategory(year, month),
-      }).pipe(
-        map(({ budgets, stats }) => {
-          // Enrich budgets with spent data from stats
-          return budgets.map((b) => {
-            const catName = b.category?.name;
-            const spent = catName && stats[catName] !== undefined ? stats[catName] : 0;
-            return { ...b, spent };
-          });
-        }),
+      return this.api.getMonthlyBudgets(year, month).pipe(
         tap((data) => this.cache.set(key, data)),
         // Map array to object structure for consistency with _localData type
         switchMap((data) => of({ content: data })),

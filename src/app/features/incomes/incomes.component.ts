@@ -206,7 +206,7 @@ import { RouterModule } from '@angular/router';
               <!-- Empty State -->
               @if (incomes().length === 0) {
               <tr>
-                <td colspan="5" class="p-8 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="4" class="p-8 text-center text-gray-500 dark:text-gray-400">
                   {{ ts.t()('trans.no_data') }}
                 </td>
               </tr>
@@ -214,7 +214,7 @@ import { RouterModule } from '@angular/router';
               <!-- Placeholder Rows to maintain fixed height -->
               @for (_ of getEmptyRows(); track $index) {
               <tr class="h-[73px]">
-                <td colspan="5"></td>
+                <td colspan="4"></td>
               </tr>
               }
             </tbody>
@@ -579,7 +579,7 @@ export class IncomesComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Operation failed', err);
-          this.ns.show('error', err.error?.message || 'Operation failed');
+          this.ns.show(err.error?.message || 'notif.operation_failed', 'error');
         },
       });
     }

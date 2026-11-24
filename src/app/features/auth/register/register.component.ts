@@ -168,7 +168,6 @@ export class RegisterComponent {
       this.success.set('');
 
       const payload = { ...this.registerForm.value, role: 'USER' };
-      console.log('Registering with payload:', payload);
 
       this.authService.register(payload).subscribe({
         next: (res) => {

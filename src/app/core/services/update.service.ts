@@ -19,14 +19,11 @@ export class UpdateService {
   constructor() {
     if (this.swUpdate.isEnabled) {
       // Force check on load
-      this.swUpdate.checkForUpdate().then(() => {
-        console.log('UpdateService: Initial check completed');
-      });
+      this.swUpdate.checkForUpdate();
 
       this.swUpdate.versionUpdates
         .pipe(filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
         .subscribe(() => {
-          console.log('UpdateService: New version ready');
           this.isUpdateAvailable.set(true);
         });
 
@@ -54,11 +51,6 @@ export class UpdateService {
   checkForUpdate() {
     this.swUpdate
       .checkForUpdate()
-      .then((hasUpdate) => {
-        if (hasUpdate) {
-          console.log('UpdateService: Update found via explicit check');
-        }
-      })
       .catch((err) => console.error('UpdateService: Failed to check for update', err));
   }
 

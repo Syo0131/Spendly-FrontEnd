@@ -67,7 +67,6 @@ export class IncomeStateService {
           );
         }),
         tap((data) => {
-          console.log('[IncomeService] Loaded all items:', data.content.length);
           this.cache.set(key, data);
         }),
         catchError((err) => {

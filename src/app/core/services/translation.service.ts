@@ -375,6 +375,10 @@ export class TranslationService {
       en: 'Permanently delete your account and all data.',
     },
     'settings.danger.btn': { es: 'Eliminar Cuenta', en: 'Delete Account' },
+    'settings.session_invalid': {
+      es: 'Tu sesión no es válida. Vuelve a iniciar sesión.',
+      en: 'Your session is invalid. Please sign in again.',
+    },
     // Categories (Normalized keys: cat.{lowercase_name})
     'cat.food': { es: 'Comida', en: 'Food' },
     'cat.comida': { es: 'Comida', en: 'Food' },

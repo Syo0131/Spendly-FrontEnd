@@ -18,6 +18,7 @@ describe('TranslationService keys', () => {
     'banks.unexpected_response',
     'banks.connect_failed',
     'banks.disconnect_failed',
+    'settings.session_invalid',
   ];
 
   beforeEach(() => {

@@ -411,19 +411,18 @@ export class SettingsComponent implements OnInit {
 
   updateProfile() {
     if (this.profileForm.invalid) return;
-    this.isLoading.set(true);
 
-    // Mock ID since we don't have it explicitly stored in AuthService public signal yet (only username)
-    // In real app, auth response should give us the ID.
-    // I previously saw UserResponse has ID.
-    // I will assume ID=1 for this demo or handle it if I can get it.
-    // Since I can't get ID easily without extensive changes to Auth, I'll hardcode 1 or try to use a valid one if known.
-    // Actually, updateByUser needs ID.
-    const mockId = 1;
+    const userId = this.authService.getUserId();
+    if (userId === null) {
+      this.ns.show('settings.session_invalid', 'error');
+      return;
+    }
+
+    this.isLoading.set(true);
 
     const data: UpdateUserDto = this.profileForm.value;
 
-    this.apiService.updateUser(mockId, data).subscribe({
+    this.apiService.updateUser(userId, data).subscribe({
       next: (res) => {
         this.ns.show('notif.profile_updated', 'success', 3000);
         this.isLoading.set(false);
@@ -439,15 +438,21 @@ export class SettingsComponent implements OnInit {
 
   changePassword() {
     if (this.securityForm.invalid) return;
+
+    const userId = this.authService.getUserId();
+    if (userId === null) {
+      this.ns.show('settings.session_invalid', 'error');
+      return;
+    }
+
     this.isLoading.set(true);
 
     // Using same updateUser endpoint but only sending password as per Plan
-    const mockId = 1;
     const data: UpdateUserDto = {
       password: this.securityForm.value.password,
     };
 
-    this.apiService.updateUser(mockId, data).subscribe({
+    this.apiService.updateUser(userId, data).subscribe({
       next: (res) => {
         this.ns.show('notif.account_disabled', 'success', 2000);
         setTimeout(() => this.authService.logout(), 2000);
@@ -461,8 +466,6 @@ export class SettingsComponent implements OnInit {
   }
 
   todoDelete() {
-    // this.apiService.deleteUser(mockId).subscribe(...)
-    // this.apiService.deleteUser(mockId).subscribe(...)
     this.ns.show('notif.pending', 'info');
   }
 }

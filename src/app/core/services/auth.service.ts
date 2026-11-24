@@ -84,6 +84,29 @@ export class AuthService {
     return token;
   }
 
+  getUserId(): number | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const parts = token.split('.');
+      if (parts.length < 2) return null;
+      let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      while (base64.length % 4) {
+        base64 += '=';
+      }
+      const payload = JSON.parse(atob(base64));
+      if (payload && typeof payload.userId === 'number') {
+        return payload.userId;
+      }
+      if (payload && payload.userId && !isNaN(Number(payload.userId))) {
+        return Number(payload.userId);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
   readPremiumFromStorage(): string | null {
     return localStorage.getItem('spendly_premium');
   }

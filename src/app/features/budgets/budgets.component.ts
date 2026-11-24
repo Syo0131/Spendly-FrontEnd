@@ -19,7 +19,13 @@ import { ApiService } from '../../core/services/api.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { BudgetStateService } from '../../core/services/budget-state.service';
-import { CreateBudgetDto, Budget, Category } from '../../core/models/api.models';
+import {
+  CreateBudgetDto,
+  UpdateBudgetDto,
+  Budget,
+  Category,
+  BudgetInputPeriod,
+} from '../../core/models/api.models';
 import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
 
 @Component({
@@ -271,6 +277,49 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             </div>
             @if (form.get('limit')?.invalid && form.get('limit')?.touched) {
             <p class="text-xs text-red-500">{{ ts.t()('budgets.error_amount') }}</p>
+            }
+          </div>
+
+          <!-- Period Selector -->
+          <div class="space-y-1.5">
+            <label
+              class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+            >
+              {{ ts.t()('budgets.period') }}
+            </label>
+            @if (isLegacyPeriod()) {
+            <div
+              class="p-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 font-medium text-sm"
+            >
+              {{ selectedBudget()?.period }}
+            </div>
+            } @else {
+            <div class="grid grid-cols-2 gap-2 p-1 bg-gray-100 dark:bg-slate-800 rounded-xl">
+              <button
+                type="button"
+                (click)="form.patchValue({ period: 'MONTHLY' })"
+                class="py-2 px-3 rounded-lg text-sm font-bold transition-all text-center"
+                [ngClass]="
+                  form.get('period')?.value === 'MONTHLY'
+                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
+                    : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                "
+              >
+                {{ ts.t()('budgets.period_monthly') }}
+              </button>
+              <button
+                type="button"
+                (click)="form.patchValue({ period: 'YEARLY' })"
+                class="py-2 px-3 rounded-lg text-sm font-bold transition-all text-center"
+                [ngClass]="
+                  form.get('period')?.value === 'YEARLY'
+                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
+                    : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
+                "
+              >
+                {{ ts.t()('budgets.period_yearly') }}
+              </button>
+            </div>
             }
           </div>
 
@@ -574,7 +623,12 @@ export class BudgetsComponent implements OnInit {
   // Form
   form: FormGroup;
 
-  periods = ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'];
+  periods: BudgetInputPeriod[] = ['MONTHLY', 'YEARLY'];
+
+  isLegacyPeriod(): boolean {
+    const p = this.selectedBudget()?.period;
+    return p === 'DAILY' || p === 'WEEKLY';
+  }
   alertOptions = [
     { value: 50, label: '50%' },
     { value: 75, label: '75%' },
@@ -678,9 +732,10 @@ export class BudgetsComponent implements OnInit {
     this.selectedBudget.set(budget);
 
     if (budget) {
+      const isLegacy = budget.period === 'DAILY' || budget.period === 'WEEKLY';
       this.form.patchValue({
         limit: budget.limit,
-        period: budget.period,
+        period: isLegacy ? 'MONTHLY' : (budget.period as BudgetInputPeriod),
         categoryId: budget.category?.id,
         warningThreshold: budget.warningThreshold || 75,
         criticalThreshold: budget.criticalThreshold || 90,
@@ -730,7 +785,7 @@ export class BudgetsComponent implements OnInit {
     return this.categories().find((c) => c.id === id);
   }
 
-  selectPeriod(p: string) {
+  selectPeriod(p: BudgetInputPeriod) {
     this.form.patchValue({ period: p });
     this.openDropdown.set(null);
   }
@@ -777,15 +832,19 @@ export class BudgetsComponent implements OnInit {
     };
 
     if (this.selectedBudget()) {
-      // For updates, we usually only allow changing limits/thresholds, not category ideally,
-      // but API might allow it. DTO usually forbids changing immutable props if strict.
-      // But adhering to the form:
+      const isLegacy = this.isLegacyPeriod();
+      const updatePayload: UpdateBudgetDto = {
+        limit: formVal.limit,
+        warningThreshold: formVal.warningThreshold,
+        criticalThreshold: formVal.criticalThreshold,
+        period: isLegacy ? undefined : formVal.period,
+      };
 
       // Optimistic Close
       this.closeModal();
 
       const cat = this.getSelectedCategory();
-      this.state.updateBudget(this.selectedBudget()!.id, payload, cat).subscribe({
+      this.state.updateBudget(this.selectedBudget()!.id, updatePayload, cat).subscribe({
         next: () => {
           this.isSubmitting.set(false);
           this.ns.show('budgets.updated', 'success');

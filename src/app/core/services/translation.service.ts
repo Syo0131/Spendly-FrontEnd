@@ -157,6 +157,9 @@ export class TranslationService {
       es: '¡Gestión de presupuestos pronto!',
       en: 'Budget management coming soon!',
     },
+    'budgets.period': { es: 'Período', en: 'Period' },
+    'budgets.period_monthly': { es: 'Mensual', en: 'Monthly' },
+    'budgets.period_yearly': { es: 'Anual', en: 'Yearly' },
     'budgets.updated': { es: 'Presupuesto actualizado', en: 'Budget updated successfully' },
     'budgets.update_failed': {
       es: 'No se pudo actualizar el presupuesto',

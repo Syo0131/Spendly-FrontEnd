@@ -198,6 +198,7 @@ export interface ContributionResponse {
 
 // Budgets
 export type BudgetPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+export type BudgetInputPeriod = 'MONTHLY' | 'YEARLY';
 
 export interface Budget {
   id: number;
@@ -217,7 +218,7 @@ export interface Budget {
 
 export interface CreateBudgetDto {
   limit: number;
-  period: BudgetPeriod;
+  period: BudgetInputPeriod;
   categoryId: number;
   warningThreshold?: number;
   criticalThreshold?: number;
@@ -227,7 +228,7 @@ export interface CreateBudgetDto {
 
 export interface UpdateBudgetDto {
   limit?: number;
-  period?: BudgetPeriod;
+  period?: BudgetInputPeriod;
   warningThreshold?: number;
   criticalThreshold?: number;
 }

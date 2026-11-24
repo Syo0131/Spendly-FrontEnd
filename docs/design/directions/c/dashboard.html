@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dirección C: Command Terminal / High-Density Pro — Spendly</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            terminal: {
+              bg: '#09090b',
+              surface: '#121215',
+              elevated: '#18181b',
+              border: '#27272a',
+              text: '#fafafa',
+              muted: '#71717a',
+              accent: '#06b6d4',
+              emerald: '#10b981',
+              rose: '#f43f5e',
+              amber: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-zinc-100 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 min-h-screen font-sans transition-colors duration-200">
+
+  <!-- Top Controller Bar -->
+  <header class="sticky top-0 z-50 bg-white/90 dark:bg-[#121215]/90 backdrop-blur border-b border-zinc-200 dark:border-zinc-800 px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-md bg-cyan-600 flex items-center justify-center text-white font-mono font-bold text-sm">C</div>
+      <div>
+        <h1 class="font-bold text-sm text-zinc-900 dark:text-white font-mono">Dirección C: Command Terminal / High-Density Pro</h1>
+        <p class="text-xs text-zinc-500 dark:text-zinc-400">Terminal ejecutiva: alta densidad de datos, cifras monoespaciadas, atajos y máxima precisión.</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <!-- Mode Toggle -->
+      <div class="inline-flex rounded-md border border-zinc-200 dark:border-zinc-800 p-0.5 bg-zinc-50 dark:bg-zinc-900 text-xs font-mono">
+        <button id="viewBoth" onclick="setView('both')" class="px-2.5 py-1.5 rounded font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white">Doble Vista</button>
+        <button id="viewDesktop" onclick="setView('desktop')" class="px-2.5 py-1.5 rounded font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white">Desktop (1280)</button>
+        <button id="viewMobile" onclick="setView('mobile')" class="px-2.5 py-1.5 rounded font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white">Mobile (375)</button>
+      </div>
+      <!-- Theme Toggle -->
+      <button onclick="toggleTheme()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs font-mono font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800">
+        <span class="material-icons-outlined text-sm">dark_mode</span>
+        <span id="themeLabel">Dark Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Editorial Philosophy Note -->
+  <section class="max-w-7xl mx-auto px-6 py-4">
+    <div class="p-4 rounded-lg border border-cyan-200 dark:border-cyan-900/50 bg-cyan-50/50 dark:bg-cyan-950/20 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 flex items-start gap-3">
+      <span class="material-icons-outlined text-cyan-500 text-lg flex-shrink-0 mt-0.5">terminal</span>
+      <div>
+        <strong class="font-bold text-cyan-900 dark:text-cyan-300 font-mono">Por qué se lee como Finanzas (más allá del color):</strong>
+        Inspirada en herramientas de tesorería y terminales cuantitativas (Bloomberg, Ramp, Raycast). Máxima densidad de información sin ruido decorativo. Los montos se presentan en tipografía monoespaciada para comparación visual vertical instantánea, con insignias de estado compactas tipo terminal (`[CRITICAL 97%]`, `[WARN 83%]`, `[ON TRACK 61%]`) y atajos de teclado siempre visibles.
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Showcase Container -->
+  <main class="max-w-7xl mx-auto px-6 py-6 space-y-12">
+
+    <!-- DESKTOP CONTAINER (1280px Simulation) -->
+    <section id="desktopSection" class="transition-all">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-bold font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+          <span class="material-icons-outlined text-sm">desktop_windows</span> Terminal Desktop (1280px)
+        </h2>
+        <span class="text-xs font-mono text-zinc-400">1280 × 800</span>
+      </div>
+
+      <div class="w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#09090b] overflow-hidden shadow-2xl flex min-h-[780px]">
+        
+        <!-- Sidebar -->
+        <aside class="w-60 border-r border-zinc-200 dark:border-zinc-800 p-4 flex flex-col justify-between bg-zinc-50/80 dark:bg-[#0e0e11]">
+          <div class="space-y-6">
+            <!-- Brand -->
+            <div class="flex items-center gap-2.5 px-2">
+              <div class="w-7 h-7 rounded bg-cyan-600 flex items-center justify-center text-white font-mono font-bold text-sm">S_</div>
+              <div>
+                <span class="font-bold font-mono text-sm tracking-tight text-zinc-900 dark:text-white block">SPENDLY</span>
+                <span class="text-[9px] font-mono text-cyan-500">v2.5 // PRO TERMINAL</span>
+              </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="space-y-0.5 text-xs font-mono">
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-2 rounded-md bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-semibold border-l-2 border-cyan-500">
+                <span class="material-icons-outlined text-base">dashboard</span> 01_DASHBOARD
+              </a>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/40">
+                <span class="material-icons-outlined text-base">trending_down</span> 02_GASTOS
+              </a>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/40">
+                <span class="material-icons-outlined text-base">trending_up</span> 03_INGRESOS
+              </a>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/40">
+                <span class="material-icons-outlined text-base">pie_chart</span> 04_LIMITES
+              </a>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/40">
+                <span class="material-icons-outlined text-base">flag</span> 05_METAS
+              </a>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/40">
+                <span class="material-icons-outlined text-base">replay</span> 06_RECURRENTES
+              </a>
+              <a href="#" class="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/40">
+                <span class="material-icons-outlined text-base">notifications</span> 07_ALERTAS
+              </a>
+            </nav>
+          </div>
+
+          <!-- User footer -->
+          <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs font-mono">
+            <div>
+              <p class="font-bold text-zinc-900 dark:text-white">USER: DD_01</p>
+              <p class="text-[10px] text-zinc-400">STATUS: ONLINE</p>
+            </div>
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 p-6 space-y-5 overflow-y-auto bg-zinc-50/40 dark:bg-[#09090b]">
+          
+          <!-- Header & Command Controls -->
+          <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
+            <div class="flex items-center gap-3">
+              <h2 class="text-base font-bold font-mono text-zinc-900 dark:text-white tracking-tight">RESUMEN_EJECUTIVO</h2>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">DOP · DOMINICAN_PESO</span>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <div class="flex items-center border border-zinc-200 dark:border-zinc-800 rounded bg-white dark:bg-[#141417] text-xs font-mono">
+                <button class="px-2 py-1 text-zinc-400 hover:text-white"><</button>
+                <span class="px-3 py-1 font-bold text-zinc-900 dark:text-white border-x border-zinc-200 dark:border-zinc-800">2026-11</span>
+                <button disabled class="px-2 py-1 text-zinc-600 cursor-not-allowed">></button>
+              </div>
+              <button class="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm">
+                <span class="material-icons-outlined text-sm">add</span> NUEVO GASTO <kbd class="text-[9px] bg-cyan-700 px-1 rounded opacity-80">Alt+N</kbd>
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI Summary Cards (Compact, Monospace) -->
+          <div class="grid grid-cols-3 gap-3">
+            
+            <!-- Balance Card -->
+            <div class="p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121215]">
+              <div class="flex items-center justify-between text-xs font-mono text-zinc-400 mb-1">
+                <span>NET_LIQUIDITY</span>
+                <span class="text-emerald-500 font-bold">+33.4%</span>
+              </div>
+              <div class="text-2xl font-bold font-mono text-zinc-900 dark:text-white tabular-nums tracking-tight">
+                RD$ 55,100.00
+              </div>
+              <div class="mt-2 text-[10px] font-mono text-zinc-500 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800/80 pt-1.5">
+                <span>STATUS: SURPLUS</span>
+                <span class="text-emerald-400 font-mono">HEALTHY</span>
+              </div>
+            </div>
+
+            <!-- Incomes Card -->
+            <div class="p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121215]">
+              <div class="flex items-center justify-between text-xs font-mono text-zinc-400 mb-1">
+                <span>TOTAL_INCOMES</span>
+                <span class="text-cyan-400">2_SOURCES</span>
+              </div>
+              <div class="text-2xl font-bold font-mono text-emerald-500 tabular-nums tracking-tight">
+                RD$ 165,000.00
+              </div>
+              <div class="mt-2 text-[10px] font-mono text-zinc-500 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800/80 pt-1.5">
+                <span>DEVENGADO</span>
+                <span class="text-zinc-400">100% RECONCILED</span>
+              </div>
+            </div>
+
+            <!-- Expenses Card -->
+            <div class="p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121215]">
+              <div class="flex items-center justify-between text-xs font-mono text-zinc-400 mb-1">
+                <span>TOTAL_EXPENSES</span>
+                <span class="text-rose-400">66.6% RATIO</span>
+              </div>
+              <div class="text-2xl font-bold font-mono text-rose-500 tabular-nums tracking-tight">
+                RD$ 109,900.00
+              </div>
+              <div class="mt-2 text-[10px] font-mono text-zinc-500 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800/80 pt-1.5">
+                <span>VELOCITY</span>
+                <span class="text-zinc-400">RD$ 3,663 / DAY</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Section Grid: Category List (§5.1) + Cashflow Trend -->
+          <div class="grid grid-cols-12 gap-4 items-start">
+            
+            <!-- Category Spending List (§5.1) - 7 cols -->
+            <div class="col-span-7 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121215] p-4 space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800 text-xs font-mono">
+                <span class="font-bold text-zinc-900 dark:text-white uppercase">CATEGORIAS // GASTO_MENSUAL</span>
+                <span class="text-zinc-400">SORT: DESC</span>
+              </div>
+
+              <!-- Compact Table Rows -->
+              <div class="space-y-1 font-mono text-xs">
+
+                <!-- 1. Educación (Yearly Budget) -->
+                <div class="p-2.5 rounded border border-zinc-100 dark:border-zinc-800/80 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <span class="material-icons-outlined text-sm text-cyan-400">school</span>
+                      <span class="font-bold text-zinc-900 dark:text-white">Educación</span>
+                      <span class="text-[10px] px-1 py-0.5 rounded bg-zinc-800 text-zinc-400">ANUAL</span>
+                    </div>
+                    <div class="text-right flex items-center gap-2">
+                      <span class="font-bold tabular-nums">RD$ 35,000.00</span>
+                      <span class="text-[10px] text-emerald-400 font-bold">[OK 67%]</span>
+                    </div>
+                  </div>
+                  <div class="h-1 w-full bg-zinc-200 dark:bg-zinc-800 rounded-none overflow-hidden">
+                    <div class="bg-emerald-500 h-full" style="width: 66.6%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] text-zinc-400 mt-1">
+                    <span>YTD: RD$ 120,000 / RD$ 180,000</span>
+                    <span>REM: RD$ 60,000</span>
+                  </div>
+                </div>
+
+                <!-- 2. Comida (Monthly Budget, OK) -->
+                <div class="p-2.5 rounded border border-zinc-100 dark:border-zinc-800/80 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <span class="material-icons-outlined text-sm text-emerald-400">restaurant</span>
+                      <span class="font-bold text-zinc-900 dark:text-white">Comida</span>
+                      <span class="text-[10px] px-1 py-0.5 rounded bg-zinc-800 text-zinc-400">MES</span>
+                    </div>
+                    <div class="text-right flex items-center gap-2">
+                      <span class="font-bold tabular-nums">RD$ 24,500.00</span>
+                      <span class="text-[10px] text-emerald-400 font-bold">[OK 61%]</span>
+                    </div>
+                  </div>
+                  <div class="h-1 w-full bg-zinc-200 dark:bg-zinc-800 rounded-none overflow-hidden">
+                    <div class="bg-emerald-500 h-full" style="width: 61.25%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] text-zinc-400 mt-1">
+                    <span>LIMIT: RD$ 40,000.00</span>
+                    <span>REM: RD$ 15,500.00</span>
+                  </div>
+                </div>
+
+                <!-- 3. Supermercado (Monthly Budget, WARNING >= 75%) -->
+                <div class="p-2.5 rounded border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-colors">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <span class="material-icons-outlined text-sm text-amber-400">shopping_cart</span>
+                      <span class="font-bold text-zinc-900 dark:text-white">Supermercado</span>
+                      <span class="text-[10px] px-1 py-0.5 rounded bg-zinc-800 text-zinc-400">MES</span>
+                    </div>
+                    <div class="text-right flex items-center gap-2">
+                      <span class="font-bold tabular-nums">RD$ 18,200.00</span>
+                      <span class="text-[10px] text-amber-400 font-bold">[WARN 83%]</span>
+                    </div>
+                  </div>
+                  <div class="h-1 w-full bg-zinc-200 dark:bg-zinc-800 rounded-none overflow-hidden">
+                    <div class="bg-amber-500 h-full" style="width: 82.7%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] text-zinc-400 mt-1">
+                    <span>LIMIT: RD$ 22,000.00</span>
+                    <span class="text-amber-400">REM: RD$ 3,800.00 ⚠️</span>
+                  </div>
+                </div>
+
+                <!-- 4. Entretenimiento (Monthly Budget, CRITICAL >= 90%) -->
+                <div class="p-2.5 rounded border border-rose-500/30 bg-rose-500/5 hover:bg-rose-500/10 transition-colors">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <span class="material-icons-outlined text-sm text-rose-400">sports_esports</span>
+                      <span class="font-bold text-rose-400">Entretenimiento</span>
+                      <span class="text-[10px] px-1 py-0.5 rounded bg-zinc-800 text-zinc-400">MES</span>
+                    </div>
+                    <div class="text-right flex items-center gap-2">
+                      <span class="font-bold text-rose-400 tabular-nums">RD$ 14,500.00</span>
+                      <span class="text-[10px] text-rose-400 font-bold animate-pulse">[CRIT 97%]</span>
+                    </div>
+                  </div>
+                  <div class="h-1 w-full bg-zinc-200 dark:bg-zinc-800 rounded-none overflow-hidden">
+                    <div class="bg-rose-500 h-full" style="width: 96.6%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] text-zinc-400 mt-1">
+                    <span>LIMIT: RD$ 15,000.00</span>
+                    <span class="text-rose-400 font-bold">REM: RD$ 500.00 🚨</span>
+                  </div>
+                </div>
+
+                <!-- 5. Transporte (No Budget) -->
+                <div class="p-2.5 rounded border border-zinc-100 dark:border-zinc-800/80 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <span class="material-icons-outlined text-sm text-zinc-400">directions_car</span>
+                      <span class="font-bold text-zinc-900 dark:text-white">Transporte</span>
+                      <span class="text-[10px] text-zinc-500">[NO_BUDGET]</span>
+                    </div>
+                    <div class="text-right flex items-center gap-2">
+                      <span class="font-bold tabular-nums">RD$ 8,400.00</span>
+                      <span class="text-[10px] text-zinc-400">7.6% TOTAL</span>
+                    </div>
+                  </div>
+                  <div class="h-0.5 w-full bg-zinc-200 dark:bg-zinc-800 rounded-none overflow-hidden">
+                    <div class="bg-zinc-500 h-full" style="width: 7.6%;"></div>
+                  </div>
+                </div>
+
+                <!-- 6. Salud (No Budget) -->
+                <div class="p-2.5 rounded border border-zinc-100 dark:border-zinc-800/80 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <span class="material-icons-outlined text-sm text-zinc-400">medical_services</span>
+                      <span class="font-bold text-zinc-900 dark:text-white">Salud</span>
+                      <span class="text-[10px] text-zinc-500">[NO_BUDGET]</span>
+                    </div>
+                    <div class="text-right flex items-center gap-2">
+                      <span class="font-bold tabular-nums">RD$ 5,200.00</span>
+                      <span class="text-[10px] text-zinc-400">4.7% TOTAL</span>
+                    </div>
+                  </div>
+                  <div class="h-0.5 w-full bg-zinc-200 dark:bg-zinc-800 rounded-none overflow-hidden">
+                    <div class="bg-zinc-500 h-full" style="width: 4.7%;"></div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Footer Link -->
+              <div class="pt-2 border-t border-zinc-200 dark:border-zinc-800/80 text-center font-mono text-[11px]">
+                <a href="#" class="text-cyan-500 hover:text-cyan-400 inline-flex items-center gap-1">
+                  -> CONFIGURAR_PRESUPUESTOS (F4)
+                </a>
+              </div>
+            </div>
+
+            <!-- Cashflow Trend & Terminal Stats (5 cols) -->
+            <div class="col-span-5 space-y-4">
+              
+              <!-- 12-Month Flow Card -->
+              <div class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121215] p-4 space-y-3 font-mono">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-bold text-zinc-900 dark:text-white">CASHFLOW_MATRIX // 12M</span>
+                  <span class="text-zinc-500">2026</span>
+                </div>
+                
+                <!-- Density Bar Chart -->
+                <div class="h-44 flex items-end justify-between gap-1 pt-6 pb-2 border-b border-zinc-200 dark:border-zinc-800 text-[9px]">
+                  <!-- Jan - Nov -->
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500 h-[60%]"></div>
+                      <div class="w-2 bg-rose-500 h-[45%]"></div>
+                    </div>
+                    <span>01</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500 h-[65%]"></div>
+                      <div class="w-2 bg-rose-500 h-[50%]"></div>
+                    </div>
+                    <span>02</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500 h-[70%]"></div>
+                      <div class="w-2 bg-rose-500 h-[55%]"></div>
+                    </div>
+                    <span>03</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500 h-[60%]"></div>
+                      <div class="w-2 bg-rose-500 h-[40%]"></div>
+                    </div>
+                    <span>04</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500 h-[75%]"></div>
+                      <div class="w-2 bg-rose-500 h-[60%]"></div>
+                    </div>
+                    <span>05</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500 h-[80%]"></div>
+                      <div class="w-2 bg-rose-500 h-[65%]"></div>
+                    </div>
+                    <span>06</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500 h-[70%]"></div>
+                      <div class="w-2 bg-rose-500 h-[48%]"></div>
+                    </div>
+                    <span>07</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500 h-[85%]"></div>
+                      <div class="w-2 bg-rose-500 h-[70%]"></div>
+                    </div>
+                    <span>08</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500 h-[72%]"></div>
+                      <div class="w-2 bg-rose-500 h-[52%]"></div>
+                    </div>
+                    <span>09</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500 h-[88%]"></div>
+                      <div class="w-2 bg-rose-500 h-[62%]"></div>
+                    </div>
+                    <span>10</span>
+                  </div>
+                  <!-- Nov Current -->
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end bg-cyan-500/10 border-b border-cyan-500">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-400 h-[92%]"></div>
+                      <div class="w-2 bg-rose-400 h-[68%]"></div>
+                    </div>
+                    <span class="text-cyan-400 font-bold">11</span>
+                  </div>
+                  <!-- Dec -->
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end opacity-20">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-zinc-600 h-[10%]"></div>
+                      <div class="w-2 bg-zinc-600 h-[10%]"></div>
+                    </div>
+                    <span>12</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between text-[10px] text-zinc-400">
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 bg-emerald-500"></span> INGRESOS</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 bg-rose-500"></span> GASTOS</span>
+                </div>
+              </div>
+
+              <!-- Shortcuts Helper -->
+              <div class="p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-[#121215] text-[10px] font-mono space-y-1.5">
+                <span class="text-zinc-400 uppercase font-bold block">KEYBOARD_DISPATCH:</span>
+                <div class="grid grid-cols-2 gap-1 text-zinc-500 dark:text-zinc-400">
+                  <div><kbd class="px-1 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200">Alt+N</kbd> Nuevo Gasto</div>
+                  <div><kbd class="px-1 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200">Esc</kbd> Cerrar modal</div>
+                  <div><kbd class="px-1 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200">Ctrl+Enter</kbd> Guardar</div>
+                  <div><kbd class="px-1 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200">Enter</kbd> Confirmar</div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- MOBILE CONTAINER (375px Simulation) -->
+    <section id="mobileSection" class="transition-all">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-bold font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+          <span class="material-icons-outlined text-sm">phone_iphone</span> Vista Móvil (375px) con Bottom Navigation
+        </h2>
+        <span class="text-xs font-mono text-zinc-400">375 × 812 (iPhone Frame)</span>
+      </div>
+
+      <div class="flex justify-center">
+        <!-- Phone Shell -->
+        <div class="w-[375px] h-[812px] rounded-[40px] border-[10px] border-zinc-800 dark:border-zinc-800 bg-white dark:bg-[#09090b] shadow-2xl overflow-hidden flex flex-col relative font-mono">
+          
+          <!-- Notch Header -->
+          <div class="h-8 w-full bg-zinc-100 dark:bg-[#141417] flex items-center justify-between px-6 text-[10px] text-zinc-500 dark:text-zinc-400 flex-shrink-0">
+            <span>09:41</span>
+            <div class="w-16 h-3.5 bg-zinc-900 rounded-full mx-auto"></div>
+            <span class="text-[9px]">100%</span>
+          </div>
+
+          <!-- Mobile App Top Bar -->
+          <div class="px-4 py-2.5 bg-white/90 dark:bg-[#09090b]/90 backdrop-blur border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded bg-cyan-600 flex items-center justify-center text-white font-bold text-xs">S</div>
+              <span class="font-bold text-xs tracking-tight text-zinc-900 dark:text-white">SPENDLY_MOB</span>
+            </div>
+            <!-- Month Selector -->
+            <div class="border border-zinc-200 dark:border-zinc-800 rounded px-2 py-0.5 text-[11px] text-zinc-300">
+              <span>2026-11 ▼</span>
+            </div>
+          </div>
+
+          <!-- Scrollable Body -->
+          <div class="flex-1 overflow-y-auto px-3 py-3 space-y-3 pb-20">
+            
+            <!-- Mobile Net Balance -->
+            <div class="p-3.5 rounded border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#121215] space-y-1">
+              <span class="text-[9px] uppercase tracking-wider text-zinc-400">NET_LIQUIDITY</span>
+              <div class="text-2xl font-bold text-zinc-900 dark:text-white tabular-nums tracking-tight">
+                RD$ 55,100.00
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t border-zinc-200 dark:border-zinc-800/80 text-[10px]">
+                <div class="text-emerald-500">
+                  <span class="text-zinc-500 block text-[8px]">INC:</span>
+                  RD$ 165,000
+                </div>
+                <div class="text-rose-500 text-right">
+                  <span class="text-zinc-500 block text-[8px]">EXP:</span>
+                  RD$ 109,900
+                </div>
+              </div>
+            </div>
+
+            <!-- Category Spending List (§5.1) -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between text-[10px] text-zinc-400 uppercase">
+                <span>GASTOS_CATEGORIA</span>
+                <span>RD$ 109,900</span>
+              </div>
+
+              <!-- 1. Educación (Yearly) -->
+              <div class="p-2.5 rounded border border-zinc-100 dark:border-zinc-800/80 bg-white dark:bg-[#121215] space-y-1">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="font-bold text-zinc-900 dark:text-white">Educación [ANUAL]</span>
+                  <span class="font-bold">RD$ 35,000</span>
+                </div>
+                <div class="h-1 w-full bg-zinc-200 dark:bg-zinc-800">
+                  <div class="bg-emerald-500 h-full" style="width: 66.6%;"></div>
+                </div>
+                <div class="flex items-center justify-between text-[9px] text-zinc-400">
+                  <span>YTD: 120k / 180k</span>
+                  <span class="text-emerald-400">[OK 67%]</span>
+                </div>
+              </div>
+
+              <!-- 2. Comida (Monthly, OK) -->
+              <div class="p-2.5 rounded border border-zinc-100 dark:border-zinc-800/80 bg-white dark:bg-[#121215] space-y-1">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="font-bold text-zinc-900 dark:text-white">Comida [MES]</span>
+                  <span class="font-bold">RD$ 24,500</span>
+                </div>
+                <div class="h-1 w-full bg-zinc-200 dark:bg-zinc-800">
+                  <div class="bg-emerald-500 h-full" style="width: 61.25%;"></div>
+                </div>
+                <div class="flex items-center justify-between text-[9px] text-zinc-400">
+                  <span>LIM: RD$ 40,000</span>
+                  <span class="text-emerald-400">[OK 61%]</span>
+                </div>
+              </div>
+
+              <!-- 3. Supermercado (Warning) -->
+              <div class="p-2.5 rounded border border-amber-500/40 bg-amber-500/5 space-y-1">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="font-bold text-zinc-900 dark:text-white">Supermercado</span>
+                  <span class="font-bold text-amber-400">RD$ 18,200</span>
+                </div>
+                <div class="h-1 w-full bg-zinc-200 dark:bg-zinc-800">
+                  <div class="bg-amber-500 h-full" style="width: 82.7%;"></div>
+                </div>
+                <div class="flex items-center justify-between text-[9px]">
+                  <span class="text-zinc-400">LIM: RD$ 22,000</span>
+                  <span class="text-amber-400 font-bold">[WARN 83%]</span>
+                </div>
+              </div>
+
+              <!-- 4. Entretenimiento (Critical) -->
+              <div class="p-2.5 rounded border border-rose-500/40 bg-rose-500/5 space-y-1">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="font-bold text-rose-400">Entretenimiento</span>
+                  <span class="font-bold text-rose-400">RD$ 14,500</span>
+                </div>
+                <div class="h-1 w-full bg-zinc-200 dark:bg-zinc-800">
+                  <div class="bg-rose-500 h-full" style="width: 96.6%;"></div>
+                </div>
+                <div class="flex items-center justify-between text-[9px]">
+                  <span class="text-zinc-400">LIM: RD$ 15,000</span>
+                  <span class="text-rose-400 font-bold">[CRIT 97%]</span>
+                </div>
+              </div>
+
+              <!-- 5. Transporte (No Budget) -->
+              <div class="p-2.5 rounded border border-zinc-100 dark:border-zinc-800/80 bg-white dark:bg-[#121215] space-y-1">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="font-bold text-zinc-400">Transporte</span>
+                  <span class="font-bold">RD$ 8,400</span>
+                </div>
+                <div class="h-0.5 w-full bg-zinc-200 dark:bg-zinc-800">
+                  <div class="bg-zinc-500 h-full" style="width: 7.6%;"></div>
+                </div>
+                <div class="flex items-center justify-between text-[9px] text-zinc-500">
+                  <span>NO_BUDGET</span>
+                  <span>7.6% TOTAL</span>
+                </div>
+              </div>
+
+              <!-- 6. Salud (No Budget) -->
+              <div class="p-2.5 rounded border border-zinc-100 dark:border-zinc-800/80 bg-white dark:bg-[#121215] space-y-1">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="font-bold text-zinc-400">Salud</span>
+                  <span class="font-bold">RD$ 5,200</span>
+                </div>
+                <div class="h-0.5 w-full bg-zinc-200 dark:bg-zinc-800">
+                  <div class="bg-zinc-500 h-full" style="width: 4.7%;"></div>
+                </div>
+                <div class="flex items-center justify-between text-[9px] text-zinc-500">
+                  <span>NO_BUDGET</span>
+                  <span>4.7% TOTAL</span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Mobile Bottom Navigation (5 destinations) -->
+          <nav class="absolute bottom-0 inset-x-0 bg-white/95 dark:bg-[#0e0e11]/95 backdrop-blur border-t border-zinc-200 dark:border-zinc-800 px-2 py-2 flex items-center justify-around z-30 pb-5 text-[9px]">
+            <a href="#" class="flex flex-col items-center gap-0.5 text-cyan-400 font-bold">
+              <span class="material-icons-outlined text-base">dashboard</span>
+              <span>DASH</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-0.5 text-zinc-400 hover:text-white">
+              <span class="material-icons-outlined text-base">trending_down</span>
+              <span>EXP</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-0.5 text-zinc-400 hover:text-white">
+              <span class="material-icons-outlined text-base">trending_up</span>
+              <span>INC</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-0.5 text-zinc-400 hover:text-white">
+              <span class="material-icons-outlined text-base">pie_chart</span>
+              <span>BUD</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-0.5 text-zinc-400 hover:text-white">
+              <span class="material-icons-outlined text-base">more_horiz</span>
+              <span>MORE</span>
+            </a>
+          </nav>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      document.getElementById('themeLabel').innerText = isDark ? 'Dark Mode' : 'Light Mode';
+    }
+
+    function setView(view) {
+      const desktop = document.getElementById('desktopSection');
+      const mobile = document.getElementById('mobileSection');
+      
+      const btnBoth = document.getElementById('viewBoth');
+      const btnDesktop = document.getElementById('viewDesktop');
+      const btnMobile = document.getElementById('viewMobile');
+
+      [btnBoth, btnDesktop, btnMobile].forEach(b => b.classList.remove('bg-white', 'dark:bg-zinc-800', 'shadow-sm', 'text-zinc-900', 'dark:text-white'));
+
+      if (view === 'desktop') {
+        desktop.classList.remove('hidden');
+        mobile.classList.add('hidden');
+        btnDesktop.classList.add('bg-white', 'dark:bg-zinc-800', 'shadow-sm', 'text-zinc-900', 'dark:text-white');
+      } else if (view === 'mobile') {
+        desktop.classList.add('hidden');
+        mobile.classList.remove('hidden');
+        btnMobile.classList.add('bg-white', 'dark:bg-zinc-800', 'shadow-sm', 'text-zinc-900', 'dark:text-white');
+      } else {
+        desktop.classList.remove('hidden');
+        mobile.classList.remove('hidden');
+        btnBoth.classList.add('bg-white', 'dark:bg-zinc-800', 'shadow-sm', 'text-zinc-900', 'dark:text-white');
+      }
+    }
+
+    setView('both');
+  </script>
+</body>
+</html>

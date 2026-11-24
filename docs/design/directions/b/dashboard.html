@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dirección B: Tactile Cashflow / Warm Fintech — Spendly</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Outfit"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            warm: {
+              bg: '#0d131f',
+              surface: '#151d2c',
+              card: '#1b2436',
+              border: '#26334a',
+              accent: '#6366f1',
+              emerald: '#10b981',
+              rose: '#f43f5e',
+              amber: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 9999px; }
+  </style>
+</head>
+<body class="bg-[#f8f9fa] dark:bg-[#0b101b] text-slate-900 dark:text-slate-100 min-h-screen font-sans transition-colors duration-200">
+
+  <!-- Top Controller Bar -->
+  <header class="sticky top-0 z-50 bg-white/90 dark:bg-[#121927]/90 backdrop-blur border-b border-slate-200 dark:border-slate-800/80 px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-indigo-500/20">B</div>
+      <div>
+        <h1 class="font-bold text-sm text-slate-900 dark:text-white">Dirección B: Tactile Cashflow / Warm Fintech</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Contornos suaves, pastillas táctiles, micro-gradientes y una experiencia financiera amigable.</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <!-- Mode Toggle -->
+      <div class="inline-flex rounded-xl border border-slate-200 dark:border-slate-700/80 p-0.5 bg-slate-50 dark:bg-slate-900 text-xs">
+        <button id="viewBoth" onclick="setView('both')" class="px-2.5 py-1.5 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Doble Vista</button>
+        <button id="viewDesktop" onclick="setView('desktop')" class="px-2.5 py-1.5 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Desktop (1280)</button>
+        <button id="viewMobile" onclick="setView('mobile')" class="px-2.5 py-1.5 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Mobile (375)</button>
+      </div>
+      <!-- Theme Toggle -->
+      <button onclick="toggleTheme()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-900 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800">
+        <span class="material-icons-outlined text-sm">dark_mode</span>
+        <span id="themeLabel">Dark Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Editorial Philosophy Note -->
+  <section class="max-w-7xl mx-auto px-6 py-4">
+    <div class="p-4 rounded-2xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/50 dark:bg-indigo-950/20 text-xs leading-relaxed text-slate-700 dark:text-slate-300 flex items-start gap-3">
+      <span class="material-icons-outlined text-indigo-500 text-lg flex-shrink-0 mt-0.5">savings</span>
+      <div>
+        <strong class="font-bold text-indigo-900 dark:text-indigo-300">Por qué se lee como Finanzas (más allá del color):</strong>
+        Inspirada en fintechs personales de última generación (Copilot Money, Monzo, Apple Card). En lugar de abrumar al usuario con tablas frías, utiliza contenedores táctiles con esquinas generosas (`rounded-2xl`), barras de progreso con remates redondeados y micro-cápsulas de estado legibles a un vistazo. Transforma el control de gastos de una tarea estresante en una experiencia positiva de acompañamiento diario.
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Showcase Container -->
+  <main class="max-w-7xl mx-auto px-6 py-6 space-y-12">
+
+    <!-- DESKTOP CONTAINER (1280px Simulation) -->
+    <section id="desktopSection" class="transition-all">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <span class="material-icons-outlined text-sm">desktop_windows</span> Vista Escritorio (1280px)
+        </h2>
+        <span class="text-xs font-mono text-slate-400">1280 × 800</span>
+      </div>
+
+      <div class="w-full rounded-3xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0f1624] overflow-hidden shadow-2xl flex min-h-[780px]">
+        
+        <!-- Sidebar -->
+        <aside class="w-64 border-r border-slate-200 dark:border-slate-800/60 p-6 flex flex-col justify-between bg-slate-50/60 dark:bg-[#121927]">
+          <div class="space-y-7">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-indigo-500/25">S</div>
+              <div>
+                <span class="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white block font-display">Spendly</span>
+                <span class="text-[11px] font-medium text-slate-400">Finanzas Personales</span>
+              </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="space-y-1.5 text-sm font-semibold">
+              <a href="#" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+                <span class="material-icons-outlined text-lg">dashboard</span> Dashboard
+              </a>
+              <a href="#" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors">
+                <span class="material-icons-outlined text-lg">trending_down</span> Gastos
+              </a>
+              <a href="#" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors">
+                <span class="material-icons-outlined text-lg">trending_up</span> Ingresos
+              </a>
+              <a href="#" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors">
+                <span class="material-icons-outlined text-lg">pie_chart</span> Presupuestos
+              </a>
+              <a href="#" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors">
+                <span class="material-icons-outlined text-lg">flag</span> Metas
+              </a>
+              <a href="#" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors">
+                <span class="material-icons-outlined text-lg">replay</span> Recurrentes
+              </a>
+              <a href="#" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors">
+                <span class="material-icons-outlined text-lg">notifications</span> Recordatorios
+              </a>
+            </nav>
+          </div>
+
+          <!-- User footer -->
+          <div class="pt-5 border-t border-slate-200 dark:border-slate-800/60 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center font-bold text-xs text-slate-800 dark:text-slate-100">DD</div>
+              <div>
+                <p class="font-bold text-slate-900 dark:text-white">Daybel Díaz</p>
+                <p class="text-[10px] text-slate-400">Plan Estándar</p>
+              </div>
+            </div>
+            <a href="#" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800">
+              <span class="material-icons-outlined text-base">settings</span>
+            </a>
+          </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 p-8 space-y-6 overflow-y-auto bg-slate-50/30 dark:bg-[#0f1624]">
+          
+          <!-- Header & Month Selector -->
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white font-display">Resumen del Mes</h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Control de liquidez y avance de presupuestos en tiempo real</p>
+            </div>
+            
+            <div class="flex items-center gap-1.5 bg-white dark:bg-[#151d2c] border border-slate-200 dark:border-slate-700/60 rounded-2xl p-1.5 shadow-sm text-xs">
+              <button class="w-7 h-7 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-slate-500">
+                <span class="material-icons-outlined text-base">chevron_left</span>
+              </button>
+              <span class="font-bold px-3 text-slate-800 dark:text-slate-200 font-display">Noviembre 2026</span>
+              <button disabled class="w-7 h-7 flex items-center justify-center text-slate-300 dark:text-slate-700 cursor-not-allowed">
+                <span class="material-icons-outlined text-base">chevron_right</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Cards Summary (Balance / Ingresos / Gastos) -->
+          <div class="grid grid-cols-3 gap-5">
+            
+            <!-- Balance Card -->
+            <div class="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#151d2c] shadow-sm relative overflow-hidden group">
+              <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2">
+                <span class="font-semibold text-xs">Balance Disponible</span>
+                <span class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                  <span class="material-icons-outlined text-sm">account_balance_wallet</span>
+                </span>
+              </div>
+              <div class="text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight font-display">
+                RD$ 55,100.00
+              </div>
+              <div class="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                <span class="material-icons-outlined text-xs">trending_up</span> 33.4% tasa de ahorro
+              </div>
+            </div>
+
+            <!-- Incomes Card -->
+            <div class="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#151d2c] shadow-sm">
+              <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2">
+                <span class="font-semibold text-xs">Ingresos Totales</span>
+                <span class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <span class="material-icons-outlined text-sm">arrow_downward</span>
+                </span>
+              </div>
+              <div class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight font-display">
+                RD$ 165,000.00
+              </div>
+              <p class="mt-3 text-xs text-slate-400">
+                Salario (85%) + Freelance (15%)
+              </p>
+            </div>
+
+            <!-- Expenses Card -->
+            <div class="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#151d2c] shadow-sm">
+              <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2">
+                <span class="font-semibold text-xs">Gastos del Mes</span>
+                <span class="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                  <span class="material-icons-outlined text-sm">arrow_upward</span>
+                </span>
+              </div>
+              <div class="text-3xl font-extrabold text-rose-600 dark:text-rose-400 tabular-nums tracking-tight font-display">
+                RD$ 109,900.00
+              </div>
+              <p class="mt-3 text-xs text-slate-400">
+                66.6% del total ingresado
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Section Grid: Category List (§5.1) + Cashflow Trend -->
+          <div class="grid grid-cols-12 gap-6 items-start">
+            
+            <!-- Category Spending List (§5.1) - 7 cols -->
+            <div class="col-span-7 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#151d2c] p-6 space-y-5 shadow-sm">
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800/60">
+                <div>
+                  <h3 class="font-extrabold text-base text-slate-900 dark:text-white font-display">Gastos por Categoría</h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">Distribución y seguimiento de presupuesto</p>
+                </div>
+                <div class="px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Total: RD$ 109,900
+                </div>
+              </div>
+
+              <!-- Rows (Sorted Descending) -->
+              <div class="space-y-2.5">
+
+                <!-- 1. Educación (Yearly Budget, OK) -->
+                <div class="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-[#1a2335]/50 hover:bg-slate-100/60 dark:hover:bg-[#1e293e] transition-all cursor-pointer">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-lg">school</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-sm text-slate-900 dark:text-white block">Educación</span>
+                        <span class="text-xs text-slate-400">RD$ 120,000 de RD$ 180,000 este año</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-extrabold text-sm text-slate-900 dark:text-white block tabular-nums">RD$ 35,000.00</span>
+                      <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">67% en meta</span>
+                    </div>
+                  </div>
+                  <!-- Soft Pill Progress Bar -->
+                  <div class="h-2 w-full bg-slate-200/60 dark:bg-slate-700/60 rounded-full overflow-hidden p-0.5">
+                    <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full" style="width: 66.6%;"></div>
+                  </div>
+                </div>
+
+                <!-- 2. Comida (Monthly Budget, OK) -->
+                <div class="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-[#1a2335]/50 hover:bg-slate-100/60 dark:hover:bg-[#1e293e] transition-all cursor-pointer">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-lg">restaurant</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-sm text-slate-900 dark:text-white block">Comida</span>
+                        <span class="text-xs text-slate-400">de RD$ 40,000 mensual</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-extrabold text-sm text-slate-900 dark:text-white block tabular-nums">RD$ 24,500.00</span>
+                      <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">61% en meta</span>
+                    </div>
+                  </div>
+                  <div class="h-2 w-full bg-slate-200/60 dark:bg-slate-700/60 rounded-full overflow-hidden p-0.5">
+                    <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full" style="width: 61.25%;"></div>
+                  </div>
+                </div>
+
+                <!-- 3. Supermercado (Monthly Budget, WARNING >= 75%) -->
+                <div class="p-3.5 rounded-xl border border-amber-200/60 dark:border-amber-900/30 bg-amber-50/20 dark:bg-amber-950/10 hover:bg-amber-50/40 dark:hover:bg-amber-950/20 transition-all cursor-pointer">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-lg">shopping_cart</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-sm text-slate-900 dark:text-white block">Supermercado</span>
+                        <span class="text-xs text-slate-400">de RD$ 22,000 mensual</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-extrabold text-sm text-slate-900 dark:text-white block tabular-nums">RD$ 18,200.00</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400">
+                        <span class="material-icons-outlined text-xs">warning</span> 83% alerta
+                      </span>
+                    </div>
+                  </div>
+                  <div class="h-2 w-full bg-slate-200/60 dark:bg-slate-700/60 rounded-full overflow-hidden p-0.5">
+                    <div class="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full" style="width: 82.7%;"></div>
+                  </div>
+                </div>
+
+                <!-- 4. Entretenimiento (Monthly Budget, CRITICAL >= 90%) -->
+                <div class="p-3.5 rounded-xl border border-rose-200/60 dark:border-rose-900/30 bg-rose-50/20 dark:bg-rose-950/10 hover:bg-rose-50/40 dark:hover:bg-rose-950/20 transition-all cursor-pointer">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-lg">sports_esports</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-sm text-slate-900 dark:text-white block">Entretenimiento</span>
+                        <span class="text-xs text-slate-400">de RD$ 15,000 mensual</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-extrabold text-sm text-rose-600 dark:text-rose-400 block tabular-nums">RD$ 14,500.00</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400">
+                        <span class="material-icons-outlined text-xs">error</span> 97% límite
+                      </span>
+                    </div>
+                  </div>
+                  <div class="h-2 w-full bg-slate-200/60 dark:bg-slate-700/60 rounded-full overflow-hidden p-0.5">
+                    <div class="bg-gradient-to-r from-rose-500 to-red-600 h-full rounded-full" style="width: 96.6%;"></div>
+                  </div>
+                </div>
+
+                <!-- 5. Transporte (NO BUDGET -> neutral thin bar, % of total) -->
+                <div class="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-[#1a2335]/50 hover:bg-slate-100/60 dark:hover:bg-[#1e293e] transition-all cursor-pointer">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center">
+                        <span class="material-icons-outlined text-lg">directions_car</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-sm text-slate-900 dark:text-white block">Transporte</span>
+                        <span class="text-xs text-slate-400">Sin presupuesto asignado</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-extrabold text-sm text-slate-900 dark:text-white block tabular-nums">RD$ 8,400.00</span>
+                      <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-500">7.6% del total</span>
+                    </div>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-200/40 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div class="bg-slate-400 dark:bg-slate-600 h-full rounded-full" style="width: 7.6%;"></div>
+                  </div>
+                </div>
+
+                <!-- 6. Salud (NO BUDGET -> neutral thin bar, % of total) -->
+                <div class="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-[#1a2335]/50 hover:bg-slate-100/60 dark:hover:bg-[#1e293e] transition-all cursor-pointer">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center">
+                        <span class="material-icons-outlined text-lg">medical_services</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-sm text-slate-900 dark:text-white block">Salud</span>
+                        <span class="text-xs text-slate-400">Sin presupuesto asignado</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-extrabold text-sm text-slate-900 dark:text-white block tabular-nums">RD$ 5,200.00</span>
+                      <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-500">4.7% del total</span>
+                    </div>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-200/40 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div class="bg-slate-400 dark:bg-slate-600 h-full rounded-full" style="width: 4.7%;"></div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Discreet Link to Budgets -->
+              <div class="pt-2 text-center">
+                <a href="#" class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1">
+                  Configurar presupuestos para estas categorías
+                  <span class="material-icons-outlined text-xs">arrow_forward</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Cashflow Trend & Distribution (5 cols) -->
+            <div class="col-span-5 space-y-5">
+              
+              <!-- 12-Month Flow Card -->
+              <div class="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#151d2c] p-6 space-y-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="font-extrabold text-base text-slate-900 dark:text-white font-display">Histórico de Flujo</h3>
+                    <p class="text-xs text-slate-400">Ingresos vs Gastos últimos 12 meses</p>
+                  </div>
+                  <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-500">2026</span>
+                </div>
+                
+                <!-- Smooth Rounded Bar Visualization -->
+                <div class="h-48 flex items-end justify-between gap-1.5 pt-6 pb-2 border-b border-slate-100 dark:border-slate-800/60">
+                  <!-- Jan to Nov bars with rounded caps -->
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-1 h-full">
+                      <div class="w-2.5 bg-emerald-500/80 rounded-full h-[60%]"></div>
+                      <div class="w-2.5 bg-rose-500/80 rounded-full h-[45%]"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Ene</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-1 h-full">
+                      <div class="w-2.5 bg-emerald-500/80 rounded-full h-[65%]"></div>
+                      <div class="w-2.5 bg-rose-500/80 rounded-full h-[50%]"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Feb</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-1 h-full">
+                      <div class="w-2.5 bg-emerald-500/80 rounded-full h-[70%]"></div>
+                      <div class="w-2.5 bg-rose-500/80 rounded-full h-[55%]"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Mar</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-1 h-full">
+                      <div class="w-2.5 bg-emerald-500/80 rounded-full h-[62%]"></div>
+                      <div class="w-2.5 bg-rose-500/80 rounded-full h-[42%]"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Abr</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-1 h-full">
+                      <div class="w-2.5 bg-emerald-500/80 rounded-full h-[75%]"></div>
+                      <div class="w-2.5 bg-rose-500/80 rounded-full h-[60%]"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">May</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-1 h-full">
+                      <div class="w-2.5 bg-emerald-500/80 rounded-full h-[80%]"></div>
+                      <div class="w-2.5 bg-rose-500/80 rounded-full h-[65%]"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Jun</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-1 h-full">
+                      <div class="w-2.5 bg-emerald-500/80 rounded-full h-[72%]"></div>
+                      <div class="w-2.5 bg-rose-500/80 rounded-full h-[50%]"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Jul</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-1 h-full">
+                      <div class="w-2.5 bg-emerald-500/80 rounded-full h-[85%]"></div>
+                      <div class="w-2.5 bg-rose-500/80 rounded-full h-[70%]"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Ago</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-1 h-full">
+                      <div class="w-2.5 bg-emerald-500/80 rounded-full h-[70%]"></div>
+                      <div class="w-2.5 bg-rose-500/80 rounded-full h-[54%]"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Sep</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-1 h-full">
+                      <div class="w-2.5 bg-emerald-500/80 rounded-full h-[88%]"></div>
+                      <div class="w-2.5 bg-rose-500/80 rounded-full h-[64%]"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Oct</span>
+                  </div>
+                  <!-- Nov Active -->
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl p-1">
+                    <div class="w-full flex items-end justify-center gap-1 h-full">
+                      <div class="w-2.5 bg-emerald-500 rounded-full h-[94%] shadow-sm"></div>
+                      <div class="w-2.5 bg-rose-500 rounded-full h-[68%] shadow-sm"></div>
+                    </div>
+                    <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">Nov</span>
+                  </div>
+                  <!-- Dec -->
+                  <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end opacity-30">
+                    <div class="w-full flex items-end justify-center gap-1 h-full">
+                      <div class="w-2.5 bg-slate-400 rounded-full h-[15%]"></div>
+                      <div class="w-2.5 bg-slate-400 rounded-full h-[15%]"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Dic</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+                  <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Ingresos
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> Gastos
+                  </div>
+                </div>
+              </div>
+
+              <!-- Friendly Insight Card -->
+              <div class="p-5 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-transparent border border-indigo-200/60 dark:border-indigo-800/40 space-y-2">
+                <div class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-xs font-bold">
+                  <span class="material-icons-outlined text-base">auto_awesome</span> Buen ritmo de ahorro
+                </div>
+                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Has gastado un <strong>12% menos</strong> en Comida que el mes anterior en esta misma fecha. ¡Excelente progreso!
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- MOBILE CONTAINER (375px Simulation) -->
+    <section id="mobileSection" class="transition-all">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <span class="material-icons-outlined text-sm">phone_iphone</span> Vista Móvil (375px) con Bottom Navigation
+        </h2>
+        <span class="text-xs font-mono text-slate-400">375 × 812 (iPhone Frame)</span>
+      </div>
+
+      <div class="flex justify-center">
+        <!-- Phone Shell -->
+        <div class="w-[375px] h-[812px] rounded-[48px] border-[10px] border-slate-800 dark:border-slate-800 bg-white dark:bg-[#0b101b] shadow-2xl overflow-hidden flex flex-col relative">
+          
+          <!-- Notch Header -->
+          <div class="h-9 w-full bg-slate-100 dark:bg-[#121927] flex items-center justify-between px-6 text-[10px] text-slate-500 dark:text-slate-400 flex-shrink-0">
+            <span>9:41</span>
+            <div class="w-20 h-4 bg-slate-900 rounded-full mx-auto"></div>
+            <span class="material-icons-outlined text-xs">battery_full</span>
+          </div>
+
+          <!-- Mobile App Top Bar -->
+          <div class="px-5 py-3.5 bg-white/80 dark:bg-[#0b101b]/80 backdrop-blur border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-md shadow-indigo-500/20">S</div>
+              <span class="font-extrabold text-base tracking-tight text-slate-900 dark:text-white font-display">Spendly</span>
+            </div>
+            <!-- Month Selector Pill -->
+            <div class="flex items-center gap-1 bg-slate-100 dark:bg-[#151d2c] border border-slate-200/60 dark:border-slate-700/60 rounded-full px-3 py-1 text-xs font-semibold">
+              <span class="text-slate-800 dark:text-slate-200">Nov 2026</span>
+              <span class="material-icons-outlined text-xs text-slate-400">expand_more</span>
+            </div>
+          </div>
+
+          <!-- Scrollable Body -->
+          <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-24">
+            
+            <!-- Mobile Net Balance Hero Card -->
+            <div class="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-b from-white to-slate-50 dark:from-[#151d2c] dark:to-[#121927] shadow-sm space-y-2">
+              <span class="text-xs font-semibold text-slate-400 block">Balance Neto</span>
+              <div class="text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight font-display">
+                RD$ 55,100.00
+              </div>
+              <div class="flex items-center justify-between pt-3 mt-3 border-t border-slate-100 dark:border-slate-800/60 text-xs">
+                <div>
+                  <span class="block text-[10px] text-slate-400 font-medium">Ingresos</span>
+                  <span class="font-bold text-emerald-600 dark:text-emerald-400">RD$ 165,000</span>
+                </div>
+                <div class="text-right">
+                  <span class="block text-[10px] text-slate-400 font-medium">Gastos</span>
+                  <span class="font-bold text-rose-600 dark:text-rose-400">RD$ 109,900</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category Spending List (§5.1) -->
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between px-1">
+                <h3 class="font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Gastos del Mes</h3>
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">RD$ 109,900</span>
+              </div>
+
+              <div class="space-y-2">
+
+                <!-- 1. Educación (Yearly) -->
+                <div class="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#151d2c] space-y-2 shadow-sm">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-base">school</span>
+                      </div>
+                      <span class="font-bold text-slate-900 dark:text-white">Educación</span>
+                    </div>
+                    <span class="font-extrabold text-slate-900 dark:text-white text-sm">RD$ 35,000</span>
+                  </div>
+                  <div class="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5">
+                    <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full" style="width: 66.6%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[11px] text-slate-400">
+                    <span>RD$ 120,000 de RD$ 180,000 este año</span>
+                    <span class="text-emerald-500 font-bold">67%</span>
+                  </div>
+                </div>
+
+                <!-- 2. Comida (Monthly, OK) -->
+                <div class="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#151d2c] space-y-2 shadow-sm">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-base">restaurant</span>
+                      </div>
+                      <span class="font-bold text-slate-900 dark:text-white">Comida</span>
+                    </div>
+                    <span class="font-extrabold text-slate-900 dark:text-white text-sm">RD$ 24,500</span>
+                  </div>
+                  <div class="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5">
+                    <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full" style="width: 61.25%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[11px] text-slate-400">
+                    <span>de RD$ 40,000 mensual</span>
+                    <span class="text-emerald-500 font-bold">61%</span>
+                  </div>
+                </div>
+
+                <!-- 3. Supermercado (Warning) -->
+                <div class="p-3.5 rounded-2xl border border-amber-200/60 dark:border-amber-900/40 bg-white dark:bg-[#151d2c] space-y-2 shadow-sm">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-base">shopping_cart</span>
+                      </div>
+                      <span class="font-bold text-slate-900 dark:text-white">Supermercado</span>
+                    </div>
+                    <span class="font-extrabold text-slate-900 dark:text-white text-sm">RD$ 18,200</span>
+                  </div>
+                  <div class="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5">
+                    <div class="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full" style="width: 82.7%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[11px]">
+                    <span class="text-slate-400">de RD$ 22,000</span>
+                    <span class="text-amber-500 font-bold flex items-center gap-0.5">
+                      <span class="material-icons-outlined text-xs">warning</span> 83%
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 4. Entretenimiento (Critical) -->
+                <div class="p-3.5 rounded-2xl border border-rose-200/60 dark:border-rose-900/40 bg-white dark:bg-[#151d2c] space-y-2 shadow-sm">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-base">sports_esports</span>
+                      </div>
+                      <span class="font-bold text-slate-900 dark:text-white">Entretenimiento</span>
+                    </div>
+                    <span class="font-extrabold text-rose-600 dark:text-rose-400 text-sm">RD$ 14,500</span>
+                  </div>
+                  <div class="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5">
+                    <div class="bg-gradient-to-r from-rose-500 to-red-600 h-full rounded-full" style="width: 96.6%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[11px]">
+                    <span class="text-slate-400">de RD$ 15,000</span>
+                    <span class="text-rose-500 font-bold flex items-center gap-0.5">
+                      <span class="material-icons-outlined text-xs">error</span> 97%
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 5. Transporte (No Budget) -->
+                <div class="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#151d2c] space-y-2 shadow-sm">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-base">directions_car</span>
+                      </div>
+                      <span class="font-bold text-slate-900 dark:text-white">Transporte</span>
+                    </div>
+                    <span class="font-extrabold text-slate-900 dark:text-white text-sm">RD$ 8,400</span>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div class="bg-slate-400 dark:bg-slate-600 h-full rounded-full" style="width: 7.6%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[11px] text-slate-400">
+                    <span>Sin presupuesto</span>
+                    <span>7.6% del total</span>
+                  </div>
+                </div>
+
+                <!-- 6. Salud (No Budget) -->
+                <div class="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#151d2c] space-y-2 shadow-sm">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-base">medical_services</span>
+                      </div>
+                      <span class="font-bold text-slate-900 dark:text-white">Salud</span>
+                    </div>
+                    <span class="font-extrabold text-slate-900 dark:text-white text-sm">RD$ 5,200</span>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div class="bg-slate-400 dark:bg-slate-600 h-full rounded-full" style="width: 4.7%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[11px] text-slate-400">
+                    <span>Sin presupuesto</span>
+                    <span>4.7% del total</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Mobile Bottom Navigation (Pill Float Style) -->
+          <nav class="absolute bottom-0 inset-x-0 bg-white/95 dark:bg-[#121927]/95 backdrop-blur border-t border-slate-200 dark:border-slate-800 px-3 py-2 flex items-center justify-around z-30 pb-5">
+            <a href="#" class="flex flex-col items-center gap-0.5 text-indigo-600 dark:text-indigo-400">
+              <span class="material-icons-outlined text-xl">dashboard</span>
+              <span class="text-[10px] font-bold">Inicio</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+              <span class="material-icons-outlined text-xl">trending_down</span>
+              <span class="text-[10px] font-medium">Gastos</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+              <span class="material-icons-outlined text-xl">trending_up</span>
+              <span class="text-[10px] font-medium">Ingresos</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+              <span class="material-icons-outlined text-xl">pie_chart</span>
+              <span class="text-[10px] font-medium">Límites</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+              <span class="material-icons-outlined text-xl">more_horiz</span>
+              <span class="text-[10px] font-medium">Más</span>
+            </a>
+          </nav>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      document.getElementById('themeLabel').innerText = isDark ? 'Dark Mode' : 'Light Mode';
+    }
+
+    function setView(view) {
+      const desktop = document.getElementById('desktopSection');
+      const mobile = document.getElementById('mobileSection');
+      
+      const btnBoth = document.getElementById('viewBoth');
+      const btnDesktop = document.getElementById('viewDesktop');
+      const btnMobile = document.getElementById('viewMobile');
+
+      [btnBoth, btnDesktop, btnMobile].forEach(b => b.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white'));
+
+      if (view === 'desktop') {
+        desktop.classList.remove('hidden');
+        mobile.classList.add('hidden');
+        btnDesktop.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white');
+      } else if (view === 'mobile') {
+        desktop.classList.add('hidden');
+        mobile.classList.remove('hidden');
+        btnMobile.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white');
+      } else {
+        desktop.classList.remove('hidden');
+        mobile.classList.remove('hidden');
+        btnBoth.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white');
+      }
+    }
+
+    setView('both');
+  </script>
+</body>
+</html>

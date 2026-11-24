@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="es" class="dark" data-palette="gold">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dirección A: Swiss Ledger (Paletas Arriesgadas) — Spendly</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 9999px; }
+
+    /* Root Variables - Light Defaults */
+    :root {
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Palette 1: Sovereign Gold (Default) */
+      --c-accent: #d97706;
+      --c-accent-hover: #b45309;
+      --c-accent-light: rgba(217, 119, 6, 0.12);
+      --c-accent-text: #b45309;
+      --c-income: #059669;
+      --c-expense: #e11d48;
+      --c-warning: #f59e0b;
+      --c-critical: #dc2626;
+      --c-bg: #fcfbfa;
+      --c-surface: #ffffff;
+      --c-surface-elevated: #f5f4ef;
+      --c-border: #e7e2d7;
+      --c-text: #1c1917;
+      --c-muted: #78716c;
+      --c-tag: #d97706;
+    }
+
+    .dark {
+      --c-bg: #090a0f;
+      --c-surface: #10121a;
+      --c-surface-elevated: #161924;
+      --c-border: #1e2230;
+      --c-text: #f5f5f4;
+      --c-muted: #8c9bb0;
+      --c-accent-text: #fbbf24;
+    }
+
+    /* Palette 1: Sovereign Gold & Obsidian */
+    [data-palette="gold"] {
+      --c-accent: #d97706;
+      --c-accent-hover: #b45309;
+      --c-accent-light: rgba(217, 119, 6, 0.14);
+      --c-income: #059669;
+      --c-expense: #e11d48;
+      --c-warning: #f59e0b;
+      --c-critical: #dc2626;
+      --c-tag: #d97706;
+    }
+    .dark[data-palette="gold"] {
+      --c-accent: #eab308;
+      --c-accent-hover: #ca8a04;
+      --c-accent-light: rgba(234, 179, 8, 0.14);
+      --c-accent-text: #facc15;
+      --c-bg: #090a0f;
+      --c-surface: #10121a;
+      --c-surface-elevated: #161924;
+      --c-border: #222636;
+      --c-tag: #facc15;
+    }
+
+    /* Palette 2: Electric Lime & Deep Forest */
+    [data-palette="lime"] {
+      --c-accent: #65a30d;
+      --c-accent-hover: #4d7c0f;
+      --c-accent-light: rgba(101, 163, 13, 0.12);
+      --c-accent-text: #4d7c0f;
+      --c-income: #10b981;
+      --c-expense: #f43f5e;
+      --c-warning: #f59e0b;
+      --c-critical: #e11d48;
+      --c-tag: #65a30d;
+    }
+    .dark[data-palette="lime"] {
+      --c-accent: #a3e635;
+      --c-accent-hover: #84cc16;
+      --c-accent-light: rgba(163, 230, 53, 0.15);
+      --c-accent-text: #bef264;
+      --c-bg: #060b09;
+      --c-surface: #0c1511;
+      --c-surface-elevated: #121f19;
+      --c-border: #1a2c24;
+      --c-tag: #a3e635;
+    }
+
+    /* Palette 3: Royal Cobalt & Cold Mint */
+    [data-palette="cobalt"] {
+      --c-accent: #4f46e5;
+      --c-accent-hover: #4338ca;
+      --c-accent-light: rgba(79, 70, 229, 0.12);
+      --c-accent-text: #4338ca;
+      --c-income: #0d9488;
+      --c-expense: #f43f5e;
+      --c-warning: #f59e0b;
+      --c-critical: #ef4444;
+      --c-tag: #4f46e5;
+    }
+    .dark[data-palette="cobalt"] {
+      --c-accent: #6366f1;
+      --c-accent-hover: #4f46e5;
+      --c-accent-light: rgba(99, 102, 241, 0.15);
+      --c-accent-text: #818cf8;
+      --c-bg: #070914;
+      --c-surface: #0d1122;
+      --c-surface-elevated: #13192f;
+      --c-border: #1c2442;
+      --c-tag: #818cf8;
+    }
+
+    .theme-bg { background-color: var(--c-bg); }
+    .theme-surface { background-color: var(--c-surface); }
+    .theme-surface-elevated { background-color: var(--c-surface-elevated); }
+    .theme-border { border-color: var(--c-border); }
+    .theme-text { color: var(--c-text); }
+    .theme-muted { color: var(--c-muted); }
+  </style>
+</head>
+<body class="theme-bg theme-text min-h-screen font-sans transition-colors duration-200">
+
+  <!-- Top Controller Bar with Palette Switcher -->
+  <header class="sticky top-0 z-50 theme-surface/95 backdrop-blur border-b theme-border px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div id="badgeLogo" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-900 font-extrabold text-sm shadow-sm" style="background-color: var(--c-accent);">A</div>
+      <div>
+        <h1 class="font-bold text-sm theme-text flex items-center gap-2">
+          Dirección A: Swiss Ledger
+          <span id="currentPaletteLabel" class="text-[10px] font-mono px-2 py-0.5 rounded border border-amber-500/40 text-amber-500">ORO SOBERANO</span>
+        </h1>
+        <p class="text-xs theme-muted">Explorador de colores arriesgados: elegí entre 3 paletas audaces</p>
+      </div>
+    </div>
+
+    <!-- Palette Buttons (Gold, Lime, Cobalt) -->
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-mono theme-muted hidden md:inline">Paleta:</span>
+      <div class="inline-flex rounded-lg border theme-border p-0.5 theme-surface-elevated text-xs">
+        <button id="palGold" onclick="setPalette('gold')" class="px-2.5 py-1.5 rounded-md font-bold transition-all bg-amber-500/20 text-amber-500">
+          👑 Oro Soberano
+        </button>
+        <button id="palLime" onclick="setPalette('lime')" class="px-2.5 py-1.5 rounded-md font-bold transition-all text-slate-400 hover:text-white">
+          ⚡ Lima Eléctrica
+        </button>
+        <button id="palCobalt" onclick="setPalette('cobalt')" class="px-2.5 py-1.5 rounded-md font-bold transition-all text-slate-400 hover:text-white">
+          🔮 Cobalto / Iris
+        </button>
+      </div>
+
+      <!-- View Switcher -->
+      <div class="inline-flex rounded-lg border theme-border p-0.5 theme-surface-elevated text-xs ml-2">
+        <button id="viewBoth" onclick="setView('both')" class="px-2.5 py-1.5 rounded-md font-medium text-slate-400 hover:theme-text">Doble</button>
+        <button id="viewDesktop" onclick="setView('desktop')" class="px-2.5 py-1.5 rounded-md font-medium text-slate-400 hover:theme-text">1280px</button>
+        <button id="viewMobile" onclick="setView('mobile')" class="px-2.5 py-1.5 rounded-md font-medium text-slate-400 hover:theme-text">375px</button>
+      </div>
+
+      <!-- Theme Toggle -->
+      <button onclick="toggleTheme()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border theme-border theme-surface-elevated text-xs font-medium hover:opacity-80">
+        <span class="material-icons-outlined text-sm">dark_mode</span>
+        <span id="themeLabel">Dark Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Editorial Philosophy & Palette Story -->
+  <section class="max-w-7xl mx-auto px-6 py-4">
+    <div class="p-4 rounded-xl border theme-border theme-surface-elevated text-xs leading-relaxed theme-text flex items-start gap-3">
+      <span class="material-icons-outlined text-lg flex-shrink-0 mt-0.5" style="color: var(--c-accent);">palette</span>
+      <div class="space-y-1">
+        <div class="font-bold flex items-center gap-2">
+          <span>Nueva Dirección Cromática:</span>
+          <span id="paletteDescriptionTitle" class="font-mono text-amber-500">1. ORO SOBERANO & OBSIDIANA (Boutique Private Wealth)</span>
+        </div>
+        <p id="paletteDescriptionText" class="theme-muted">
+          Reemplaza el clásico azul genérico de SaaS por una paleta de lingote y libro mayor clásico (oro cálido / champagne noble sobre papel marfil o tinta obsidiana). Se aleja por completo de lo templado y transmite herencia, respaldo institucional y valor real acumulado.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Showcase Container -->
+  <main class="max-w-7xl mx-auto px-6 py-6 space-y-12">
+
+    <!-- DESKTOP CONTAINER (1280px Simulation) -->
+    <section id="desktopSection" class="transition-all">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider theme-muted flex items-center gap-2">
+          <span class="material-icons-outlined text-sm">desktop_windows</span> Vista Escritorio (1280px)
+        </h2>
+        <span class="text-xs font-mono theme-muted">1280 × 800</span>
+      </div>
+
+      <div class="w-full rounded-2xl border theme-border theme-surface overflow-hidden shadow-2xl flex min-h-[780px]">
+        
+        <!-- Sidebar -->
+        <aside class="w-64 border-r theme-border p-5 flex flex-col justify-between theme-surface-elevated">
+          <div class="space-y-6">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center font-black text-lg text-slate-950 shadow-md" style="background-color: var(--c-accent);">S</div>
+              <div>
+                <span class="font-bold text-base tracking-tight theme-text block">Spendly</span>
+                <span class="text-[10px] uppercase font-mono tracking-widest theme-muted">Swiss Ledger</span>
+              </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="space-y-1 text-sm font-medium">
+              <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg font-semibold" style="background-color: var(--c-accent-light); color: var(--c-accent-text);">
+                <span class="material-icons-outlined text-lg">dashboard</span> Dashboard
+              </a>
+              <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg theme-muted hover:theme-text hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <span class="material-icons-outlined text-lg">trending_down</span> Gastos
+              </a>
+              <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg theme-muted hover:theme-text hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <span class="material-icons-outlined text-lg">trending_up</span> Ingresos
+              </a>
+              <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg theme-muted hover:theme-text hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <span class="material-icons-outlined text-lg">pie_chart</span> Presupuestos
+              </a>
+              <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg theme-muted hover:theme-text hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <span class="material-icons-outlined text-lg">flag</span> Metas
+              </a>
+              <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg theme-muted hover:theme-text hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <span class="material-icons-outlined text-lg">replay</span> Recurrentes
+              </a>
+              <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg theme-muted hover:theme-text hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <span class="material-icons-outlined text-lg">notifications</span> Recordatorios
+              </a>
+            </nav>
+          </div>
+
+          <!-- User footer -->
+          <div class="pt-4 border-t theme-border flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-full border theme-border flex items-center justify-center font-bold text-xs theme-text theme-surface">DD</div>
+              <div>
+                <p class="font-bold theme-text">Daybel Díaz</p>
+                <p class="text-[10px] theme-muted font-mono">DOP · Español</p>
+              </div>
+            </div>
+            <a href="#" class="theme-muted hover:theme-text">
+              <span class="material-icons-outlined text-base">settings</span>
+            </a>
+          </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 p-8 space-y-6 overflow-y-auto">
+          
+          <!-- Header & Month Selector -->
+          <div class="flex items-center justify-between pb-4 border-b theme-border">
+            <div>
+              <h2 class="text-xl font-bold tracking-tight theme-text">Resumen Financiero</h2>
+              <p class="text-xs theme-muted mt-0.5">Control de liquidez y ejecución presupuestaria mensual</p>
+            </div>
+            
+            <div class="flex items-center gap-2 theme-surface-elevated border theme-border rounded-lg p-1 text-xs">
+              <button class="p-1 hover:opacity-75 rounded theme-muted">
+                <span class="material-icons-outlined text-sm">chevron_left</span>
+              </button>
+              <span class="font-bold font-mono px-3 theme-text">Noviembre 2026</span>
+              <button disabled class="p-1 opacity-30 cursor-not-allowed">
+                <span class="material-icons-outlined text-sm">chevron_right</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI Summary Cards (Balance / Ingresos / Gastos) -->
+          <div class="grid grid-cols-3 gap-4">
+            
+            <!-- Balance Card -->
+            <div class="p-5 rounded-xl border theme-border theme-surface-elevated relative overflow-hidden">
+              <div class="flex items-center justify-between text-xs theme-muted mb-1">
+                <span class="font-medium uppercase tracking-wider text-[11px]">Balance Neto</span>
+                <span class="material-icons-outlined text-sm" style="color: var(--c-accent);">account_balance_wallet</span>
+              </div>
+              <div class="text-2xl font-extrabold font-mono theme-text tabular-nums tracking-tight">
+                RD$ 55,100.00
+              </div>
+              <div class="mt-2 text-[11px] flex items-center gap-1 font-medium font-mono text-emerald-500">
+                <span class="material-icons-outlined text-xs">arrow_upward</span> +33.4% margen de ahorro
+              </div>
+            </div>
+
+            <!-- Incomes Card -->
+            <div class="p-5 rounded-xl border theme-border theme-surface-elevated">
+              <div class="flex items-center justify-between text-xs theme-muted mb-1">
+                <span class="font-medium uppercase tracking-wider text-[11px]">Ingresos del Mes</span>
+                <span class="material-icons-outlined text-emerald-500 text-sm">trending_up</span>
+              </div>
+              <div class="text-2xl font-extrabold font-mono text-emerald-500 tabular-nums tracking-tight">
+                RD$ 165,000.00
+              </div>
+              <div class="mt-2 text-[11px] theme-muted font-mono">
+                2 fuentes registradas (Salario + Freelance)
+              </div>
+            </div>
+
+            <!-- Expenses Card -->
+            <div class="p-5 rounded-xl border theme-border theme-surface-elevated">
+              <div class="flex items-center justify-between text-xs theme-muted mb-1">
+                <span class="font-medium uppercase tracking-wider text-[11px]">Gastos del Mes</span>
+                <span class="material-icons-outlined text-rose-500 text-sm">trending_down</span>
+              </div>
+              <div class="text-2xl font-extrabold font-mono text-rose-500 tabular-nums tracking-tight">
+                RD$ 109,900.00
+              </div>
+              <div class="mt-2 text-[11px] theme-muted font-mono">
+                66.6% del total de ingresos devengados
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Section Grid: Category List (§5.1) + Cashflow Trend -->
+          <div class="grid grid-cols-12 gap-6 items-start">
+            
+            <!-- Category Spending List (§5.1) - 7 cols -->
+            <div class="col-span-7 rounded-xl border theme-border theme-surface p-5 space-y-4 shadow-sm">
+              <div class="flex items-center justify-between pb-3 border-b theme-border">
+                <div>
+                  <h3 class="font-bold text-sm theme-text">Gastos por Categoría</h3>
+                  <p class="text-[11px] theme-muted">Ordenado por monto gastado · Noviembre 2026</p>
+                </div>
+                <span class="text-xs font-mono font-bold theme-text">RD$ 109,900.00</span>
+              </div>
+
+              <!-- Rows (Sorted Descending) -->
+              <div class="divide-y theme-border space-y-1">
+
+                <!-- 1. Educación (Yearly Budget, OK) -->
+                <div class="pt-2.5 pb-2 hover:bg-black/5 dark:hover:bg-white/5 px-2 rounded-lg transition-colors cursor-pointer group">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-7 h-7 rounded-md flex items-center justify-center" style="background-color: var(--c-accent-light); color: var(--c-accent-text);">
+                        <span class="material-icons-outlined text-sm">school</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-xs theme-text block group-hover:opacity-80">Educación</span>
+                        <span class="text-[10px] theme-muted font-mono">RD$ 120,000 de RD$ 180,000 este año</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-mono font-bold text-xs theme-text block tabular-nums">RD$ 35,000.00</span>
+                      <span class="text-[10px] font-mono text-emerald-500 font-semibold">67% anual · En meta</span>
+                    </div>
+                  </div>
+                  <!-- Progress Bar -->
+                  <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden flex">
+                    <div class="bg-emerald-500 h-full rounded-sm" style="width: 66.6%;"></div>
+                  </div>
+                </div>
+
+                <!-- 2. Comida (Monthly Budget, OK) -->
+                <div class="pt-2.5 pb-2 hover:bg-black/5 dark:hover:bg-white/5 px-2 rounded-lg transition-colors cursor-pointer group">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-7 h-7 rounded-md bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-sm">restaurant</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-xs theme-text block group-hover:opacity-80">Comida</span>
+                        <span class="text-[10px] theme-muted font-mono">de RD$ 40,000.00 mensual</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-mono font-bold text-xs theme-text block tabular-nums">RD$ 24,500.00</span>
+                      <span class="text-[10px] font-mono text-emerald-500 font-semibold">61% gastado</span>
+                    </div>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden flex">
+                    <div class="bg-emerald-500 h-full rounded-sm" style="width: 61.25%;"></div>
+                  </div>
+                </div>
+
+                <!-- 3. Supermercado (Monthly Budget, WARNING >= 75%) -->
+                <div class="pt-2.5 pb-2 hover:bg-black/5 dark:hover:bg-white/5 px-2 rounded-lg transition-colors cursor-pointer group">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-7 h-7 rounded-md bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-sm">shopping_cart</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-xs theme-text block group-hover:opacity-80">Supermercado</span>
+                        <span class="text-[10px] theme-muted font-mono">de RD$ 22,000.00 mensual</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-mono font-bold text-xs theme-text block tabular-nums">RD$ 18,200.00</span>
+                      <span class="text-[10px] font-mono text-amber-500 font-bold flex items-center justify-end gap-0.5">
+                        <span class="material-icons-outlined text-[11px]">warning</span> 83% alerta
+                      </span>
+                    </div>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden flex">
+                    <div class="bg-amber-500 h-full rounded-sm" style="width: 82.7%;"></div>
+                  </div>
+                </div>
+
+                <!-- 4. Entretenimiento (Monthly Budget, CRITICAL >= 90%) -->
+                <div class="pt-2.5 pb-2 hover:bg-black/5 dark:hover:bg-white/5 px-2 rounded-lg transition-colors cursor-pointer group">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-7 h-7 rounded-md bg-rose-500/10 text-rose-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-sm">sports_esports</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-xs theme-text block group-hover:opacity-80">Entretenimiento</span>
+                        <span class="text-[10px] theme-muted font-mono">de RD$ 15,000.00 mensual</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-mono font-bold text-xs text-rose-500 block tabular-nums">RD$ 14,500.00</span>
+                      <span class="text-[10px] font-mono text-rose-500 font-bold flex items-center justify-end gap-0.5">
+                        <span class="material-icons-outlined text-[11px]">error</span> 97% límite
+                      </span>
+                    </div>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden flex">
+                    <div class="bg-rose-500 h-full rounded-sm" style="width: 96.6%;"></div>
+                  </div>
+                </div>
+
+                <!-- 5. Transporte (NO BUDGET -> neutral thin bar, % of total) -->
+                <div class="pt-2.5 pb-2 hover:bg-black/5 dark:hover:bg-white/5 px-2 rounded-lg transition-colors cursor-pointer group">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-7 h-7 rounded-md bg-slate-500/10 theme-muted flex items-center justify-center">
+                        <span class="material-icons-outlined text-sm">directions_car</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-xs theme-text block group-hover:opacity-80">Transporte</span>
+                        <span class="text-[10px] theme-muted font-mono">Sin presupuesto asignado</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-mono font-bold text-xs theme-text block tabular-nums">RD$ 8,400.00</span>
+                      <span class="text-[10px] font-mono theme-muted">7.6% del total</span>
+                    </div>
+                  </div>
+                  <div class="h-1 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden flex">
+                    <div class="bg-slate-400 dark:bg-slate-600 h-full rounded-sm" style="width: 7.6%;"></div>
+                  </div>
+                </div>
+
+                <!-- 6. Salud (NO BUDGET -> neutral thin bar, % of total) -->
+                <div class="pt-2.5 pb-2 hover:bg-black/5 dark:hover:bg-white/5 px-2 rounded-lg transition-colors cursor-pointer group">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-7 h-7 rounded-md bg-slate-500/10 theme-muted flex items-center justify-center">
+                        <span class="material-icons-outlined text-sm">medical_services</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-xs theme-text block group-hover:opacity-80">Salud</span>
+                        <span class="text-[10px] theme-muted font-mono">Sin presupuesto asignado</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-mono font-bold text-xs theme-text block tabular-nums">RD$ 5,200.00</span>
+                      <span class="text-[10px] font-mono theme-muted">4.7% del total</span>
+                    </div>
+                  </div>
+                  <div class="h-1 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden flex">
+                    <div class="bg-slate-400 dark:bg-slate-600 h-full rounded-sm" style="width: 4.7%;"></div>
+                  </div>
+                </div>
+
+                <!-- 7. Servicios (Monthly Budget, OK) -->
+                <div class="pt-2.5 pb-2 hover:bg-black/5 dark:hover:bg-white/5 px-2 rounded-lg transition-colors cursor-pointer group">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-7 h-7 rounded-md bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                        <span class="material-icons-outlined text-sm">bolt</span>
+                      </div>
+                      <div>
+                        <span class="font-bold text-xs theme-text block group-hover:opacity-80">Servicios</span>
+                        <span class="text-[10px] theme-muted font-mono">de RD$ 8,000.00 mensual</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-mono font-bold text-xs theme-text block tabular-nums">RD$ 4,100.00</span>
+                      <span class="text-[10px] font-mono text-emerald-500 font-semibold">51% gastado</span>
+                    </div>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden flex">
+                    <div class="bg-emerald-500 h-full rounded-sm" style="width: 51.25%;"></div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Discreet Link to Budgets -->
+              <div class="pt-2 border-t theme-border text-center">
+                <a href="#" class="text-xs font-medium inline-flex items-center gap-1 hover:underline" style="color: var(--c-accent-text);">
+                  Gestionar y ajustar límites en Presupuestos
+                  <span class="material-icons-outlined text-xs">arrow_forward</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Cashflow Trend & Distribution (5 cols) -->
+            <div class="col-span-5 space-y-4">
+              
+              <!-- 12-Month Flow Card -->
+              <div class="rounded-xl border theme-border theme-surface p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                  <h3 class="font-bold text-sm theme-text">Flujo Anual (Ingresos vs Gastos)</h3>
+                  <span class="text-[10px] font-mono uppercase tracking-wider theme-muted">2026</span>
+                </div>
+                
+                <!-- Mockup Chart Bar Visualization -->
+                <div class="h-44 flex items-end justify-between gap-1.5 pt-6 pb-2 border-b theme-border">
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500/70 rounded-t-sm h-[60%]"></div>
+                      <div class="w-2 bg-rose-500/70 rounded-t-sm h-[45%]"></div>
+                    </div>
+                    <span class="text-[9px] font-mono theme-muted">Ene</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500/70 rounded-t-sm h-[65%]"></div>
+                      <div class="w-2 bg-rose-500/70 rounded-t-sm h-[50%]"></div>
+                    </div>
+                    <span class="text-[9px] font-mono theme-muted">Feb</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500/70 rounded-t-sm h-[70%]"></div>
+                      <div class="w-2 bg-rose-500/70 rounded-t-sm h-[55%]"></div>
+                    </div>
+                    <span class="text-[9px] font-mono theme-muted">Mar</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500/70 rounded-t-sm h-[60%]"></div>
+                      <div class="w-2 bg-rose-500/70 rounded-t-sm h-[40%]"></div>
+                    </div>
+                    <span class="text-[9px] font-mono theme-muted">Abr</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500/70 rounded-t-sm h-[75%]"></div>
+                      <div class="w-2 bg-rose-500/70 rounded-t-sm h-[60%]"></div>
+                    </div>
+                    <span class="text-[9px] font-mono theme-muted">May</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500/70 rounded-t-sm h-[80%]"></div>
+                      <div class="w-2 bg-rose-500/70 rounded-t-sm h-[65%]"></div>
+                    </div>
+                    <span class="text-[9px] font-mono theme-muted">Jun</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500/70 rounded-t-sm h-[70%]"></div>
+                      <div class="w-2 bg-rose-500/70 rounded-t-sm h-[48%]"></div>
+                    </div>
+                    <span class="text-[9px] font-mono theme-muted">Jul</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500/70 rounded-t-sm h-[85%]"></div>
+                      <div class="w-2 bg-rose-500/70 rounded-t-sm h-[70%]"></div>
+                    </div>
+                    <span class="text-[9px] font-mono theme-muted">Ago</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500/70 rounded-t-sm h-[72%]"></div>
+                      <div class="w-2 bg-rose-500/70 rounded-t-sm h-[52%]"></div>
+                    </div>
+                    <span class="text-[9px] font-mono theme-muted">Sep</span>
+                  </div>
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500/70 rounded-t-sm h-[88%]"></div>
+                      <div class="w-2 bg-rose-500/70 rounded-t-sm h-[62%]"></div>
+                    </div>
+                    <span class="text-[9px] font-mono theme-muted">Oct</span>
+                  </div>
+                  <!-- Nov Active -->
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group p-0.5 rounded-t" style="background-color: var(--c-accent-light);">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-emerald-500 rounded-t-sm h-[92%] shadow-sm"></div>
+                      <div class="w-2 bg-rose-500 rounded-t-sm h-[68%] shadow-sm"></div>
+                    </div>
+                    <span class="text-[9px] font-mono font-bold" style="color: var(--c-accent-text);">Nov</span>
+                  </div>
+                  <!-- Dec -->
+                  <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group opacity-40">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div class="w-2 bg-slate-400 rounded-t-sm h-[10%]"></div>
+                      <div class="w-2 bg-slate-400 rounded-t-sm h-[10%]"></div>
+                    </div>
+                    <span class="text-[9px] font-mono theme-muted">Dic</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs theme-muted font-mono">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></span> Ingresos
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-sm bg-rose-500 inline-block"></span> Gastos
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Action Box -->
+              <div class="rounded-xl border border-dashed theme-border p-4 flex items-center justify-between theme-surface-elevated">
+                <div class="text-xs">
+                  <span class="font-bold theme-text block">Acceso Rápido</span>
+                  <span class="theme-muted">Atajos de teclado: Alt+N para nuevo gasto</span>
+                </div>
+                <button class="px-3.5 py-1.5 rounded-lg font-bold text-xs text-slate-950 shadow-sm flex items-center gap-1 hover:opacity-90 transition-opacity" style="background-color: var(--c-accent);">
+                  <span class="material-icons-outlined text-sm">add</span> Nuevo
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- MOBILE CONTAINER (375px Simulation) -->
+    <section id="mobileSection" class="transition-all">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider theme-muted flex items-center gap-2">
+          <span class="material-icons-outlined text-sm">phone_iphone</span> Vista Móvil (375px) con Bottom Navigation
+        </h2>
+        <span class="text-xs font-mono theme-muted">375 × 812 (iPhone Frame)</span>
+      </div>
+
+      <div class="flex justify-center">
+        <!-- Phone Shell -->
+        <div class="w-[375px] h-[812px] rounded-[44px] border-[10px] border-slate-800 dark:border-slate-800 theme-bg shadow-2xl overflow-hidden flex flex-col relative">
+          
+          <!-- Notch Header -->
+          <div class="h-9 w-full theme-surface-elevated flex items-center justify-between px-6 text-[10px] font-mono theme-muted flex-shrink-0">
+            <span>9:41</span>
+            <div class="w-20 h-4 bg-slate-900 rounded-full mx-auto"></div>
+            <span class="material-icons-outlined text-xs">wifi</span>
+          </div>
+
+          <!-- Mobile App Top Bar -->
+          <div class="px-4 py-3 theme-surface/90 backdrop-blur border-b theme-border flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs text-slate-950 shadow-sm" style="background-color: var(--c-accent);">S</div>
+              <span class="font-bold text-sm tracking-tight theme-text">Spendly</span>
+            </div>
+            <!-- Month Selector Pill -->
+            <div class="flex items-center gap-1 theme-surface-elevated border theme-border rounded-full px-2.5 py-1 text-[11px] font-mono">
+              <span class="theme-text font-bold">Nov 2026</span>
+              <span class="material-icons-outlined text-xs theme-muted">expand_more</span>
+            </div>
+          </div>
+
+          <!-- Scrollable Body -->
+          <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-20">
+            
+            <!-- Mobile Net Balance Hero -->
+            <div class="p-4 rounded-xl border theme-border theme-surface-elevated space-y-1">
+              <span class="text-[10px] uppercase font-mono tracking-wider theme-muted">Balance Neto</span>
+              <div class="text-2xl font-extrabold font-mono theme-text tabular-nums tracking-tight">
+                RD$ 55,100.00
+              </div>
+              <div class="flex items-center justify-between pt-2 mt-2 border-t theme-border text-[11px] font-mono">
+                <div class="text-emerald-500">
+                  <span class="block text-[9px] uppercase theme-muted">Ingresos</span>
+                  RD$ 165,000
+                </div>
+                <div class="text-rose-500 text-right">
+                  <span class="block text-[9px] uppercase theme-muted">Gastos</span>
+                  RD$ 109,900
+                </div>
+              </div>
+            </div>
+
+            <!-- Category Spending List (§5.1) -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-xs uppercase tracking-wider theme-muted">Gastos del Mes</h3>
+                <span class="text-[11px] font-mono font-bold theme-text">RD$ 109,900</span>
+              </div>
+
+              <div class="space-y-2">
+
+                <!-- 1. Educación (Yearly) -->
+                <div class="p-3 rounded-lg border theme-border theme-surface space-y-1.5 shadow-sm">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                      <span class="material-icons-outlined text-sm" style="color: var(--c-accent);">school</span>
+                      <span class="font-bold theme-text">Educación</span>
+                    </div>
+                    <span class="font-mono font-bold theme-text">RD$ 35,000</span>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden">
+                    <div class="bg-emerald-500 h-full rounded-sm" style="width: 66.6%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] theme-muted font-mono">
+                    <span>RD$ 120,000 de RD$ 180,000 este año</span>
+                    <span class="text-emerald-500 font-semibold">67%</span>
+                  </div>
+                </div>
+
+                <!-- 2. Comida (Monthly, OK) -->
+                <div class="p-3 rounded-lg border theme-border theme-surface space-y-1.5 shadow-sm">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                      <span class="material-icons-outlined text-sm text-emerald-500">restaurant</span>
+                      <span class="font-bold theme-text">Comida</span>
+                    </div>
+                    <span class="font-mono font-bold theme-text">RD$ 24,500</span>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden">
+                    <div class="bg-emerald-500 h-full rounded-sm" style="width: 61.25%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] theme-muted font-mono">
+                    <span>de RD$ 40,000</span>
+                    <span class="text-emerald-500 font-semibold">61%</span>
+                  </div>
+                </div>
+
+                <!-- 3. Supermercado (Warning) -->
+                <div class="p-3 rounded-lg border border-amber-500/30 theme-surface space-y-1.5 shadow-sm">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                      <span class="material-icons-outlined text-sm text-amber-500">shopping_cart</span>
+                      <span class="font-bold theme-text">Supermercado</span>
+                    </div>
+                    <span class="font-mono font-bold theme-text">RD$ 18,200</span>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden">
+                    <div class="bg-amber-500 h-full rounded-sm" style="width: 82.7%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] font-mono">
+                    <span class="theme-muted">de RD$ 22,000</span>
+                    <span class="text-amber-500 font-bold flex items-center gap-0.5">
+                      <span class="material-icons-outlined text-[10px]">warning</span> 83%
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 4. Entretenimiento (Critical) -->
+                <div class="p-3 rounded-lg border border-rose-500/30 theme-surface space-y-1.5 shadow-sm">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                      <span class="material-icons-outlined text-sm text-rose-500">sports_esports</span>
+                      <span class="font-bold theme-text">Entretenimiento</span>
+                    </div>
+                    <span class="font-mono font-bold text-rose-500">RD$ 14,500</span>
+                  </div>
+                  <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden">
+                    <div class="bg-rose-500 h-full rounded-sm" style="width: 96.6%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] font-mono">
+                    <span class="theme-muted">de RD$ 15,000</span>
+                    <span class="text-rose-500 font-bold flex items-center gap-0.5">
+                      <span class="material-icons-outlined text-[10px]">error</span> 97%
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 5. Transporte (No Budget) -->
+                <div class="p-3 rounded-lg border theme-border theme-surface space-y-1.5 shadow-sm">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                      <span class="material-icons-outlined text-sm theme-muted">directions_car</span>
+                      <span class="font-bold theme-text">Transporte</span>
+                    </div>
+                    <span class="font-mono font-bold theme-text">RD$ 8,400</span>
+                  </div>
+                  <div class="h-1 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden">
+                    <div class="bg-slate-400 dark:bg-slate-600 h-full rounded-sm" style="width: 7.6%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] theme-muted font-mono">
+                    <span>Sin presupuesto</span>
+                    <span>7.6% del total</span>
+                  </div>
+                </div>
+
+                <!-- 6. Salud (No Budget) -->
+                <div class="p-3 rounded-lg border theme-border theme-surface space-y-1.5 shadow-sm">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                      <span class="material-icons-outlined text-sm theme-muted">medical_services</span>
+                      <span class="font-bold theme-text">Salud</span>
+                    </div>
+                    <span class="font-mono font-bold theme-text">RD$ 5,200</span>
+                  </div>
+                  <div class="h-1 w-full bg-slate-200 dark:bg-slate-800 rounded-sm overflow-hidden">
+                    <div class="bg-slate-400 dark:bg-slate-600 h-full rounded-sm" style="width: 4.7%;"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-[10px] theme-muted font-mono">
+                    <span>Sin presupuesto</span>
+                    <span>4.7% del total</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Mobile Bottom Navigation (5 destinations) -->
+          <nav class="absolute bottom-0 inset-x-0 theme-surface/95 backdrop-blur border-t theme-border px-3 py-2 flex items-center justify-around z-30 pb-5">
+            <a href="#" class="flex flex-col items-center gap-0.5" style="color: var(--c-accent-text);">
+              <span class="material-icons-outlined text-lg">dashboard</span>
+              <span class="text-[9px] font-bold">Inicio</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-0.5 theme-muted hover:theme-text">
+              <span class="material-icons-outlined text-lg">trending_down</span>
+              <span class="text-[9px] font-medium">Gastos</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-0.5 theme-muted hover:theme-text">
+              <span class="material-icons-outlined text-lg">trending_up</span>
+              <span class="text-[9px] font-medium">Ingresos</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-0.5 theme-muted hover:theme-text">
+              <span class="material-icons-outlined text-lg">pie_chart</span>
+              <span class="text-[9px] font-medium">Límites</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-0.5 theme-muted hover:theme-text">
+              <span class="material-icons-outlined text-lg">more_horiz</span>
+              <span class="text-[9px] font-medium">Más</span>
+            </a>
+          </nav>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const palettes = {
+      gold: {
+        label: 'ORO SOBERANO',
+        title: '1. ORO SOBERANO & OBSIDIANA (Boutique Wealth / Luxury Ledger)',
+        desc: 'Reemplaza el clásico azul genérico por una paleta de lingote y libro mayor clásico (oro cálido / champagne noble sobre papel marfil o tinta obsidiana). Transmite respaldo institucional, riqueza acumulada y seriedad contable sin caer en convencionalismos.'
+      },
+      lime: {
+        label: 'LIMA ELÉCTRICA',
+        title: '2. LIMA ELÉCTRICA & BOSQUE PROFUNDO (Neo-Fintech / Cashflow Impact)',
+        desc: 'Inspirada en el fintech moderno más disruptivo (Wise, Cash App, N26). Un fondo bosque/pino ultra oscuro con un acento lima/chartreuse electrizante de alto contraste. Hace que los balances y presupuestos salten con energía y modernidad radical.'
+      },
+      cobalt: {
+        label: 'COBALTO / IRIS',
+        title: '3. COBALTO PROFUNDO & MENTA FRÍA (Neo-Bank / Haute Tech)',
+        desc: 'Un índigo ultra saturado y vibrante (Cobalto / Iris eléctrico) complementado con menta fría para ingresos y carmín frambuesa para gastos. Da una sensación de precisión quirúrgica, alta tecnología y producto financiero de primera línea.'
+      }
+    };
+
+    function setPalette(name) {
+      document.documentElement.setAttribute('data-palette', name);
+      
+      const p = palettes[name];
+      document.getElementById('currentPaletteLabel').innerText = p.label;
+      document.getElementById('paletteDescriptionTitle').innerText = p.title;
+      document.getElementById('paletteDescriptionText').innerText = p.desc;
+
+      // Update button active states
+      ['palGold', 'palLime', 'palCobalt'].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.classList.remove('bg-amber-500/20', 'text-amber-500', 'bg-lime-500/20', 'text-lime-400', 'bg-indigo-500/20', 'text-indigo-400');
+        btn.classList.add('text-slate-400');
+      });
+
+      if (name === 'gold') {
+        const b = document.getElementById('palGold');
+        b.classList.remove('text-slate-400');
+        b.classList.add('bg-amber-500/20', 'text-amber-500');
+        document.getElementById('currentPaletteLabel').className = 'text-[10px] font-mono px-2 py-0.5 rounded border border-amber-500/40 text-amber-500';
+      } else if (name === 'lime') {
+        const b = document.getElementById('palLime');
+        b.classList.remove('text-slate-400');
+        b.classList.add('bg-lime-500/20', 'text-lime-400');
+        document.getElementById('currentPaletteLabel').className = 'text-[10px] font-mono px-2 py-0.5 rounded border border-lime-500/40 text-lime-400';
+      } else if (name === 'cobalt') {
+        const b = document.getElementById('palCobalt');
+        b.classList.remove('text-slate-400');
+        b.classList.add('bg-indigo-500/20', 'text-indigo-400');
+        document.getElementById('currentPaletteLabel').className = 'text-[10px] font-mono px-2 py-0.5 rounded border border-indigo-500/40 text-indigo-400';
+      }
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      document.getElementById('themeLabel').innerText = isDark ? 'Dark Mode' : 'Light Mode';
+    }
+
+    function setView(view) {
+      const desktop = document.getElementById('desktopSection');
+      const mobile = document.getElementById('mobileSection');
+      
+      const btnBoth = document.getElementById('viewBoth');
+      const btnDesktop = document.getElementById('viewDesktop');
+      const btnMobile = document.getElementById('viewMobile');
+
+      [btnBoth, btnDesktop, btnMobile].forEach(b => b.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white'));
+
+      if (view === 'desktop') {
+        desktop.classList.remove('hidden');
+        mobile.classList.add('hidden');
+        btnDesktop.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white');
+      } else if (view === 'mobile') {
+        desktop.classList.add('hidden');
+        mobile.classList.remove('hidden');
+        btnMobile.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white');
+      } else {
+        desktop.classList.remove('hidden');
+        mobile.classList.remove('hidden');
+        btnBoth.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-sm', 'text-slate-900', 'dark:text-white');
+      }
+    }
+
+    // Initialize Default
+    setPalette('gold');
+    setView('both');
+  </script>
+</body>
+</html>

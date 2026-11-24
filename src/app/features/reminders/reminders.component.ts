@@ -1,329 +1,305 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+  HostListener,
+} from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslationService } from '../../core/services/translation.service';
 import { RemindersStateService } from '../../core/services/reminders-state.service';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NotificationService } from '../../core/services/notification.service';
 import {
   CreateRemindersDto,
-  UpdateRemindersDto,
   RemindersResponseDto,
 } from '../../core/models/api.models';
+import {
+  ButtonComponent,
+  AmountComponent,
+  IconComponent,
+  SkeletonComponent,
+  EmptyStateComponent,
+  PageHeaderComponent,
+  FormFieldComponent,
+  CurrencyInputComponent,
+  DialogShellComponent,
+  PaginationComponent,
+  UiDialogService,
+} from '../../shared/ui';
 
 @Component({
   selector: 'app-reminders',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    DatePipe,
+    ButtonComponent,
+    AmountComponent,
+    IconComponent,
+    SkeletonComponent,
+    EmptyStateComponent,
+    PageHeaderComponent,
+    FormFieldComponent,
+    CurrencyInputComponent,
+    DialogShellComponent,
+    PaginationComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="p-6 pb-24 md:pb-6 space-y-6 animate-fade-in-up">
+    <div class="space-y-6">
       <!-- Header -->
-      <div class="flex flex-col md:flex-row justify-between md:items-end gap-6">
-        <div>
-          <h1
-            class="text-xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3"
-          >
-            {{ ts.t()('reminders.title') }}
-          </h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium">
-            {{ ts.t()('reminders.desc') }}
-          </p>
-        </div>
+      <ui-page-header
+        [title]="ts.t()('reminders.title')"
+        [subtitle]="ts.t()('reminders.desc')"
+      >
         <button
+          uiButton
+          variant="primary"
           (click)="openModal()"
-          class="w-full md:w-auto px-3 py-1.5 md:px-6 md:py-3 bg-primary hover:bg-primary-700 text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm md:text-base tracking-wide"
         >
-          <span class="material-icons-outlined mr-2 text-lg md:text-xl">add_circle</span>
+          <ui-icon name="add" size="sm" class="mr-1.5" />
           {{ ts.t()('forms.add') }}
         </button>
-      </div>
+      </ui-page-header>
 
       <!-- Loading State -->
       @if (state.isLoading() && !state.reminders().length) {
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
-        @for (i of [1,2,3]; track i) {
-        <div
-          class="p-5 border border-gray-200 dark:border-white/5 rounded-2xl bg-white/5 h-32"
-        ></div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="p-5 border border-border rounded-xl bg-surface-raised space-y-4">
+          <div class="flex items-center gap-3">
+            <ui-skeleton shape="circle" class="w-10 h-10" />
+            <div class="flex-1 space-y-2">
+              <ui-skeleton class="h-4 w-3/4" />
+              <ui-skeleton class="h-3 w-1/2" />
+            </div>
+          </div>
+          <div class="flex justify-between items-end pt-2 border-t border-border/50">
+            <ui-skeleton class="h-3 w-24" />
+            <ui-skeleton class="h-5 w-20" />
+          </div>
+        </div>
         }
       </div>
       }
 
       <!-- Empty State -->
       @if (!state.isLoading() && !state.reminders().length) {
-      <div
-        class="glass-card p-12 text-center border border-gray-200 dark:border-white/10 rounded-2xl"
+      <ui-empty-state
+        icon="notifications_off"
+        [title]="ts.t()('reminders.empty_title')"
+        [description]="ts.t()('reminders.empty_desc')"
       >
-        <div
-          class="w-16 h-16 rounded-full bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mx-auto mb-4"
-        >
-          <span class="material-icons-outlined text-3xl text-primary-300 dark:text-primary-600"
-            >notifications_off</span
-          >
-        </div>
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
-          {{ ts.t()('reminders.empty_title') }}
-        </h3>
-        <p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-6 text-sm">
-          {{ ts.t()('reminders.empty_desc') }}
-        </p>
         <button
+          uiEmptyAction
+          uiButton
+          variant="primary"
           (click)="openModal()"
-          class="text-primary hover:text-primary-700 dark:text-primary-400 font-bold text-sm"
         >
+          <ui-icon name="add" size="sm" class="mr-1.5" />
           {{ ts.t()('forms.add') }}
         </button>
-      </div>
+      </ui-empty-state>
       }
 
       <!-- List -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      @if (state.reminders().length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @for (item of state.reminders(); track item.id) {
         <div
-          class="glass-card p-4 md:p-5 border border-gray-100 dark:border-white/5 hover:shadow-xl hover:border-indigo-500/20 transition-all duration-300 rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 group"
+          class="bg-surface-raised border border-border hover:border-lime-500/40 transition-colors rounded-xl p-5 shadow-sm flex flex-col justify-between group"
         >
           <!-- Card Content -->
-          <div class="flex justify-between items-start mb-4">
-            <div class="flex items-center gap-3">
-              <div
-                class="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center shrink-0 shadow-sm"
-              >
-                <span class="material-icons-outlined text-primary">campaign</span>
-              </div>
-              <div>
-                <h3
-                  class="text-sm md:text-base font-bold text-gray-900 dark:text-white leading-tight mb-1 line-clamp-1 break-all"
+          <div>
+            <div class="flex justify-between items-start gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div
+                  class="w-10 h-10 rounded-lg bg-surface-sunken flex items-center justify-center shrink-0 border border-border text-ink"
                 >
-                  {{ item.title }}
-                </h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
-                  {{ item.message }}
-                </p>
+                  <ui-icon name="campaign" size="md" />
+                </div>
+                <div class="min-w-0">
+                  <h3
+                    class="text-sm font-semibold text-ink leading-tight truncate"
+                    [title]="item.title"
+                  >
+                    {{ item.title }}
+                  </h3>
+                  <p
+                    class="text-xs text-ink-muted line-clamp-2 mt-0.5"
+                    [title]="item.message"
+                  >
+                    {{ item.message }}
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <!-- Actions -->
-            <div
-              class="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <button
-                (click)="edit(item)"
-                class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-primary hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all"
-              >
-                <span class="material-icons-outlined text-lg">edit</span>
-              </button>
-              <button
-                (click)="requestDelete(item.id)"
-                class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
-              >
-                <span class="material-icons-outlined text-lg">delete</span>
-              </button>
+              <!-- Actions -->
+              <div class="flex items-center gap-1 shrink-0">
+                <button
+                  uiButton
+                  variant="ghost"
+                  size="sm"
+                  class="!p-1.5 text-ink-muted hover:text-ink"
+                  (click)="edit(item)"
+                  [title]="ts.t()('trans.edit')"
+                  [attr.aria-label]="ts.t()('trans.edit')"
+                >
+                  <ui-icon name="edit" size="sm" />
+                </button>
+                <button
+                  uiButton
+                  variant="ghost"
+                  size="sm"
+                  class="!p-1.5 text-ink-muted hover:text-danger"
+                  (click)="confirmDelete(item)"
+                  [title]="ts.t()('trans.delete')"
+                  [attr.aria-label]="ts.t()('trans.delete')"
+                >
+                  <ui-icon name="delete" size="sm" />
+                </button>
+              </div>
             </div>
           </div>
 
-          <div class="flex justify-between items-end mt-4">
+          <div class="flex justify-between items-end mt-4 pt-3 border-t border-border/50 text-xs text-ink-muted">
             <div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">
+              <span class="block text-[10px] uppercase font-bold tracking-wider text-ink-muted/80">
                 {{ ts.t()('trans.date') }}
-              </p>
-              <p class="text-sm font-bold text-gray-900 dark:text-white">
+              </span>
+              <span class="font-medium text-ink">
                 {{ item.remindAt | date : 'medium' }}
-              </p>
+              </span>
             </div>
 
             @if (item.amount) {
-            <span class="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-              {{ item.amount | currency : 'DOP' : 'symbol' : '1.0-0' }}
-            </span>
+            <div class="text-right">
+              <ui-amount [value]="item.amount" currency="DOP" size="md" />
+            </div>
             }
           </div>
         </div>
         }
       </div>
-    </div>
 
-    <!-- Modal -->
-    @if (showModal) {
-    <div
-      class="fixed inset-0 z-[60] flex items-center justify-center p-4 px-4 sm:px-0 animate-fade-in"
-    >
-      <!-- Backdrop -->
-      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" (click)="closeModal()"></div>
-
-      <!-- Dialog -->
-      <div
-        class="glass-card w-full max-w-md p-6 relative bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-2xl animate-scale-in"
-      >
-        <button
-          (click)="closeModal()"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full"
-        >
-          <span class="material-icons-outlined text-lg">close</span>
-        </button>
-
-        <div class="text-center mb-6">
-          <div
-            class="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mx-auto mb-4"
-          >
-            <span class="material-icons-outlined text-3xl text-primary">{{
-              isEditing ? 'edit_notifications' : 'notification_add'
-            }}</span>
-          </div>
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-            {{ isEditing ? ts.t()('trans.edit') : ts.t()('reminders.new_title') }}
-          </h2>
-          <p class="text-gray-500 text-xs mt-1">{{ ts.t()('reminders.setup') }}</p>
-        </div>
-
-        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
-          <!-- Title -->
-          <div class="space-y-1.5">
-            <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
-            >
-              {{ ts.t()('trans.title') }}
-            </label>
-            <input
-              type="text"
-              formControlName="title"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-semibold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder-gray-300"
-              [placeholder]="ts.t()('trans.title')"
-            />
-          </div>
-
-          <!-- Message -->
-          <div class="space-y-1.5">
-            <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
-            >
-              {{ ts.t()('trans.desc') }}
-            </label>
-            <input
-              type="text"
-              formControlName="message"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-semibold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder-gray-300"
-              [placeholder]="ts.t()('trans.desc')"
-            />
-          </div>
-
-          <!-- Amount (Optional) -->
-          <div class="space-y-1.5">
-            <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
-            >
-              {{ ts.t()('trans.amount') }}
-            </label>
-            <div class="relative group">
-              <span
-                class="absolute left-4 top-3.5 text-gray-500 dark:text-gray-400 font-bold text-lg"
-                >$</span
-              >
-              <input
-                type="number"
-                formControlName="amount"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-lg font-bold rounded-xl p-3 pl-8 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder-gray-300"
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-
-          <!-- Date -->
-          <div class="space-y-1.5">
-            <label
-              class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1"
-            >
-              {{ ts.t()('trans.date') }}
-            </label>
-            <input
-              type="datetime-local"
-              formControlName="remindAt"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 text-sm font-bold rounded-xl p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-            />
-          </div>
-
-          <!-- Actions -->
-          <button
-            type="submit"
-            [disabled]="form.invalid || state.isLoading()"
-            class="w-full bg-primary hover:bg-primary-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm"
-          >
-            <span class="material-icons-outlined text-lg">check</span>
-            {{ isEditing ? ts.t()('action.save') : ts.t()('forms.add') }}
-          </button>
-        </form>
+      @if (state.totalPages() > 1) {
+      <div class="flex justify-center pt-4">
+        <ui-pagination
+          [page]="state.currentPage()"
+          [totalPages]="state.totalPages()"
+          (pageChange)="state.setPage($event)"
+        />
       </div>
+      }
+      }
     </div>
-    }
 
-    <!-- Delete Confirmation Modal -->
-    @if (deleteTargetId() !== null) {
+    <!-- Create/Edit Modal -->
+    @if (showModal()) {
     <div
-      class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-      (click)="cancelDelete()"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      (click)="closeModal()"
     >
-      <div
-        class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-sm p-6 animate-scale-in text-center"
-        (click)="$event.stopPropagation()"
-      >
-        <div
-          class="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4 text-red-500"
+      <div class="w-full max-w-lg" (click)="$event.stopPropagation()">
+        <ui-dialog-shell
+          [title]="isEditing() ? ts.t()('trans.edit') : ts.t()('reminders.new_title')"
+          [closeLabel]="ts.t()('action.cancel')"
+          (closed)="closeModal()"
         >
-          <span class="material-icons-outlined text-3xl">delete_forever</span>
-        </div>
+          <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+            <!-- Title -->
+            <ui-form-field fieldId="reminder-title" [label]="ts.t()('trans.title')">
+              <input
+                id="reminder-title"
+                type="text"
+                formControlName="title"
+                class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent placeholder-ink-muted/50"
+                [placeholder]="ts.t()('trans.title')"
+              />
+            </ui-form-field>
 
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-          {{ ts.t()('trans.delete') }}
-        </h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6">
-          {{ ts.t()('trans.delete_msg') }}
-        </p>
+            <!-- Message -->
+            <ui-form-field fieldId="reminder-desc" [label]="ts.t()('trans.desc')">
+              <input
+                id="reminder-desc"
+                type="text"
+                formControlName="message"
+                class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent placeholder-ink-muted/50"
+                [placeholder]="ts.t()('trans.desc')"
+              />
+            </ui-form-field>
 
-        <div class="flex gap-3">
-          <button
-            type="button"
-            (click)="cancelDelete()"
-            class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-          >
-            {{ ts.t()('action.cancel') }}
-          </button>
-          <button
-            type="button"
-            (click)="confirmDelete()"
-            class="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-bold shadow-lg shadow-red-500/30 hover:bg-red-600 transition-all"
-          >
-            {{ ts.t()('trans.delete') }}
-          </button>
-        </div>
+            <!-- Amount -->
+            <ui-form-field fieldId="reminder-amount" [label]="ts.t()('trans.amount')">
+              <ui-currency-input
+                inputId="reminder-amount"
+                formControlName="amount"
+              />
+            </ui-form-field>
+
+            <!-- Date -->
+            <ui-form-field fieldId="reminder-date" [label]="ts.t()('trans.date')">
+              <input
+                id="reminder-date"
+                type="datetime-local"
+                formControlName="remindAt"
+                class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent"
+              />
+            </ui-form-field>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-3 pt-4 border-t border-border">
+              <button
+                uiButton
+                variant="secondary"
+                type="button"
+                (click)="closeModal()"
+              >
+                {{ ts.t()('action.cancel') }}
+              </button>
+              <button
+                uiButton
+                variant="primary"
+                type="submit"
+                [disabled]="form.invalid || state.isLoading()"
+              >
+                <ui-icon name="check" size="sm" class="mr-1.5" />
+                {{ isEditing() ? ts.t()('action.save') : ts.t()('forms.add') }}
+              </button>
+            </div>
+          </form>
+        </ui-dialog-shell>
       </div>
     </div>
     }
   `,
-  styles: [],
 })
 export class RemindersComponent {
   state = inject(RemindersStateService);
   ts = inject(TranslationService);
   fb = inject(FormBuilder);
   ns = inject(NotificationService);
+  dialogService = inject(UiDialogService);
 
-  showModal = false;
-  isEditing = false;
-  editingId: number | null = null;
-  deleteTargetId = signal<number | null>(null);
+  showModal = signal(false);
+  isEditing = signal(false);
+  editingId = signal<number | null>(null);
 
   form: FormGroup = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
     message: ['', [Validators.required, Validators.minLength(3)]],
-    amount: [null, [Validators.required, Validators.min(0.01)]],
+    amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     remindAt: ['', [Validators.required]],
   });
 
   openModal() {
-    this.showModal = true;
-    this.isEditing = false;
-    this.editingId = null;
+    this.showModal.set(true);
+    this.isEditing.set(false);
+    this.editingId.set(null);
     const tomorrow = new Date(Date.now() + 86400000);
     this.form.reset({
-      // Default to "tomorrow" same time if new
       remindAt: tomorrow.toISOString().slice(0, 16),
       amount: null,
       title: '',
@@ -332,15 +308,17 @@ export class RemindersComponent {
   }
 
   closeModal() {
-    this.showModal = false;
+    this.showModal.set(false);
+    this.isEditing.set(false);
+    this.editingId.set(null);
     this.form.reset();
   }
 
   edit(item: RemindersResponseDto) {
-    this.isEditing = true;
-    this.editingId = item.id;
-    this.showModal = true;
-    // Format for datetime-local: YYYY-MM-DDTHH:mm
+    this.isEditing.set(true);
+    this.editingId.set(item.id);
+    this.showModal.set(true);
+
     let dateStr = '';
     if (item.remindAt) {
       dateStr = new Date(item.remindAt).toISOString().slice(0, 16);
@@ -354,64 +332,73 @@ export class RemindersComponent {
     });
   }
 
-  submit() {
+  async submit() {
     if (this.form.invalid) return;
 
     const val = this.form.value;
-    const payload = {
+    const payload: CreateRemindersDto = {
       title: val.title,
       message: val.message,
-      amount: val.amount,
-      remindAt: val.remindAt.length === 16 ? val.remindAt + ':00' : val.remindAt, // Ensure seconds are present, no Z or millis
-    } as CreateRemindersDto;
+      amount: Number(val.amount),
+      remindAt: val.remindAt.length === 16 ? val.remindAt + ':00' : val.remindAt,
+    };
 
-    if (this.isEditing && this.editingId) {
-      this.state
-        .update(this.editingId, payload)
-        .then(() => {
-          this.ns.show(this.ts.translate('reminders.updated'), 'success');
-          this.closeModal();
-        })
-        .catch((err: any) => {
-          this.ns.show(this.ts.translate('reminders.fail_update'), 'error');
-        });
-    } else {
-      this.state
-        .add(payload)
-        .then(() => {
-          this.ns.show(this.ts.translate('reminders.created'), 'success');
-          this.closeModal();
-        })
-        .catch((err: any) => {
-          this.ns.show(this.ts.translate('reminders.fail_create'), 'error');
-        });
+    const isEdit = this.isEditing();
+    const editId = this.editingId();
+
+    this.closeModal();
+
+    try {
+      if (isEdit && editId !== null) {
+        await this.state.update(editId, payload);
+        this.ns.show(this.ts.translate('reminders.updated'), 'success');
+      } else {
+        await this.state.add(payload);
+        this.ns.show(this.ts.translate('reminders.created'), 'success');
+      }
+    } catch {
+      this.ns.show(
+        this.ts.translate(isEdit ? 'reminders.fail_update' : 'reminders.fail_create'),
+        'error'
+      );
     }
   }
 
-  requestDelete(id: number) {
-    this.deleteTargetId.set(id);
-  }
+  async confirmDelete(item: RemindersResponseDto) {
+    const confirmed = await this.dialogService.confirm({
+      title: this.ts.t()('reminders.delete_title'),
+      message: `${this.ts.t()('reminders.delete_confirm')} "${item.title}"?`,
+      confirmLabel: this.ts.t()('trans.delete'),
+      cancelLabel: this.ts.t()('action.cancel'),
+      tone: 'danger',
+    });
 
-  cancelDelete() {
-    this.deleteTargetId.set(null);
-  }
-
-  confirmDelete() {
-    const id = this.deleteTargetId();
-    if (id === null) return;
-    this.deleteTargetId.set(null);
-
-    this.state
-      .delete(id)
-      .then(() => {
+    if (confirmed) {
+      try {
+        await this.state.delete(item.id);
         this.ns.show(this.ts.translate('reminders.deleted'), 'success');
-      })
-      .catch((err: any) => {
+      } catch {
         this.ns.show(this.ts.translate('reminders.fail_delete'), 'error');
-      });
+      }
+    }
   }
 
-  delete(id: number) {
-    this.requestDelete(id);
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      if (this.showModal()) {
+        this.closeModal();
+      }
+    } else if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+      if (this.showModal() && this.form.valid && !this.state.isLoading()) {
+        event.preventDefault();
+        this.submit();
+      }
+    } else if (event.altKey && (event.key === 'n' || event.key === 'N')) {
+      if (!this.showModal()) {
+        event.preventDefault();
+        this.openModal();
+      }
+    }
   }
 }

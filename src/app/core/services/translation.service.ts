@@ -334,6 +334,11 @@ export class TranslationService {
       es: 'Configura los detalles de tu alerta',
       en: 'Set up your alert details',
     },
+    'reminders.delete_title': { es: '¿Eliminar Recordatorio?', en: 'Delete Reminder?' },
+    'reminders.delete_confirm': {
+      es: '¿Estás seguro de que deseas eliminar este recordatorio',
+      en: 'Are you sure you want to delete this reminder',
+    },
     'reminders.created': { es: 'Recordatorio creado', en: 'Reminder created' },
     'reminders.updated': { es: 'Recordatorio actualizado', en: 'Reminder updated' },
     'reminders.deleted': { es: 'Recordatorio eliminado', en: 'Reminder deleted' },

@@ -1,8 +1,8 @@
 import {
   Component,
-  Injectable,
   inject,
   signal,
+  computed,
   OnInit,
   ChangeDetectionStrategy,
 } from '@angular/core';
@@ -21,351 +21,325 @@ import { TranslationService } from '../../core/services/translation.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { UpdateUserDto } from '../../core/models/api.models';
-import { UpdateService } from '../../core/services/update.service';
+import {
+  ButtonComponent,
+  IconComponent,
+  PageHeaderComponent,
+  FormFieldComponent,
+  SegmentedControlComponent,
+  SegmentedControlOption,
+  ToggleComponent,
+} from '../../shared/ui';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ButtonComponent,
+    IconComponent,
+    PageHeaderComponent,
+    FormFieldComponent,
+    SegmentedControlComponent,
+    ToggleComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="p-8 animate-fade-in max-w-4xl mx-auto space-y-6">
+    <div class="space-y-6 max-w-4xl">
       <!-- Header -->
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            {{ ts.t()('nav.settings') }}
-          </h1>
-          <p class="text-gray-500 dark:text-gray-400">{{ ts.t()('settings.profile.title') }}</p>
-        </div>
-      </div>
+      <ui-page-header
+        [title]="ts.t()('nav.settings')"
+        [subtitle]="ts.t()('settings.profile.title')"
+      />
 
       <!-- Navigation Tabs -->
-      <div
-        class="grid grid-cols-3 gap-1 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl w-full md:w-fit backdrop-blur-sm border border-gray-200 dark:border-white/5"
-      >
-        <button
-          *ngFor="let tab of tabs"
-          (click)="activeTab.set($any(tab.id))"
-          [class]="
-            activeTab() === tab.id
-              ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-          "
-          class="flex items-center justify-center px-2 md:px-6 py-2.5 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap gap-1 md:gap-2"
-        >
-          <span class="material-icons-outlined text-lg">{{ tab.icon }}</span>
-          <span class="truncate">{{ ts.t()('settings.tabs.' + tab.id) }}</span>
-        </button>
+      <div class="w-full sm:w-auto">
+        <ui-segmented-control
+          [options]="tabOptions()"
+          [value]="activeTab()"
+          (valueChange)="setTab($any($event))"
+        />
       </div>
 
       <!-- Content Area -->
       <div
-        class="glass-card p-6 md:p-8 bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 relative overflow-hidden"
+        class="bg-surface-raised border border-border rounded-xl p-6 sm:p-8 space-y-6 shadow-sm"
       >
         <!-- Profile Section -->
-        <div *ngIf="activeTab() === 'profile'" class="animate-fade-in-up space-y-6">
-          <div class="flex items-center gap-4 mb-6">
+        @if (activeTab() === 'profile') {
+        <div class="space-y-6 animate-fade-in">
+          <div class="flex items-center gap-4">
             <div
-              class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary border-2 border-primary/20"
+              class="w-16 h-16 rounded-full bg-accent/15 text-accent border border-accent/25 flex items-center justify-center text-2xl font-bold select-none"
             >
               {{ authService.currentUserStr()?.charAt(0)?.toUpperCase() || 'U' }}
             </div>
             <div>
-              <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+              <h3 class="text-lg font-semibold text-ink">
                 {{ authService.currentUserStr() }}
               </h3>
-              <p class="text-sm text-gray-500">{{ ts.t()('settings.profile.title') }}</p>
+              <p class="text-xs text-ink-muted">{{ ts.t()('settings.profile.title') }}</p>
             </div>
           </div>
 
           <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="space-y-4 max-w-lg">
-            <div>
-              <label
-                class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
-                >{{ ts.t()('settings.profile.name') }}</label
-              >
+            <ui-form-field fieldId="settings-name" [label]="ts.t()('settings.profile.name')">
               <input
+                id="settings-name"
                 formControlName="name"
                 type="text"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400"
+                class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent placeholder-ink-muted/50"
                 placeholder="Your Name"
               />
-            </div>
+            </ui-form-field>
 
-            <div>
-              <label
-                class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
-                >{{ ts.t()('settings.profile.email') }}</label
-              >
+            <ui-form-field fieldId="settings-email" [label]="ts.t()('settings.profile.email')">
               <input
+                id="settings-email"
                 formControlName="email"
                 type="email"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400"
+                class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent placeholder-ink-muted/50"
                 placeholder="name@example.com"
               />
-            </div>
+            </ui-form-field>
 
-            <div>
-              <label
-                class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
-                >{{ ts.t()('settings.profile.username') }}</label
-              >
+            <ui-form-field fieldId="settings-username" [label]="ts.t()('settings.profile.username')">
               <input
+                id="settings-username"
                 formControlName="username"
                 type="text"
-                class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400"
+                class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent placeholder-ink-muted/50"
                 placeholder="username"
               />
-            </div>
+            </ui-form-field>
 
-            <div class="pt-4">
+            <div class="pt-2">
               <button
+                uiButton
+                variant="primary"
                 type="submit"
                 [disabled]="profileForm.invalid || isLoading()"
-                class="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center min-w-[120px]"
               >
-                <span *ngIf="isLoading()" class="material-icons-outlined animate-spin text-lg mr-2"
-                  >sync</span
-                >
+                @if (isLoading()) {
+                  <ui-icon name="sync" size="sm" class="mr-1.5 animate-spin" />
+                }
                 {{ ts.t()('settings.profile.save') }}
               </button>
             </div>
           </form>
         </div>
+        }
 
         <!-- Security Section -->
-        <div *ngIf="activeTab() === 'security'" class="animate-fade-in-up space-y-6">
+        @if (activeTab() === 'security') {
+        <div class="space-y-6 animate-fade-in">
           <div
-            class="border-l-4 border-amber-500 pl-4 py-1 bg-amber-50 dark:bg-amber-900/10 rounded-r-lg"
+            class="border-l-4 border-amber-500 pl-4 py-2 bg-amber-500/10 rounded-r-lg"
           >
-            <h4 class="text-amber-800 dark:text-amber-500 font-bold text-sm">
+            <h4 class="text-amber-500 font-semibold text-sm">
               {{ ts.t()('settings.security.note_title') }}
             </h4>
-            <p class="text-amber-700 dark:text-amber-600 text-xs">
+            <p class="text-ink-muted text-xs mt-0.5">
               {{ ts.t()('settings.security.note_desc') }}
             </p>
           </div>
 
           <form [formGroup]="securityForm" (ngSubmit)="changePassword()" class="space-y-4 max-w-lg">
-            <div>
-              <label
-                class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
-                >{{ ts.t()('settings.security.new_password') }}</label
-              >
+            <ui-form-field
+              fieldId="settings-pwd"
+              [label]="ts.t()('settings.security.new_password')"
+              [hint]="ts.t()('settings.security.password_hint')"
+            >
               <div class="relative">
                 <input
+                  id="settings-pwd"
                   formControlName="password"
                   [type]="showPassword() ? 'text' : 'password'"
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 pr-10 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 pr-10 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
-                  (click)="$event.preventDefault(); showPassword.set(!showPassword())"
-                  class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none cursor-pointer"
+                  (click)="showPassword.set(!showPassword())"
+                  [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+                  class="absolute right-2.5 top-2.5 text-ink-muted hover:text-ink focus:outline-none"
                 >
-                  <span class="material-icons-outlined text-lg">{{
-                    showPassword() ? 'visibility' : 'visibility_off'
-                  }}</span>
+                  <ui-icon [name]="showPassword() ? 'visibility' : 'visibility_off'" size="sm" />
                 </button>
               </div>
-              <p class="text-[10px] text-gray-400 mt-1">
-                {{ ts.t()('settings.security.password_hint') }}
-              </p>
-            </div>
+            </ui-form-field>
 
-            <div>
-              <label
-                class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
-                >{{ ts.t()('settings.security.confirm_password') }}</label
-              >
+            <ui-form-field
+              fieldId="settings-cpwd"
+              [label]="ts.t()('settings.security.confirm_password')"
+              [error]="securityForm.hasError('mismatch') && securityForm.get('confirmPassword')?.touched ? ts.t()('settings.security.mismatch') : null"
+            >
               <div class="relative">
                 <input
+                  id="settings-cpwd"
                   formControlName="confirmPassword"
                   [type]="showConfirmPassword() ? 'text' : 'password'"
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 pr-10 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 pr-10 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
-                  (click)="$event.preventDefault(); showConfirmPassword.set(!showConfirmPassword())"
-                  class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none cursor-pointer"
+                  (click)="showConfirmPassword.set(!showConfirmPassword())"
+                  [attr.aria-label]="showConfirmPassword() ? 'Hide password' : 'Show password'"
+                  class="absolute right-2.5 top-2.5 text-ink-muted hover:text-ink focus:outline-none"
                 >
-                  <span class="material-icons-outlined text-lg">{{
-                    showConfirmPassword() ? 'visibility' : 'visibility_off'
-                  }}</span>
+                  <ui-icon [name]="showConfirmPassword() ? 'visibility' : 'visibility_off'" size="sm" />
                 </button>
               </div>
-              <p
-                *ngIf="
-                  securityForm.hasError('mismatch') && securityForm.get('confirmPassword')?.touched
-                "
-                class="text-red-500 text-xs mt-1"
-              >
-                {{ ts.t()('settings.security.mismatch') }}
-              </p>
-            </div>
+            </ui-form-field>
 
-            <div class="pt-4">
+            <div class="pt-2">
               <button
+                uiButton
+                variant="primary"
                 type="submit"
                 [disabled]="securityForm.invalid || isLoading()"
-                class="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center min-w-[120px]"
               >
-                <span *ngIf="isLoading()" class="material-icons-outlined animate-spin text-lg mr-2"
-                  >sync</span
-                >
+                @if (isLoading()) {
+                  <ui-icon name="sync" size="sm" class="mr-1.5 animate-spin" />
+                }
                 {{ ts.t()('settings.security.btn_update') }}
               </button>
             </div>
           </form>
         </div>
+        }
 
         <!-- Preferences Section -->
-        <div *ngIf="activeTab() === 'preferences'" class="animate-fade-in-up space-y-6">
-          <div class="max-w-xl space-y-4">
-            <!-- Theme Toggle -->
-            <div
-              class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-white/5 rounded-xl"
-            >
-              <div class="flex items-center gap-3">
-                <div
-                  class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400"
-                >
-                  <span class="material-icons-outlined">dark_mode</span>
-                </div>
-                <div>
-                  <p class="text-gray-900 dark:text-white font-medium">
-                    {{ ts.t()('settings.pref.dark_mode') }}
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ ts.t()('settings.pref.dark_desc') }}
-                  </p>
-                </div>
-              </div>
-              <!-- Theme Toggle -->
-              <button
-                (click)="themeService.toggleTheme()"
-                class="w-14 h-7 rounded-full relative transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                [class.bg-gray-200]="!themeService.darkMode()"
-                [class.bg-primary]="themeService.darkMode()"
+        @if (activeTab() === 'preferences') {
+        <div class="space-y-6 animate-fade-in max-w-xl">
+          <!-- Theme Toggle -->
+          <div
+            class="flex items-center justify-between p-4 bg-surface-sunken border border-border rounded-xl"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-lg bg-surface flex items-center justify-center border border-border text-ink"
               >
-                <div
-                  class="absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300"
-                  [class.translate-x-7]="themeService.darkMode()"
-                  [class.translate-x-0]="!themeService.darkMode()"
-                ></div>
-              </button>
-            </div>
-
-            <!-- Language -->
-            <div
-              class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-white/5 rounded-xl"
-            >
-              <div class="flex items-center gap-3">
-                <div
-                  class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400"
-                >
-                  <span class="material-icons-outlined">translate</span>
-                </div>
-                <div>
-                  <p class="text-gray-900 dark:text-white font-medium">
-                    {{ ts.t()('settings.pref.lang') }}
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ ts.t()('settings.pref.lang_desc') }}
-                  </p>
-                </div>
+                <ui-icon name="dark_mode" size="md" />
               </div>
-              <div class="flex gap-2">
-                <button
-                  (click)="ts.setLang('en')"
-                  [class.ring-2]="ts.currentLang() === 'en'"
-                  class="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 text-xs font-bold border border-gray-200 dark:border-white/10 ring-primary/50 transition-all"
-                >
-                  EN
-                </button>
-                <button
-                  (click)="ts.setLang('es')"
-                  [class.ring-2]="ts.currentLang() === 'es'"
-                  class="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 text-xs font-bold border border-gray-200 dark:border-white/10 ring-primary/50 transition-all"
-                >
-                  ES
-                </button>
-              </div>
-            </div>
-
-            <!-- Delete Account -->
-            <div class="mt-8 pt-8 border-t border-gray-200 dark:border-white/10">
-              <h4 class="text-red-500 font-bold mb-2">{{ ts.t()('settings.danger.title') }}</h4>
-              <div class="flex items-center justify-between">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                  {{ ts.t()('settings.danger.desc') }}
+              <div>
+                <p class="text-ink font-medium text-sm">
+                  {{ ts.t()('settings.pref.dark_mode') }}
                 </p>
-                <button
-                  (click)="todoDelete()"
-                  class="px-4 py-2 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-lg text-sm font-bold border border-red-200 dark:border-red-900/50 hover:bg-red-100 transition-colors"
-                >
-                  {{ ts.t()('settings.danger.btn') }}
-                </button>
+                <p class="text-xs text-ink-muted">
+                  {{ ts.t()('settings.pref.dark_desc') }}
+                </p>
               </div>
+            </div>
+            <ui-toggle
+              [checked]="themeService.darkMode()"
+              (change)="themeService.toggleTheme()"
+              [label]="''"
+            />
+          </div>
+
+          <!-- Language -->
+          <div
+            class="flex items-center justify-between p-4 bg-surface-sunken border border-border rounded-xl"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-lg bg-surface flex items-center justify-center border border-border text-ink"
+              >
+                <ui-icon name="translate" size="md" />
+              </div>
+              <div>
+                <p class="text-ink font-medium text-sm">
+                  {{ ts.t()('settings.pref.lang') }}
+                </p>
+                <p class="text-xs text-ink-muted">
+                  {{ ts.t()('settings.pref.lang_desc') }}
+                </p>
+              </div>
+            </div>
+            <ui-segmented-control
+              [options]="langOptions"
+              [value]="ts.currentLang()"
+              (valueChange)="ts.setLang($any($event))"
+            />
+          </div>
+
+          <!-- Delete Account -->
+          <div class="mt-8 pt-6 border-t border-border">
+            <h4 class="text-danger font-semibold text-sm mb-1">
+              {{ ts.t()('settings.danger.title') }}
+            </h4>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <p class="text-xs text-ink-muted">
+                {{ ts.t()('settings.danger.desc') }}
+              </p>
+              <button
+                uiButton
+                variant="danger"
+                size="sm"
+                (click)="todoDelete()"
+              >
+                {{ ts.t()('settings.danger.btn') }}
+              </button>
             </div>
           </div>
         </div>
+        }
       </div>
     </div>
   `,
 })
 export class SettingsComponent implements OnInit {
+  fb = inject(FormBuilder);
+  authService = inject(AuthService);
+  ts = inject(TranslationService);
+  themeService = inject(ThemeService);
+  apiService = inject(ApiService);
+  ns = inject(NotificationService);
+
   activeTab = signal<'profile' | 'security' | 'preferences'>('profile');
   isLoading = signal(false);
   showPassword = signal(false);
   showConfirmPassword = signal(false);
-  tabs = [
-    { id: 'profile', label: 'Profile', icon: 'person' },
-    { id: 'security', label: 'Security', icon: 'lock' },
-    { id: 'preferences', label: 'Preferences', icon: 'tune' },
+
+  tabOptions = computed<SegmentedControlOption<string>[]>(() => [
+    { value: 'profile', label: this.ts.t()('settings.tabs.profile') },
+    { value: 'security', label: this.ts.t()('settings.tabs.security') },
+    { value: 'preferences', label: this.ts.t()('settings.tabs.preferences') },
+  ]);
+
+  langOptions: SegmentedControlOption<string>[] = [
+    { value: 'en', label: 'English' },
+    { value: 'es', label: 'Español' },
   ];
 
-  profileForm: FormGroup;
-  securityForm: FormGroup;
+  profileForm: FormGroup = this.fb.group({
+    name: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]],
+    username: ['', Validators.required],
+  });
 
-  ns = inject(NotificationService);
-  private updateService = inject(UpdateService);
-
-  constructor(
-    private fb: FormBuilder,
-    public authService: AuthService,
-    public ts: TranslationService,
-    public themeService: ThemeService,
-    private apiService: ApiService
-  ) {
-    this.profileForm = this.fb.group({
-      name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      username: ['', Validators.required],
-    });
-
-    this.securityForm = this.fb.group(
-      {
-        password: ['', [Validators.required, Validators.minLength(8)]],
-        confirmPassword: ['', Validators.required],
-      },
-      { validators: this.passwordMatchValidator }
-    );
-  }
+  securityForm: FormGroup = this.fb.group(
+    {
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required],
+    },
+    { validators: this.passwordMatchValidator }
+  );
 
   ngOnInit() {
-    // Pre-fill profile if data exists in local storage or fetch from API if we had a getUser endpoint
-    // For now, relying on currentUserStr or mocking.
-    // Ideally we call apiService.getUser(id) here.
     const currentUser = this.authService.currentUserStr();
     if (currentUser) {
       this.profileForm.patchValue({
         username: currentUser,
       });
     }
+  }
+
+  setTab(tab: 'profile' | 'security' | 'preferences') {
+    this.activeTab.set(tab);
   }
 
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -384,14 +358,12 @@ export class SettingsComponent implements OnInit {
     }
 
     this.isLoading.set(true);
-
     const data: UpdateUserDto = this.profileForm.value;
 
     this.apiService.updateUser(userId, data).subscribe({
-      next: (res) => {
+      next: () => {
         this.ns.show('notif.profile_updated', 'success', 3000);
         this.isLoading.set(false);
-        // Update local state if needed
       },
       error: (err) => {
         console.error(err);
@@ -411,14 +383,12 @@ export class SettingsComponent implements OnInit {
     }
 
     this.isLoading.set(true);
-
-    // Using same updateUser endpoint but only sending password as per Plan
     const data: UpdateUserDto = {
       password: this.securityForm.value.password,
     };
 
     this.apiService.updateUser(userId, data).subscribe({
-      next: (res) => {
+      next: () => {
         this.ns.show('notif.account_disabled', 'success', 2000);
         setTimeout(() => this.authService.logout(), 2000);
       },

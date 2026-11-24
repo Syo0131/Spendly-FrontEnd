@@ -2,8 +2,10 @@ import {
   Component,
   ChangeDetectionStrategy,
   input,
+  output,
   signal,
   forwardRef,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -59,6 +61,8 @@ export interface SegmentedControlOption<T> {
 })
 export class SegmentedControlComponent<T = unknown> implements ControlValueAccessor {
   options = input<SegmentedControlOption<T>[]>([]);
+  value = input<T | undefined>(undefined);
+  valueChange = output<T>();
 
   selectedValue = signal<T | null>(null);
   disabled = signal<boolean>(false);
@@ -66,9 +70,19 @@ export class SegmentedControlComponent<T = unknown> implements ControlValueAcces
   private onChange: (value: T) => void = () => {};
   private onTouched: () => void = () => {};
 
+  constructor() {
+    effect(() => {
+      const v = this.value();
+      if (v !== undefined) {
+        this.selectedValue.set(v);
+      }
+    });
+  }
+
   select(val: T): void {
     if (this.disabled()) return;
     this.selectedValue.set(val);
+    this.valueChange.emit(val);
     this.onChange(val);
     this.onTouched();
   }

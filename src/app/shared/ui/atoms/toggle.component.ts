@@ -2,8 +2,10 @@ import {
   Component,
   ChangeDetectionStrategy,
   input,
+  output,
   signal,
   forwardRef,
+  effect,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -52,6 +54,8 @@ import { CommonModule } from '@angular/common';
 })
 export class ToggleComponent implements ControlValueAccessor {
   label = input<string>('');
+  checkedInput = input<boolean | undefined>(undefined, { alias: 'checked' });
+  change = output<boolean>();
 
   checked = signal<boolean>(false);
   disabled = signal<boolean>(false);
@@ -59,10 +63,20 @@ export class ToggleComponent implements ControlValueAccessor {
   private onChange: (value: boolean) => void = () => {};
   private onTouched: () => void = () => {};
 
+  constructor() {
+    effect(() => {
+      const val = this.checkedInput();
+      if (val !== undefined) {
+        this.checked.set(val);
+      }
+    });
+  }
+
   toggle(): void {
     if (this.disabled()) return;
     const next = !this.checked();
     this.checked.set(next);
+    this.change.emit(next);
     this.onChange(next);
     this.onTouched();
   }

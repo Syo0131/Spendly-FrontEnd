@@ -74,19 +74,6 @@ import { ActivatedRoute, Router } from '@angular/router';
         background: rgba(17, 24, 39, 0.8);
         border-color: rgba(255, 255, 255, 0.1);
       }
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-out;
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
     `,
   ],
 })

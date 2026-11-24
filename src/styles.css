@@ -51,6 +51,12 @@
   --color-focus-ring: 163 230 53;
 }
 
+/* Global Focus Visible Style */
+*:focus-visible {
+  outline: 2px solid rgb(var(--color-focus-ring));
+  outline-offset: 2px;
+}
+
 /* Material Icons Self-Hosted Outlined Class */
 .material-icons-outlined {
   font-family: 'Material Icons Outlined', sans-serif;
@@ -73,21 +79,29 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Global Animations */
+/* Global Animations & Motion Tokens */
 .animate-fade-in {
-  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeIn 150ms ease-out forwards;
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeInUp 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: scaleIn 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-slide-up {
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: slideUp 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
 }
 
 @keyframes fadeIn {
@@ -113,7 +127,7 @@
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
   to {
     opacity: 1;
@@ -123,10 +137,22 @@
 
 @keyframes slideUp {
   from {
-    transform: translateY(20%);
+    transform: translateY(15%);
   }
   to {
     transform: translateY(0);
+  }
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

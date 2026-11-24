@@ -261,27 +261,6 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
       </div>
     </div>
   `,
-  styles: [
-    `
-      .delay-100 {
-        animation-delay: 100ms;
-      }
-      .delay-200 {
-        animation-delay: 200ms;
-      }
-      .animate-fade-in-up {
-        animation: fadeInUp 0.6s ease-out forwards;
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      @keyframes fadeInUp {
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-    `,
-  ],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   currentDate = signal(new Date());

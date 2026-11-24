@@ -102,23 +102,6 @@ import { TranslationService } from '../../../core/services/translation.service';
       </form>
     </div>
   `,
-  styles: [
-    `
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-out;
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-    `,
-  ],
 })
 export class LoginComponent {
   loginForm: FormGroup;

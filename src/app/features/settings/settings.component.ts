@@ -316,41 +316,6 @@ import { UpdateService } from '../../core/services/update.service';
       </div>
     </div>
   `,
-  styles: [
-    `
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-out;
-      }
-      .animate-fade-in-up {
-        animation: fadeInUp 0.4s ease-out forwards;
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none; /* IE and Edge */
-        scrollbar-width: none; /* Firefox */
-      }
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-    `,
-  ],
 })
 export class SettingsComponent implements OnInit {
   activeTab = signal<'profile' | 'security' | 'preferences'>('profile');

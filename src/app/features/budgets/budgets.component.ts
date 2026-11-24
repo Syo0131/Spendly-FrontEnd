@@ -788,11 +788,11 @@ export class BudgetsComponent implements OnInit {
       this.state.updateBudget(this.selectedBudget()!.id, payload, cat).subscribe({
         next: () => {
           this.isSubmitting.set(false);
-          this.ns.show('Budget updated successfully', 'success');
+          this.ns.show('budgets.updated', 'success');
         },
         error: (err: any) => {
           this.isSubmitting.set(false);
-          this.ns.show(err.error?.message || 'Failed to update budget', 'error');
+          this.ns.show(err.error?.message || 'budgets.update_failed', 'error');
         },
       });
     } else {
@@ -802,11 +802,11 @@ export class BudgetsComponent implements OnInit {
       this.state.addBudget(payload).subscribe({
         next: () => {
           this.isSubmitting.set(false);
-          this.ns.show('Budget created successfully', 'success');
+          this.ns.show('budgets.created', 'success');
         },
         error: (err) => {
           this.isSubmitting.set(false);
-          this.ns.show(err.error?.message || 'Failed to create budget', 'error');
+          this.ns.show(err.error?.message || 'budgets.create_failed', 'error');
         },
       });
     }
@@ -833,9 +833,9 @@ export class BudgetsComponent implements OnInit {
 
     this.state.removeBudget(budget.id).subscribe({
       next: () => {
-        this.ns.show('Budget deleted', 'success');
+        this.ns.show('budgets.deleted', 'success');
       },
-      error: () => this.ns.show('Failed to delete budget', 'error'),
+      error: () => this.ns.show('budgets.delete_failed', 'error'),
     });
   }
 }

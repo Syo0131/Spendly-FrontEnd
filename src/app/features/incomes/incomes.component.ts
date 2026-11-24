@@ -6,472 +6,357 @@ import {
   ChangeDetectionStrategy,
   HostListener,
   inject,
-  computed,
 } from '@angular/core';
-import { Subscription, interval } from 'rxjs';
-import { CurrencyInputDirective } from '../../shared/directives/currency-input.directive';
-import { DatePipe, CurrencyPipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ApiService } from '../../core/services/api.service';
+import { RouterModule } from '@angular/router';
+import { Subscription, interval } from 'rxjs';
 import { TranslationService } from '../../core/services/translation.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { IncomeStateService } from '../../core/services/income-state.service';
 import { IncomeResponse } from '../../core/models/api.models';
-import { RouterModule } from '@angular/router';
+import {
+  ButtonComponent,
+  AmountComponent,
+  IconComponent,
+  SkeletonComponent,
+  ListRowComponent,
+  EmptyStateComponent,
+  PageHeaderComponent,
+  PaginationComponent,
+  FormFieldComponent,
+  CurrencyInputComponent,
+  DialogShellComponent,
+  ActionSheetComponent,
+  UiDialogService,
+} from '../../shared/ui';
 
 @Component({
   selector: 'app-incomes',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, CurrencyInputDirective, DatePipe, CurrencyPipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    DatePipe,
+    ButtonComponent,
+    AmountComponent,
+    IconComponent,
+    SkeletonComponent,
+    ListRowComponent,
+    EmptyStateComponent,
+    PageHeaderComponent,
+    PaginationComponent,
+    FormFieldComponent,
+    CurrencyInputComponent,
+    DialogShellComponent,
+    ActionSheetComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-6">
-      <!-- Header -->
-      <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
-        <div>
-          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-            {{ ts.t()('nav.incomes') }}
-          </h1>
-          <p class="text-gray-500 dark:text-gray-400">Manage your sources of income</p>
+      <!-- Page Header -->
+      <ui-page-header
+        [title]="ts.t()('nav.incomes')"
+        [subtitle]="ts.t()('trans.incomes_subtitle')"
+      >
+        <div uiHeaderActions class="flex items-center gap-2">
+          <!-- Add Income Button -->
+          <button
+            uiButton
+            variant="primary"
+            size="sm"
+            type="button"
+            (click)="openModal()"
+            class="h-9 whitespace-nowrap"
+          >
+            <ui-icon name="add" size="sm" class="mr-1" />
+            <span>{{ ts.t()('trans.add_income') }}</span>
+          </button>
         </div>
-        <button
-          (click)="openModal()"
-          class="w-full md:w-auto px-3 py-1.5 md:px-6 md:py-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
-        >
-          <span class="material-icons-outlined mr-1 md:mr-2 text-lg md:text-2xl">add</span>
-          <span class="text-sm md:text-base font-bold">{{ ts.t()('trans.add_income') }}</span>
-        </button>
-      </div>
+      </ui-page-header>
 
-      <!-- Tabs -->
+      <!-- Sub-Tabs: Incomes / Expenses Switch -->
       <div
-        class="flex space-x-1 bg-gray-100 dark:bg-slate-800/50 p-1 rounded-xl w-fit backdrop-blur-sm border border-gray-200 dark:border-white/5"
+        class="flex items-center gap-1 bg-surface-raised border border-border p-1 rounded-xl w-fit"
       >
         <a
           routerLink="/incomes"
-          class="px-6 py-2 rounded-lg text-sm font-medium transition-all bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm"
+          class="px-4 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-colors bg-surface text-accent shadow-sm border border-border/50"
         >
           {{ ts.t()('nav.incomes') }}
         </a>
         <a
           routerLink="/expenses"
-          class="px-6 py-2 rounded-lg text-sm font-medium transition-all text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+          class="px-4 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-colors text-ink-muted hover:text-ink hover:bg-surface"
         >
           {{ ts.t()('nav.expenses') }}
         </a>
       </div>
 
-      <!-- List -->
-      <!-- List -->
-      <div
-        class="glass-card overflow-hidden bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 animate-fade-in"
-      >
-        <!-- Skeleton Loader (Only initial load) -->
-        @if (isLoading() && incomes().length === 0) {
-        <div class="animate-pulse">
-          <!-- Mobile Skeleton -->
-          <div class="md:hidden divide-y divide-gray-200 dark:divide-white/5">
-            @for (i of [1, 2, 3, 4, 5]; track $index) {
-            <div class="p-4 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-white/10"></div>
-                <div class="space-y-2">
-                  <div class="h-4 w-24 bg-gray-200 dark:bg-white/10 rounded"></div>
-                  <div class="h-3 w-16 bg-gray-200 dark:bg-white/10 rounded"></div>
-                </div>
-              </div>
-              <div class="h-5 w-20 bg-gray-200 dark:bg-white/10 rounded"></div>
-            </div>
-            }
-          </div>
-          <!-- Desktop Skeleton -->
-          <div class="hidden md:block p-4">
-            <div class="space-y-4">
-              @for (i of [1, 2, 3, 4, 5]; track $index) {
-              <div class="flex items-center justify-between">
-                <div class="h-4 w-1/4 bg-gray-200 dark:bg-white/10 rounded"></div>
-                <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
-                <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
-                <div class="h-4 w-1/6 bg-gray-200 dark:bg-white/10 rounded"></div>
-              </div>
-              }
-            </div>
-          </div>
-        </div>
-        }
-
-        <!-- Mobile Card View (md:hidden) -->
-        @if (incomes().length > 0 || !isLoading()) {
-        <div
-          class="md:hidden transition-opacity duration-300"
-          [class.opacity-50]="isLoading()"
-          [class.pointer-events-none]="isLoading()"
-        >
-          @if (incomes().length === 0) {
-          <div class="p-8 text-center text-gray-500 dark:text-gray-400">
-            {{ ts.t()('trans.no_data') }}
-          </div>
-          }
-          <div class="divide-y divide-gray-200 dark:divide-white/5">
-            @for (item of incomes(); track trackById($index, item)) {
+      <!-- Main Incomes List / Table -->
+      @if (isLoading() && incomes().length === 0) {
+        <!-- Skeleton Loading State -->
+        <div class="space-y-3">
+          @for (i of [1, 2, 3, 4, 5, 6]; track i) {
             <div
-              (click)="openActionMenu(item)"
-              class="p-3 md:p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer"
+              class="p-4 rounded-xl bg-surface border border-border flex items-center justify-between gap-4"
             >
-              <!-- Left: Icon & Desc -->
-              <div class="flex items-center gap-3 overflow-hidden">
-                <div
-                  class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-teal-100 dark:bg-teal-900/30"
-                >
-                  <span class="material-icons-outlined text-lg text-teal-600 dark:text-teal-400">
-                    attach_money
-                  </span>
-                </div>
-                <div class="min-w-0">
-                  <p
-                    class="font-medium text-sm md:text-base text-gray-900 dark:text-white truncate"
-                  >
-                    {{ item.description }}
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ item.date | date : 'MMM d' }}
-                  </p>
+              <div class="flex items-center gap-3 flex-1">
+                <ui-skeleton shape="circle" customClass="w-9 h-9" />
+                <div class="space-y-1.5 flex-1 max-w-xs">
+                  <ui-skeleton shape="line" customClass="h-4 w-3/4" />
+                  <ui-skeleton shape="line" customClass="h-3 w-1/2" />
                 </div>
               </div>
-
-              <!-- Right: Amount -->
-              <div class="flex flex-col items-end gap-1 ml-2 shrink-0">
-                <span class="font-bold text-sm md:text-base text-teal-600 dark:text-teal-400">
-                  + {{ item.amount | currency : 'DOP' : 'symbol' : '1.2-2' }}
-                </span>
-              </div>
+              <ui-skeleton shape="line" customClass="h-5 w-24" />
             </div>
-            }
-          </div>
+          }
         </div>
-        }
+      } @else if (incomes().length === 0) {
+        <!-- Empty State -->
+        <ui-empty-state
+          icon="account_balance_wallet"
+          [title]="ts.t()('trans.empty_incomes_title')"
+          [description]="ts.t()('trans.empty_incomes_desc')"
+        >
+          <button
+            uiButton
+            variant="primary"
+            uiEmptyAction
+            type="button"
+            (click)="openModal()"
+          >
+            <ui-icon name="add" size="sm" class="mr-1" />
+            <span>{{ ts.t()('trans.add_income') }}</span>
+          </button>
+        </ui-empty-state>
+      } @else {
+        <!-- Mobile List View (md:hidden) -->
+        <div class="md:hidden space-y-2">
+          @for (item of incomes(); track item.id) {
+            <ui-list-row [interactive]="true" (rowClick)="openActionMenu(item)">
+              <div uiRowLeading class="flex items-center justify-center">
+                <div
+                  class="w-8 h-8 rounded-full flex items-center justify-center bg-income/10 text-income"
+                >
+                  <ui-icon name="trending_up" size="sm" />
+                </div>
+              </div>
+              <div class="min-w-0 pr-2">
+                <p class="font-medium text-sm text-ink truncate">{{ item.description }}</p>
+                <p class="text-xs text-ink-muted mt-0.5">{{ item.date | date: 'mediumDate' }}</p>
+              </div>
+              <div uiRowTrailing class="text-right">
+                <ui-amount [value]="item.amount" tone="income" size="sm" />
+              </div>
+            </ui-list-row>
+          }
+        </div>
 
         <!-- Desktop Table View (hidden md:block) -->
-        @if (incomes().length > 0 || !isLoading()) {
         <div
-          class="hidden md:block overflow-x-auto transition-opacity duration-300"
-          [class.opacity-50]="isLoading()"
-          [class.pointer-events-none]="isLoading()"
+          class="hidden md:block bg-surface border border-border rounded-2xl overflow-hidden shadow-sm"
         >
-          <table class="w-full text-left table-fixed">
+          <table class="w-full text-left table-fixed border-collapse">
             <thead
-              class="bg-gray-50/50 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider"
+              class="bg-surface-raised border-b border-border text-ink-muted text-xs font-semibold uppercase tracking-wider"
             >
               <tr>
-                <th class="p-4 font-medium w-6/12">{{ ts.t()('trans.desc') }}</th>
-                <th class="p-4 font-medium w-2/12">{{ ts.t()('trans.date') }}</th>
-                <th class="p-4 font-medium text-right w-3/12">{{ ts.t()('trans.amount') }}</th>
-                <th class="p-4 font-medium text-center w-1/12"></th>
+                <th class="py-3.5 px-4 w-6/12">{{ ts.t()('trans.desc') }}</th>
+                <th class="py-3.5 px-4 w-3/12">{{ ts.t()('trans.date') }}</th>
+                <th class="py-3.5 px-4 text-right w-2/12">{{ ts.t()('trans.amount') }}</th>
+                <th class="py-3.5 px-4 text-center w-1/12">{{ ts.t()('trans.actions') }}</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-white/5">
-              @for (item of incomes(); track trackById($index, item)) {
-              <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
-                <td class="p-4 text-gray-900 dark:text-white font-medium">
-                  <div class="truncate max-w-full" [title]="item.description">
-                    {{ item.description }}
-                  </div>
-                </td>
-                <td class="p-4 text-gray-500 dark:text-gray-400 text-sm">
-                  {{ item.date | date }}
-                </td>
-                <td class="p-4 text-right font-bold text-teal-600 dark:text-teal-400">
-                  + {{ item.amount | currency : 'DOP' : 'symbol' : '1.2-2' }}
-                </td>
-                <td class="p-4 text-center">
-                  <div class="flex items-center justify-end gap-1 opacity-100">
-                    <button
-                      (click)="openModal(item)"
-                      class="p-2 text-gray-400 hover:text-primary transition-colors"
-                      title="Edit"
-                    >
-                      <span class="material-icons-outlined text-lg">edit</span>
-                    </button>
-                    <button
-                      (click)="deleteItem(item)"
-                      class="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                      title="Delete"
-                    >
-                      <span class="material-icons-outlined text-lg">delete</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              }
-              <!-- Empty State -->
-              @if (incomes().length === 0) {
-              <tr>
-                <td colspan="4" class="p-8 text-center text-gray-500 dark:text-gray-400">
-                  {{ ts.t()('trans.no_data') }}
-                </td>
-              </tr>
-              }
-              <!-- Placeholder Rows to maintain fixed height -->
-              @for (_ of getEmptyRows(); track $index) {
-              <tr class="h-[73px]">
-                <td colspan="4"></td>
-              </tr>
+            <tbody class="divide-y divide-border">
+              @for (item of incomes(); track item.id) {
+                <tr class="hover:bg-surface-raised/60 transition-colors">
+                  <td class="py-3.5 px-4 text-ink font-medium">
+                    <span class="truncate block max-w-full" [title]="item.description">
+                      {{ item.description }}
+                    </span>
+                  </td>
+                  <td class="py-3.5 px-4 text-ink-muted text-sm tabular-nums">
+                    {{ item.date | date: 'mediumDate' }}
+                  </td>
+                  <td class="py-3.5 px-4 text-right font-medium">
+                    <ui-amount [value]="item.amount" tone="income" size="sm" />
+                  </td>
+                  <td class="py-3.5 px-4 text-center">
+                    <div class="flex items-center justify-center gap-1">
+                      <button
+                        type="button"
+                        uiButton
+                        variant="ghost"
+                        size="sm"
+                        class="h-8 w-8 p-0"
+                        (click)="openModal(item)"
+                        [attr.aria-label]="ts.t()('trans.edit')"
+                        [title]="ts.t()('trans.edit')"
+                      >
+                        <ui-icon name="edit" size="sm" class="text-ink-muted hover:text-accent" />
+                      </button>
+                      <button
+                        type="button"
+                        uiButton
+                        variant="ghost"
+                        size="sm"
+                        class="h-8 w-8 p-0"
+                        (click)="deleteItem(item)"
+                        [attr.aria-label]="ts.t()('trans.delete')"
+                        [title]="ts.t()('trans.delete')"
+                      >
+                        <ui-icon
+                          name="delete"
+                          size="sm"
+                          class="text-ink-muted hover:text-expense"
+                        />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               }
             </tbody>
           </table>
         </div>
-        }
 
         <!-- Pagination Controls -->
-        <div
-          class="flex items-center justify-between p-4 border-t border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/5"
-        >
-          <button
-            (click)="prevPage()"
-            [disabled]="currentPage() === 0"
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {{ ts.t()('trans.prev') }}
-          </button>
-
-          <span class="text-sm text-gray-600 dark:text-gray-400">
-            {{ ts.t()('trans.page') }} {{ currentPage() + 1 }} {{ ts.t()('trans.of') }}
-            {{ totalPages() || 1 }}
-          </span>
-
-          <button
-            (click)="nextPage()"
-            [disabled]="currentPage() >= totalPages() - 1"
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {{ ts.t()('trans.next') }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Edit Modal -->
-    @defer (when showModal()) { @if (showModal()) {
-    <div
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-    >
-      <div
-        class="glass-card w-full max-w-lg p-8 relative animate-scale-in bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl"
-      >
-        <button
-          (click)="closeModal()"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full"
-        >
-          <span class="material-icons-outlined">close</span>
-        </button>
-
-        <div class="text-center mb-8">
-          <div
-            class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4"
-          >
-            <span class="material-icons-outlined text-3xl text-primary">
-              attach_money
-            </span>
-          </div>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-            {{ editingId() ? ts.t()('trans.edit_income') : ts.t()('trans.add_income') }}
-          </h2>
-        </div>
-
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
-          <!-- Description -->
-          <div class="space-y-1.5">
-            <label
-              class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-              >{{ ts.t()('trans.desc') }}</label
-            >
-            <input
-              formControlName="description"
-              type="text"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400 dark:placeholder-gray-600"
+        @if (totalPages() > 1) {
+          <div class="pt-2">
+            <ui-pagination
+              [page]="currentPage()"
+              [totalPages]="totalPages()"
+              [prevLabel]="ts.t()('trans.prev')"
+              [nextLabel]="ts.t()('trans.next')"
+              (pageChange)="onPageChange($event)"
             />
           </div>
-
-          <!-- Amount & Date Row -->
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1.5">
-              <label
-                class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                >{{ ts.t()('trans.amount') }}</label
-              >
-              <div class="relative">
-                <span class="absolute left-3 top-3 text-gray-500 dark:text-gray-400">$</span>
-                <input
-                  formControlName="amount"
-                  type="text"
-                  inputmode="decimal"
-                  appCurrencyInput
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 pl-7 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder-gray-400 dark:placeholder-gray-600"
-                />
-              </div>
-            </div>
-            <div class="space-y-1.5">
-              <label
-                class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                >{{ ts.t()('trans.date') }}</label
-              >
-              <div class="relative">
-                <input
-                  formControlName="date"
-                  type="date"
-                  class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl p-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all dark:[color-scheme:dark]"
-                />
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            [disabled]="form.invalid"
-            class="w-full mt-6 bg-primary text-white py-3.5 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
-          >
-            {{ editingId() ? 'Update' : ts.t()('trans.save') }}
-          </button>
-        </form>
-      </div>
+        }
+      }
     </div>
-    } }
 
-    <!-- Delete Modal -->
-    @if (showDeleteModal()) {
-    <div
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-    >
+    <!-- Add / Edit Modal -->
+    @if (showModal()) {
       <div
-        class="glass-card w-full max-w-sm p-6 relative animate-scale-in bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 shadow-2xl text-center"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+        (click)="closeModal()"
       >
-        <div
-          class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4"
-        >
-          <span class="material-icons-outlined text-3xl text-red-500">warning</span>
-        </div>
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
-          {{ ts.t()('trans.delete_title') }}
-        </h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm">
-          {{ ts.t()('trans.delete_msg') }}
-        </p>
-        <div class="flex space-x-3 justify-center">
-          <button
-            (click)="cancelDelete()"
-            class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+        <div class="w-full max-w-lg" (click)="$event.stopPropagation()">
+          <ui-dialog-shell
+            [title]="editingId() ? ts.t()('trans.edit_income') : ts.t()('trans.add_income')"
+            [closeLabel]="ts.t()('trans.cancel')"
+            (closed)="closeModal()"
           >
-            {{ ts.t()('trans.cancel') }}
-          </button>
-          <button
-            (click)="confirmDelete()"
-            class="px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/30 transition-all hover:scale-[1.02]"
-          >
-            {{ ts.t()('trans.delete') }}
-          </button>
+            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+              <ui-form-field [label]="ts.t()('trans.desc')" fieldId="income-desc">
+                <input
+                  id="income-desc"
+                  formControlName="description"
+                  type="text"
+                  class="w-full h-10 px-3 bg-surface border border-border text-ink text-sm rounded-md shadow-sm placeholder:text-ink-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:border-accent"
+                  placeholder="e.g. Salary, Freelance, Dividend, etc."
+                />
+              </ui-form-field>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ui-form-field [label]="ts.t()('trans.amount')" fieldId="income-amount">
+                  <ui-currency-input inputId="income-amount" formControlName="amount" />
+                </ui-form-field>
+
+                <ui-form-field [label]="ts.t()('trans.date')" fieldId="income-date">
+                  <input
+                    id="income-date"
+                    formControlName="date"
+                    type="date"
+                    class="w-full h-10 px-3 bg-surface border border-border text-ink text-sm rounded-md shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:border-accent dark:[color-scheme:dark]"
+                  />
+                </ui-form-field>
+              </div>
+
+              <div uiDialogFooter class="flex items-center justify-end gap-2.5">
+                <button type="button" uiButton variant="secondary" (click)="closeModal()">
+                  {{ ts.t()('trans.cancel') }}
+                </button>
+                <button type="submit" uiButton variant="primary" [disabled]="form.invalid">
+                  {{ editingId() ? ts.t()('trans.update') : ts.t()('trans.save') }}
+                </button>
+              </div>
+            </form>
+          </ui-dialog-shell>
         </div>
       </div>
-    </div>
     }
 
     <!-- Mobile Action Menu (Bottom Sheet) -->
     @if (showActionMenu()) {
-    <div class="fixed inset-0 z-[100] flex items-end justify-center md:hidden">
-      <!-- Backdrop -->
       <div
-        class="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+        class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end lg:items-center justify-center p-0 lg:p-4 animate-fade-in"
         (click)="closeActionMenu()"
-      ></div>
-
-      <!-- Sheet -->
-      <div
-        class="bg-white dark:bg-slate-900 w-full rounded-t-3xl p-6 relative z-10 animate-slide-up border-t border-gray-200 dark:border-white/10 shadow-2xl"
       >
-        <!-- Handle -->
-        <div class="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-6"></div>
-
-        <div class="mb-6">
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
-            {{ ts.t()('trans.actions') }}
-          </h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ actionMenuItem()?.description }}
-          </p>
-        </div>
-
-        <div class="space-y-3">
-          <button
-            (click)="onEditFromMenu()"
-            class="w-full flex items-center p-4 bg-gray-50 dark:bg-slate-800 rounded-xl text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+        <div class="w-full max-w-md" (click)="$event.stopPropagation()">
+          <ui-action-sheet
+            [title]="actionMenuItem()?.description"
+            [closeLabel]="ts.t()('trans.cancel')"
+            (closed)="closeActionMenu()"
           >
-            <span class="material-icons-outlined mr-3 text-primary">edit</span>
-            {{ ts.t()('trans.edit') || 'Edit' }}
-          </button>
+            <div class="space-y-2">
+              <button
+                type="button"
+                uiButton
+                variant="secondary"
+                class="w-full justify-start text-left"
+                (click)="onEditFromMenu()"
+              >
+                <ui-icon name="edit" size="sm" class="mr-2 text-accent" />
+                <span>{{ ts.t()('trans.edit') }}</span>
+              </button>
 
-          <button
-            (click)="onDeleteFromMenu()"
-            class="w-full flex items-center p-4 bg-red-50 dark:bg-red-500/10 rounded-xl text-red-600 dark:text-red-400 font-medium hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
-          >
-            <span class="material-icons-outlined mr-3">delete</span>
-            {{ ts.t()('trans.delete') }}
-          </button>
-
-          <button
-            (click)="closeActionMenu()"
-            class="w-full p-4 text-center text-gray-500 dark:text-gray-400 font-medium mt-2"
-          >
-            {{ ts.t()('trans.cancel') }}
-          </button>
+              <button
+                type="button"
+                uiButton
+                variant="danger"
+                class="w-full justify-start text-left"
+                (click)="onDeleteFromMenu()"
+              >
+                <ui-icon name="delete" size="sm" class="mr-2" />
+                <span>{{ ts.t()('trans.delete') }}</span>
+              </button>
+            </div>
+          </ui-action-sheet>
         </div>
       </div>
-    </div>
     }
   `,
-  styles: [],
 })
 export class IncomesComponent implements OnInit, OnDestroy {
-  // State Service
+  // Injections
   state = inject(IncomeStateService);
+  private fb = inject(FormBuilder);
+  public ts = inject(TranslationService);
+  private ns = inject(NotificationService);
+  private dialogService = inject(UiDialogService);
 
   // UI State
-  isDeleting = signal<number | null>(null);
-
-  // Pagination (UI driven - standard sizing)
   pageSize = signal(6);
 
-  // Computed Signals from State
+  // State Signals
   incomes = this.state.incomes;
   isLoading = this.state.isLoading;
   totalItems = this.state.totalElements;
   totalPages = this.state.totalPages;
   currentPage = this.state.currentPage;
 
-  // Helpers
-  getEmptyRows() {
-    if (this.totalItems() <= this.pageSize()) return [];
-    const curLen = this.incomes().length;
-    const emptyCount = this.pageSize() - curLen;
-    return emptyCount > 0 ? new Array(emptyCount) : [];
-  }
-
-  private refreshSubscription: Subscription | null = null;
-
-  // Forms & Modals
-  form: FormGroup;
+  // Modal & Sheet Signals
   showModal = signal(false);
   editingId = signal<number | null>(null);
-
-  showDeleteModal = signal(false);
-  itemToDelete = signal<any>(null);
-
   showActionMenu = signal(false);
-  actionMenuItem = signal<any>(null);
+  actionMenuItem = signal<IncomeResponse | null>(null);
 
-  constructor(
-    private fb: FormBuilder,
-    public ts: TranslationService,
-    private ns: NotificationService
-  ) {
+  form: FormGroup;
+  private refreshSubscription: Subscription | null = null;
+
+  constructor() {
     this.form = this.fb.group({
       description: ['', Validators.required],
       amount: [0, [Validators.required, Validators.min(0.01)]],
@@ -481,10 +366,9 @@ export class IncomesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Initial Load
     this.state.refresh();
 
-    // Auto-refresh
+    // Auto-refresh every 30 seconds
     this.refreshSubscription = interval(30000).subscribe(() => this.state.refresh());
   }
 
@@ -494,12 +378,13 @@ export class IncomesComponent implements OnInit, OnDestroy {
     }
   }
 
-  trackById(index: number, item: any): number {
-    return item.id;
+  // Pagination
+  onPageChange(page: number) {
+    this.state.load(page, this.pageSize());
   }
 
-  // Action Menu
-  openActionMenu(item: any) {
+  // Action Menu (Mobile Sheet)
+  openActionMenu(item: IncomeResponse) {
     this.actionMenuItem.set(item);
     this.showActionMenu.set(true);
   }
@@ -521,21 +406,8 @@ export class IncomesComponent implements OnInit, OnDestroy {
     if (item) this.deleteItem(item);
   }
 
-  // Pagination
-  nextPage() {
-    if (this.currentPage() < this.totalPages() - 1) {
-      this.state.load(this.currentPage() + 1, this.pageSize());
-    }
-  }
-
-  prevPage() {
-    if (this.currentPage() > 0) {
-      this.state.load(this.currentPage() - 1, this.pageSize());
-    }
-  }
-
-  // CRUD
-  openModal(itemToEdit: any = null) {
+  // Add / Edit Modal
+  openModal(itemToEdit: IncomeResponse | null = null) {
     if (itemToEdit) {
       this.editingId.set(itemToEdit.id);
       this.form.patchValue({
@@ -547,10 +419,10 @@ export class IncomesComponent implements OnInit, OnDestroy {
     } else {
       this.editingId.set(null);
       this.form.reset({
+        description: '',
+        amount: 0,
         date: new Date().toISOString().split('T')[0],
         currency: 'DOP',
-        amount: 0,
-        description: '',
       });
     }
     this.showModal.set(true);
@@ -565,7 +437,7 @@ export class IncomesComponent implements OnInit, OnDestroy {
     if (this.form.valid) {
       const formData = this.form.value;
       const id = this.editingId();
-      let payload = { ...formData };
+      const payload = { ...formData };
 
       // Optimistic Close
       this.closeModal();
@@ -585,63 +457,44 @@ export class IncomesComponent implements OnInit, OnDestroy {
     }
   }
 
-  deleteItem(item: any) {
-    this.itemToDelete.set(item);
-    this.showDeleteModal.set(true);
-  }
-
-  confirmDelete() {
-    const item = this.itemToDelete();
-    if (!item) return;
-
-    // Optimistic Close
-    this.cancelDelete();
-
-    this.state.delete(Number(item.id)).subscribe({
-      next: () => {
-        this.ns.show('notif.income_deleted', 'success');
-      },
-      error: () => {
-        this.ns.show('notif.income_delete_fail', 'error');
-      },
+  async deleteItem(item: IncomeResponse) {
+    const confirmed = await this.dialogService.confirm({
+      title: this.ts.t()('trans.delete_title'),
+      message: this.ts.t()('trans.delete_msg'),
+      confirmLabel: this.ts.t()('trans.delete'),
+      cancelLabel: this.ts.t()('trans.cancel'),
+      tone: 'danger',
     });
-  }
 
-  cancelDelete() {
-    this.showDeleteModal.set(false);
-    this.itemToDelete.set(null);
+    if (confirmed) {
+      this.state.delete(Number(item.id)).subscribe({
+        next: () => {
+          this.ns.show('notif.income_deleted', 'success');
+        },
+        error: () => {
+          this.ns.show('notif.income_delete_fail', 'error');
+        },
+      });
+    }
   }
 
   @HostListener('document:keydown', ['$event'])
-  handleKeyboardEvent(event: any) {
-    // ... existing keyboard logic ...
+  handleKeyboardEvent(event: KeyboardEvent) {
     if (event.key === 'Escape') {
       if (this.showActionMenu()) {
         this.closeActionMenu();
-        return;
-      }
-      if (this.showDeleteModal()) {
-        this.cancelDelete();
         return;
       }
       if (this.showModal()) {
         this.closeModal();
       }
     } else if (event.key === 'Enter') {
-      if (this.showDeleteModal()) {
-        event.preventDefault();
-        event.stopPropagation();
-        this.confirmDelete();
-        return;
-      }
       if (this.showModal() && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
         this.onSubmit();
       }
-    }
-    // Alt+N
-    else if ((event.altKey && event.key === 'n') || (event.altKey && event.key === 'N')) {
-      if (!this.showModal() && !this.showDeleteModal()) {
+    } else if ((event.altKey && event.key === 'n') || (event.altKey && event.key === 'N')) {
+      if (!this.showModal()) {
         event.preventDefault();
         this.openModal();
       }

@@ -102,6 +102,12 @@ export class TranslationService {
     'trans.next': { es: 'Siguiente', en: 'Next' },
     'trans.page': { es: 'Página', en: 'Page' },
     'trans.of': { es: 'de', en: 'of' },
+    'trans.incomes_subtitle': { es: 'Administra tus fuentes de ingreso', en: 'Manage your sources of income' },
+    'trans.empty_incomes_title': { es: 'Sin ingresos registrados', en: 'No incomes recorded' },
+    'trans.empty_incomes_desc': {
+      es: 'Comienza agregando un ingreso para llevar el control de tus finanzas.',
+      en: 'Start by adding an income to track your finances.',
+    },
     'trans.expenses_subtitle': { es: 'Controla y monitorea tus gastos', en: 'Track your spending habits' },
     'trans.all_time': { es: 'Todo el tiempo', en: 'All Time' },
     'trans.all_categories': { es: 'Todas las categorías', en: 'All Categories' },

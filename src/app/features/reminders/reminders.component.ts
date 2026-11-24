@@ -61,10 +61,10 @@ import {
           >
         </div>
         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">
-          {{ ts.t()('goals.empty_title') }}
+          {{ ts.t()('reminders.empty_title') }}
         </h3>
         <p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-6 text-sm">
-          {{ ts.t()('goals.empty_desc') }}
+          {{ ts.t()('reminders.empty_desc') }}
         </p>
         <button
           (click)="openModal()"
@@ -169,7 +169,7 @@ import {
             }}</span>
           </div>
           <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-            {{ isEditing ? ts.t()('trans.edit') : ts.t()('goals.new_title') }}
+            {{ isEditing ? ts.t()('trans.edit') : ts.t()('reminders.new_title') }}
           </h2>
           <p class="text-gray-500 text-xs mt-1">{{ ts.t()('reminders.setup') }}</p>
         </div>

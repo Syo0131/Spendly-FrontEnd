@@ -1,141 +1,152 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { ButtonComponent, IconComponent, FormFieldComponent } from '../../../shared/ui';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    ButtonComponent,
+    IconComponent,
+    FormFieldComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
-      class="glass-card p-8 w-full animate-fade-in shadow-2xl shadow-primary/10 border border-gray-200 dark:border-white/10"
+      class="bg-surface-raised border border-border rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto shadow-xl space-y-6 animate-fade-in"
     >
-      <div class="text-center mb-8">
-        <h2
-          class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-light to-secondary mb-2"
-        >
+      <div class="text-center space-y-2">
+        <h2 class="text-2xl font-bold text-ink tracking-tight">
           {{ ts.t()('auth.create_account') }}
         </h2>
-        <p class="text-gray-500 dark:text-gray-400">{{ ts.t()('auth.join') }}</p>
+        <p class="text-xs text-ink-muted">{{ ts.t()('auth.join') }}</p>
       </div>
 
-      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-5">
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
         <!-- Name -->
-        <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">{{
-            ts.t()('auth.name')
-          }}</label>
+        <ui-form-field fieldId="reg-name" [label]="ts.t()('auth.name')">
           <input
+            id="reg-name"
             type="text"
             formControlName="name"
-            class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-primary focus:border-primary block p-3 transition-colors placeholder-gray-400 dark:placeholder-gray-600"
+            class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent placeholder-ink-muted/50 transition-colors"
             placeholder="John Doe"
           />
-        </div>
+        </ui-form-field>
 
         <!-- Email -->
-        <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">{{
-            ts.t()('auth.email')
-          }}</label>
+        <ui-form-field fieldId="reg-email" [label]="ts.t()('auth.email')">
           <input
+            id="reg-email"
             type="email"
             formControlName="email"
-            class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-primary focus:border-primary block p-3 transition-colors placeholder-gray-400 dark:placeholder-gray-600"
+            class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent placeholder-ink-muted/50 transition-colors"
             placeholder="john@example.com"
           />
-        </div>
+        </ui-form-field>
 
         <!-- Username -->
-        <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">{{
-            ts.t()('auth.username')
-          }}</label>
+        <ui-form-field fieldId="reg-username" [label]="ts.t()('auth.username')">
           <input
+            id="reg-username"
             type="text"
             formControlName="username"
-            class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-primary focus:border-primary block p-3 transition-colors placeholder-gray-400 dark:placeholder-gray-600"
+            class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent placeholder-ink-muted/50 transition-colors"
             placeholder="johndoe"
           />
-        </div>
+        </ui-form-field>
 
         <!-- Password -->
-        <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">{{
-            ts.t()('auth.password')
-          }}</label>
+        <ui-form-field fieldId="reg-password" [label]="ts.t()('auth.password')">
           <div class="relative">
             <input
+              id="reg-password"
               [type]="showPassword() ? 'text' : 'password'"
               formControlName="password"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-primary focus:border-primary block p-3 pr-10 transition-colors placeholder-gray-400 dark:placeholder-gray-500"
+              class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 pr-10 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent placeholder-ink-muted/50 transition-colors"
               placeholder="••••••••"
             />
             <button
               type="button"
               (click)="showPassword.set(!showPassword())"
-              class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
+              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+              class="absolute right-2.5 top-2.5 text-ink-muted hover:text-ink focus:outline-none"
             >
-              <span class="material-icons-outlined text-lg">{{
-                showPassword() ? 'visibility' : 'visibility_off'
-              }}</span>
+              <ui-icon [name]="showPassword() ? 'visibility' : 'visibility_off'" size="sm" />
             </button>
           </div>
-        </div>
+        </ui-form-field>
 
         <!-- Error Message -->
-        <div
-          *ngIf="error()"
-          class="p-3 text-sm text-red-600 dark:text-red-200 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg"
-        >
-          {{ error() }}
-        </div>
+        @if (error()) {
+          <div
+            class="p-3 text-xs text-danger bg-danger/10 border border-danger/25 rounded-lg flex items-center gap-2 animate-fade-in"
+            role="alert"
+          >
+            <ui-icon name="error" size="sm" />
+            <span>{{ error() }}</span>
+          </div>
+        }
 
         <!-- Success Message -->
-        <div
-          *ngIf="success()"
-          class="p-3 text-sm text-green-600 dark:text-green-200 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg"
-        >
-          {{ success() }}
+        @if (success()) {
+          <div
+            class="p-3 text-xs text-income bg-income/10 border border-income/25 rounded-lg flex items-center gap-2 animate-fade-in"
+          >
+            <ui-icon name="check_circle" size="sm" />
+            <span>{{ success() }}</span>
+          </div>
+        }
+
+        <div class="pt-2">
+          <button
+            uiButton
+            variant="primary"
+            size="lg"
+            type="submit"
+            [disabled]="registerForm.invalid || isLoading()"
+            class="w-full justify-center"
+          >
+            @if (isLoading()) {
+              <ui-icon name="sync" size="sm" class="mr-2 animate-spin" />
+            }
+            {{ isLoading() ? ts.t()('auth.creating') : ts.t()('auth.signup') }}
+          </button>
         </div>
 
-        <button
-          type="submit"
-          [disabled]="registerForm.invalid || isLoading()"
-          class="w-full mt-2 text-white bg-gradient-to-r from-primary to-primary-dark hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-primary/30 font-bold rounded-xl text-sm px-5 py-3.5 text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] shadow-lg shadow-primary/25"
-        >
-          <span *ngIf="isLoading()" class="mr-2">...</span>
-          {{ isLoading() ? ts.t()('auth.creating') : ts.t()('auth.signup') }}
-        </button>
-
-        <div class="text-center text-sm text-gray-500 dark:text-gray-400">
+        <div class="text-center text-xs text-ink-muted pt-2">
           {{ ts.t()('auth.have_account') }}
           <a
             routerLink="/auth/login"
-            class="text-primary dark:hover:text-white transition-colors font-semibold"
-            >{{ ts.t()('auth.login') }}</a
+            class="text-accent hover:underline font-semibold ml-1"
           >
+            {{ ts.t()('auth.login') }}
+          </a>
         </div>
       </form>
     </div>
   `,
 })
 export class RegisterComponent {
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  public ts = inject(TranslationService);
+
   registerForm: FormGroup;
   isLoading = signal(false);
   error = signal('');
   success = signal('');
   showPassword = signal(false);
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    public ts: TranslationService
-  ) {
+  constructor() {
     this.registerForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -159,17 +170,9 @@ export class RegisterComponent {
           setTimeout(() => this.router.navigate(['/auth/login']), 2000);
         },
         error: (err) => {
+          console.error('Registration error:', err);
           this.isLoading.set(false);
-          console.error('Registration error detail:', err);
-          this.error.set(
-            err.error?.mensaje ||
-              err.error?.message ||
-              `Registration failed: ${
-                typeof err.error === 'string'
-                  ? err.error
-                  : JSON.stringify(err.error || err.statusText)
-              }`
-          );
+          this.error.set(err.error?.mensaje || 'Error registering user. Try a different username.');
         },
       });
     }

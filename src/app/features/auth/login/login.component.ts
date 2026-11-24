@@ -1,120 +1,132 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { ButtonComponent, IconComponent, FormFieldComponent } from '../../../shared/ui';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    ButtonComponent,
+    IconComponent,
+    FormFieldComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
-      class="glass-card p-8 w-full animate-fade-in shadow-2xl shadow-primary/10 border border-white/10 dark:border-white/5"
+      class="bg-surface-raised border border-border rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto shadow-xl space-y-6 animate-fade-in"
     >
-      <div class="text-center mb-8">
+      <div class="text-center space-y-2">
         <div
-          class="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mx-auto mb-4 border border-white/5"
+          class="w-14 h-14 rounded-2xl bg-accent/15 text-accent border border-accent/25 flex items-center justify-center mx-auto text-2xl font-bold shadow-sm"
         >
-          <span class="text-2xl">🔐</span>
+          <ui-icon name="lock" size="lg" />
         </div>
-        <h2
-          class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-light to-secondary mb-2"
-        >
+        <h2 class="text-2xl font-bold text-ink tracking-tight">
           {{ ts.t()('auth.welcome') }}
         </h2>
-        <p class="text-gray-500 dark:text-gray-400">{{ ts.t()('auth.subtitle') }}</p>
+        <p class="text-xs text-ink-muted">{{ ts.t()('auth.subtitle') }}</p>
       </div>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
         <!-- Username -->
-        <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">{{
-            ts.t()('auth.username')
-          }}</label>
+        <ui-form-field fieldId="login-username" [label]="ts.t()('auth.username')">
           <div class="relative">
-            <span class="absolute left-3 top-3.5 text-gray-500 material-icons-outlined text-sm"
-              >person</span
-            >
+            <span class="absolute left-3 top-3 text-ink-muted pointer-events-none select-none">
+              <ui-icon name="person" size="sm" />
+            </span>
             <input
+              id="login-username"
               type="text"
               formControlName="username"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary block p-3.5 pl-9 transition-all placeholder-gray-400 dark:placeholder-gray-600"
+              class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 pl-9 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent placeholder-ink-muted/50 transition-colors"
               placeholder="johndoe"
             />
           </div>
-        </div>
+        </ui-form-field>
 
         <!-- Password -->
-        <div class="space-y-2">
-          <label class="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">{{
-            ts.t()('auth.password')
-          }}</label>
+        <ui-form-field fieldId="login-password" [label]="ts.t()('auth.password')">
           <div class="relative">
-            <span class="absolute left-3 top-3.5 text-gray-500 material-icons-outlined text-sm"
-              >lock</span
-            >
+            <span class="absolute left-3 top-3 text-ink-muted pointer-events-none select-none">
+              <ui-icon name="lock" size="sm" />
+            </span>
             <input
+              id="login-password"
               [type]="showPassword() ? 'text' : 'password'"
               formControlName="password"
-              class="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary block p-3.5 pl-9 pr-10 transition-all placeholder-gray-400 dark:placeholder-gray-600"
+              class="w-full bg-surface-sunken border border-border text-ink text-sm rounded-lg p-2.5 pl-9 pr-10 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-transparent placeholder-ink-muted/50 transition-colors"
               placeholder="••••••••"
             />
             <button
               type="button"
-              (click)="$event.preventDefault(); showPassword.set(!showPassword())"
-              class="absolute right-3 top-3.5 z-10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none cursor-pointer"
+              (click)="showPassword.set(!showPassword())"
+              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+              class="absolute right-2.5 top-2.5 text-ink-muted hover:text-ink focus:outline-none"
             >
-              <span class="material-icons-outlined text-lg">{{
-                showPassword() ? 'visibility' : 'visibility_off'
-              }}</span>
+              <ui-icon [name]="showPassword() ? 'visibility' : 'visibility_off'" size="sm" />
             </button>
           </div>
-        </div>
+        </ui-form-field>
 
         <!-- Error Message -->
-        <div
-          *ngIf="error()"
-          class="p-3 text-sm text-red-600 dark:text-red-200 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg flex items-center"
-        >
-          <span class="material-icons-outlined mr-2 text-sm">error</span>
-          {{ error() }}
+        @if (error()) {
+          <div
+            class="p-3 text-xs text-danger bg-danger/10 border border-danger/25 rounded-lg flex items-center gap-2 animate-fade-in"
+            role="alert"
+          >
+            <ui-icon name="error" size="sm" />
+            <span>{{ error() }}</span>
+          </div>
+        }
+
+        <div class="pt-2">
+          <button
+            uiButton
+            variant="primary"
+            size="lg"
+            type="submit"
+            [disabled]="loginForm.invalid || isLoading()"
+            class="w-full justify-center"
+          >
+            @if (isLoading()) {
+              <ui-icon name="sync" size="sm" class="mr-2 animate-spin" />
+            }
+            {{ isLoading() ? ts.t()('auth.login.loading') : ts.t()('auth.login') }}
+          </button>
         </div>
 
-        <button
-          type="submit"
-          [disabled]="loginForm.invalid || isLoading()"
-          class="w-full text-white bg-gradient-to-r from-primary to-secondary hover:from-primary-dark hover:to-secondary-dark font-bold rounded-xl text-sm px-5 py-3.5 text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/25"
-        >
-          <span *ngIf="isLoading()" class="mr-2">...</span>
-          {{ isLoading() ? ts.t()('auth.login.loading') : ts.t()('auth.login') }}
-        </button>
-
-        <div class="text-center text-sm text-gray-500 dark:text-gray-400">
+        <div class="text-center text-xs text-ink-muted pt-2">
           {{ ts.t()('auth.no_account') }}
           <a
             routerLink="/auth/register"
-            class="text-primary dark:hover:text-white transition-colors font-semibold"
-            >{{ ts.t()('auth.signup') }}</a
+            class="text-accent hover:underline font-semibold ml-1"
           >
+            {{ ts.t()('auth.signup') }}
+          </a>
         </div>
       </form>
     </div>
   `,
 })
 export class LoginComponent {
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  public ts = inject(TranslationService);
+
   loginForm: FormGroup;
   isLoading = signal(false);
   error = signal('');
   showPassword = signal(false);
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    public ts: TranslationService
-  ) {
+  constructor() {
     this.loginForm = this.fb.group({
       username: ['', Validators.required],
       password: ['', Validators.required],

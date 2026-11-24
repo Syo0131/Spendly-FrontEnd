@@ -168,6 +168,44 @@ export class TranslationService {
       en: 'Bank disconnected successfully',
     },
 
+    // OAuth Bank Callback
+    'oauth.processing': {
+      es: 'Procesando conexión bancaria...',
+      en: 'Processing bank connection...',
+    },
+    'oauth.success_title': { es: '¡Conexión Exitosa!', en: 'Connection Successful!' },
+    'oauth.success_desc': {
+      es: 'Los siguientes bancos se han conectado correctamente:',
+      en: 'The following banks were connected successfully:',
+    },
+    'oauth.go_dashboard': { es: 'Ir al Dashboard', en: 'Go to Dashboard' },
+    'oauth.error_title': { es: 'Error de Conexión', en: 'Connection Error' },
+    'oauth.retry': { es: 'Intentar de nuevo', en: 'Try Again' },
+    'oauth.error_invalid_state': {
+      es: 'El estado de autenticación es inválido.',
+      en: 'Authentication state is invalid.',
+    },
+    'oauth.error_invalid_bank': {
+      es: 'El código del banco es inválido.',
+      en: 'The bank code is invalid.',
+    },
+    'oauth.error_no_banks': {
+      es: 'No se especificaron bancos para conectar.',
+      en: 'No banks were specified to connect.',
+    },
+    'oauth.error_unsupported_bank': {
+      es: 'El banco no está soportado.',
+      en: 'The bank is not supported.',
+    },
+    'oauth.error_invalid_user': {
+      es: 'ID de usuario inválido.',
+      en: 'Invalid user ID.',
+    },
+    'oauth.error_unknown': {
+      es: 'Error desconocido al conectar bancos.',
+      en: 'Unknown error connecting banks.',
+    },
+
     'settings.security.note_title': { es: 'Nota de Seguridad', en: 'Security Note' },
     'settings.security.note_desc': {
       es: 'Por tu seguridad, cambiar la contraseña requerirá que inicies sesión nuevamente.',

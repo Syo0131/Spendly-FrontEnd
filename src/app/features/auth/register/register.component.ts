@@ -115,7 +115,7 @@ import { TranslationService } from '../../../core/services/translation.service';
           {{ ts.t()('auth.have_account') }}
           <a
             routerLink="/auth/login"
-            class="text-primary hover:text-primary-dark dark:text-primary-light dark:hover:text-white transition-colors font-semibold"
+            class="text-primary dark:hover:text-white transition-colors font-semibold"
             >{{ ts.t()('auth.login') }}</a
           >
         </div>

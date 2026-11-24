@@ -123,7 +123,7 @@ import { UpdateService } from '../../core/services/update.service';
               <button
                 type="submit"
                 [disabled]="profileForm.invalid || isLoading()"
-                class="px-8 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center min-w-[120px]"
+                class="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center min-w-[120px]"
               >
                 <span *ngIf="isLoading()" class="material-icons-outlined animate-spin text-lg mr-2"
                   >sync</span
@@ -211,7 +211,7 @@ import { UpdateService } from '../../core/services/update.service';
               <button
                 type="submit"
                 [disabled]="securityForm.invalid || isLoading()"
-                class="px-8 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center min-w-[120px]"
+                class="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center min-w-[120px]"
               >
                 <span *ngIf="isLoading()" class="material-icons-outlined animate-spin text-lg mr-2"
                   >sync</span

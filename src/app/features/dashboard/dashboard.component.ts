@@ -134,13 +134,13 @@ import { catchError, expand, reduce, map } from 'rxjs/operators';
           <div class="flex gap-3">
             <button
               (click)="closeDatePicker()"
-              class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-sidebar-dark transition-colors"
+              class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               (click)="confirmDateSelection()"
-              class="flex-1 py-2.5 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all hover:scale-[1.02]"
+              class="flex-1 py-2.5 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 transition-all hover:scale-[1.02]"
             >
               Apply
             </button>

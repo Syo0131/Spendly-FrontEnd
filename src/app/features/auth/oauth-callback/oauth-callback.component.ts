@@ -31,7 +31,7 @@ import { ActivatedRoute, Router } from '@angular/router';
           </p>
           <button
             (click)="goToDashboard()"
-            class="w-full py-3 px-4 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors font-medium shadow-lg shadow-primary/25"
+            class="w-full py-3 px-4 bg-primary text-white rounded-xl transition-colors font-medium shadow-lg shadow-primary/25"
           >
             Ir al Dashboard
           </button>

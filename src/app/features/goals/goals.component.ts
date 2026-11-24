@@ -27,7 +27,7 @@ import { GoalStateService } from '../../core/services/goal-state.service';
         </div>
         <button
           (click)="openModal()"
-          class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-medium shadow-lg shadow-primary/30 transition-all hover:scale-105 flex items-center gap-2"
+          class="bg-primary text-white px-4 py-2 rounded-xl font-medium shadow-lg shadow-primary/30 transition-all hover:scale-105 flex items-center gap-2"
         >
           <span class="material-icons-outlined">add</span>
           <span class="hidden md:inline">{{ ts.t()('goals.add') }}</span>
@@ -324,7 +324,7 @@ import { GoalStateService } from '../../core/services/goal-state.service';
                   (!form.get('contributionAmount')?.value ||
                     form.get('contributionAmount')?.value <= 0))
               "
-              class="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all disabled:opacity-50"
+              class="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 transition-all disabled:opacity-50"
             >
               {{ isSubmitting() ? '...' : ts.t()('action.save') }}
             </button>

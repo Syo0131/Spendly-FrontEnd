@@ -36,7 +36,7 @@ import { RouterModule } from '@angular/router';
         </div>
         <button
           (click)="openModal()"
-          class="w-full md:w-auto px-3 py-1.5 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
+          class="w-full md:w-auto px-3 py-1.5 md:px-6 md:py-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
         >
           <span class="material-icons-outlined mr-1 md:mr-2 text-lg md:text-2xl">add</span>
           <span class="text-sm md:text-base font-bold">{{ ts.t()('trans.add_income') }}</span>
@@ -269,7 +269,7 @@ import { RouterModule } from '@angular/router';
           <div
             class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4"
           >
-            <span class="material-icons-outlined text-3xl text-primary dark:text-primary-light">
+            <span class="material-icons-outlined text-3xl text-primary">
               attach_money
             </span>
           </div>
@@ -328,7 +328,7 @@ import { RouterModule } from '@angular/router';
           <button
             type="submit"
             [disabled]="form.invalid"
-            class="w-full mt-6 bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+            class="w-full mt-6 bg-primary text-white py-3.5 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
           >
             {{ editingId() ? 'Update' : ts.t()('trans.save') }}
           </button>

@@ -55,7 +55,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
         </div>
         <button
           (click)="openModal()"
-          class="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
+          class="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105"
         >
           <span class="material-icons-outlined mr-1 md:mr-2 text-lg md:text-2xl">add</span>
           <span class="text-sm md:text-base font-bold">{{ ts.t()('budgets.create') }}</span>
@@ -355,7 +355,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             <button
               type="button"
               (click)="toggleAdvanced()"
-              class="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
+              class="flex items-center gap-2 text-sm font-medium text-primary transition-colors"
             >
               <span class="material-icons-outlined text-lg">
                 {{ showAdvanced() ? 'expand_less' : 'expand_more' }}
@@ -366,7 +366,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
 
           @if (showAdvanced()) {
           <div
-            class="space-y-4 pt-2 border-t border-gray-100 dark:border-white/5 animate-slide-down"
+            class="space-y-4 pt-2 border-t border-gray-100 dark:border-white/5"
           >
             <!-- Warning Threshold -->
             <div class="space-y-1.5">
@@ -474,7 +474,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
           <button
             type="submit"
             [disabled]="form.invalid || isSubmitting()"
-            class="w-full py-3.5 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            class="w-full py-3.5 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/25 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             @if (isSubmitting()) {
             <svg
@@ -599,15 +599,6 @@ export class BudgetsComponent implements OnInit {
   // Data
   categories = signal<Category[]>([]);
 
-  // Computed
-  totalBudgeted = computed(() => {
-    return this.budgets().reduce((acc: number, b: Budget) => acc + b.limit, 0);
-  });
-
-  totalSpent = computed(() => {
-    return this.budgets().reduce((acc: number, b: Budget) => acc + b.spent, 0);
-  });
-
   // UI State
   showModal = signal(false);
   isSubmitting = signal(false);
@@ -615,7 +606,6 @@ export class BudgetsComponent implements OnInit {
   showDeleteModal = signal(false);
   budgetToDelete = signal<Budget | null>(null);
   selectedBudget = signal<Budget | null>(null);
-  openMenuId = signal<number | null>(null); // Added this
 
   // Custom Dropdowns
   openDropdown = signal<string | null>(null);
@@ -629,19 +619,6 @@ export class BudgetsComponent implements OnInit {
     const p = this.selectedBudget()?.period;
     return p === 'DAILY' || p === 'WEEKLY';
   }
-  alertOptions = [
-    { value: 50, label: '50%' },
-    { value: 75, label: '75%' },
-    { value: 80, label: '80%' },
-    { value: 90, label: '90%' },
-  ];
-  criticalOptions = [
-    { value: 80, label: '80%' },
-    { value: 90, label: '90%' },
-    { value: 95, label: '95%' },
-    { value: 100, label: '100% (On Limit)' },
-  ];
-  repeatOptions = [3, 6, 9, 12];
 
   constructor() {
     this.form = this.fb.group({
@@ -689,27 +666,8 @@ export class BudgetsComponent implements OnInit {
     });
   }
 
-  // Navigation
-  prevMonth() {
-    const date = new Date(this.currentDate());
-    date.setMonth(date.getMonth() - 1);
-    this.state.setDate(date);
-  }
-
-  nextMonth() {
-    const date = new Date(this.currentDate());
-    date.setMonth(date.getMonth() + 1);
-    this.state.setDate(date);
-  }
-
   trackById(index: number, item: any): number {
     return item.id;
-  }
-
-  toggleMenu(id: number, event: Event) {
-    // Added this
-    event.stopPropagation();
-    this.openMenuId.update((current) => (current === id ? null : id));
   }
 
   // --- Display Helpers ---

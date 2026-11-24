@@ -44,7 +44,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
         </div>
         <button
           (click)="openModal()"
-          class="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-primary hover:bg-primary-dark text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm md:text-base tracking-wide"
+          class="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center transform hover:scale-105 active:scale-95 font-semibold text-sm md:text-base tracking-wide"
         >
           <span class="material-icons-outlined mr-2 text-lg md:text-xl">add_circle</span>
           {{ ts.t()('recurring.new') }}
@@ -90,7 +90,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
         </h3>
         <button
           (click)="openModal()"
-          class="text-primary hover:text-primary-light font-bold text-sm"
+          class="text-primary font-bold text-sm"
         >
           {{ ts.t()('recurring.create_now') }}
         </button>
@@ -426,7 +426,7 @@ import { CurrencyInputDirective } from '../../shared/directives/currency-input.d
             [disabled]="
               form.invalid || (durationMode() === 'fixed' && !form.get('totalOccurrences')?.value)
             "
-            class="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm"
+            class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/25 transform transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm"
           >
             <span class="material-icons-outlined text-lg">check</span>
             {{ editingId() ? ts.t()('recurring.update_btn') : ts.t()('recurring.create_btn') }}

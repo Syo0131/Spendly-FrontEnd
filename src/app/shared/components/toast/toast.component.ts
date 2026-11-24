@@ -11,7 +11,7 @@ import { TranslationService } from '../../../core/services/translation.service';
     <div class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
       @for (toast of ns.toasts(); track toast.id) {
       <div
-        class="animate-slide-in-up pointer-events-auto min-w-[300px] max-w-sm rounded-xl shadow-lg border p-4 flex items-start gap-3 backdrop-blur-md"
+        class="pointer-events-auto min-w-[300px] max-w-sm rounded-xl shadow-lg border p-4 flex items-start gap-3 backdrop-blur-md"
         [ngClass]="{
           'bg-green-50/90 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200':
             toast.type === 'success',

@@ -8,7 +8,17 @@
 
 android/
 ios/
-*.txt
+/*.txt
+
+# AI agents and local tooling
+# Skills are reinstalled from skills-lock.json (tracked).
+.agent/
+.agents/
+.claude/
+.atl/
+.impeccable/
+.codegraph/
+
 # Node
 /node_modules
 npm-debug.log

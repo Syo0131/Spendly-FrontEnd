@@ -102,6 +102,16 @@ export class TranslationService {
     'trans.next': { es: 'Siguiente', en: 'Next' },
     'trans.page': { es: 'Página', en: 'Page' },
     'trans.of': { es: 'de', en: 'of' },
+    'trans.expenses_subtitle': { es: 'Controla y monitorea tus gastos', en: 'Track your spending habits' },
+    'trans.all_time': { es: 'Todo el tiempo', en: 'All Time' },
+    'trans.all_categories': { es: 'Todas las categorías', en: 'All Categories' },
+    'trans.general': { es: 'General', en: 'General' },
+    'trans.update': { es: 'Actualizar', en: 'Update' },
+    'trans.empty_expenses_title': { es: 'Sin gastos registrados', en: 'No expenses recorded' },
+    'trans.empty_expenses_desc': {
+      es: 'Comienza agregando un gasto para llevar el control de tus finanzas.',
+      en: 'Start by adding an expense to track your finances.',
+    },
 
     // Banks
     'banks.title': { es: 'Integración Bancaria', en: 'Bank Integration' },

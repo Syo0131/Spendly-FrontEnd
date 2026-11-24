@@ -284,6 +284,7 @@ export class TranslationService {
     'notif.income_updated': { es: 'Ingreso actualizado', en: 'Income updated' },
     'notif.income_deleted': { es: 'Ingreso eliminado', en: 'Income deleted' },
     'notif.income_delete_fail': { es: 'Error al eliminar ingreso', en: 'Failed to delete income' },
+    'notif.operation_failed': { es: 'La operación falló', en: 'Operation failed' },
     'alert.reminder_due': { es: 'Recordatorio', en: 'Reminder Due' },
     'notif.profile_updated': {
       es: 'Perfil actualizado exitosamente!',

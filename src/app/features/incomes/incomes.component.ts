@@ -579,7 +579,7 @@ export class IncomesComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Operation failed', err);
-          this.ns.show('error', err.error?.message || 'Operation failed');
+          this.ns.show(err.error?.message || 'notif.operation_failed', 'error');
         },
       });
     }

@@ -52,6 +52,15 @@ export class TranslationService {
     'dash.expenses': { es: 'Gastos del Mes', en: 'Monthly Expenses' },
     'dash.breakdown': { es: 'Desglose de Gastos', en: 'Expense Breakdown' },
     'dash.overview': { es: 'Resumen Financiero', en: 'Financial Overview' },
+    'dashboard.spending_title': { es: 'Gastos de {{month}}', en: '{{month}} expenses' },
+    'dashboard.cat_of_limit': { es: 'de {{amount}}', en: 'of {{amount}}' },
+    'dashboard.cat_of_limit_year': { es: 'de {{amount}} este año', en: 'of {{amount}} this year' },
+    'dashboard.cat_share': { es: '{{pct}}% del total', en: '{{pct}}% of total' },
+    'dashboard.no_budgets_hint': {
+      es: 'Crea presupuestos para ver cómo vas en cada categoría',
+      en: "Create budgets to see how you're doing in each category",
+    },
+    'dashboard.no_expenses_title': { es: 'Sin gastos este mes', en: 'No expenses this month' },
 
     // Navigation
     'nav.dashboard': { es: 'Inicio', en: 'Dashboard' },

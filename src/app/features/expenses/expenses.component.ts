@@ -17,7 +17,7 @@ import { TranslationService } from '../../core/services/translation.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ExpenseStateService } from '../../core/services/expense-state.service';
 import { ExpenseResponse, Category } from '../../core/models/api.models';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-expenses',
@@ -615,6 +615,7 @@ import { RouterModule } from '@angular/router';
 export class ExpensesComponent implements OnInit, OnDestroy {
   // State Service
   state = inject(ExpenseStateService);
+  private route = inject(ActivatedRoute);
 
   // UI State
   categories = signal<Category[]>([]);
@@ -672,6 +673,21 @@ export class ExpensesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    const qp = this.route.snapshot.queryParams;
+    if (qp['category']) {
+      const catId = Number(qp['category']);
+      if (!isNaN(catId)) {
+        this.state.setFilter(catId);
+      }
+    }
+    if (qp['month'] && qp['year']) {
+      const month = Number(qp['month']);
+      const year = Number(qp['year']);
+      if (!isNaN(month) && !isNaN(year)) {
+        this.state.setDateFilter(month, year);
+      }
+    }
+
     this.state.refresh();
     this.loadCategories();
 

@@ -24,8 +24,11 @@ export class AmountComponent {
 
   value = input.required<number>();
   tone = input<AmountTone>('neutral');
+  type = input<AmountTone | undefined>(undefined);
   size = input<AmountSize>('md');
   locale = input<string>('es-DO');
+
+  effectiveTone = computed<AmountTone>(() => this.type() ?? this.tone());
 
   formattedValue = computed(() => {
     const val = this.value();
@@ -70,6 +73,6 @@ export class AmountComponent {
       xl: 'text-2xl md:text-3xl font-extrabold',
     };
 
-    return `${base} ${toneClasses[this.tone()]} ${sizeClasses[this.size()]}`.trim();
+    return `${base} ${toneClasses[this.effectiveTone()]} ${sizeClasses[this.size()]}`.trim();
   });
 }

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -10,129 +10,140 @@ import { TranslationService } from '../../core/services/translation.service';
   imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
     <aside
-      class="fixed inset-y-0 left-0 z-50 w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r border-gray-200 dark:border-white/10 hidden lg:block transition-colors duration-300"
+      class="fixed inset-y-0 left-0 z-50 w-64 bg-surface/95 backdrop-blur-xl border-r border-border hidden lg:flex lg:flex-col transition-colors duration-300"
     >
-      <!-- Logo -->
-      <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-white/5">
+      <!-- Logo & Brand Header -->
+      <div class="h-16 flex items-center px-6 border-b border-border shrink-0">
         <div
-          class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center mr-3 shadow-lg shadow-primary/20"
+          class="w-8 h-8 rounded-lg bg-accent text-accent-contrast flex items-center justify-center mr-3 font-bold text-lg font-heading shadow-sm select-none"
         >
-          <span class="text-white font-bold text-lg">S</span>
+          S
         </div>
-        <span
-          class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary dark:from-white dark:to-gray-400"
-          >Spendly</span
-        >
+        <span class="text-xl font-bold tracking-tight text-ink font-heading select-none">
+          Spendly
+        </span>
       </div>
 
-      <!-- Nav -->
-      <nav class="p-4 space-y-1">
+      <!-- Navigation Links -->
+      <nav class="flex-1 overflow-y-auto p-4 space-y-1.5 no-scrollbar">
+        <!-- Dashboard -->
         <a
           routerLink="/dashboard"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
+          routerLinkActive="bg-accent/15 text-accent font-semibold border-r-2 border-accent"
+          class="flex items-center px-3.5 py-2.5 rounded-xl text-ink-muted hover:text-ink hover:bg-surface-raised transition-colors text-sm font-medium group select-none"
         >
-          <span class="material-icons-outlined mr-3">dashboard</span>
-          {{ ts.t()('nav.dashboard') }}
+          <span class="material-icons-outlined mr-3 text-xl group-hover:scale-105 transition-transform">dashboard</span>
+          <span>{{ ts.t()('nav.dashboard') }}</span>
         </a>
 
-        <a
-          routerLink="/incomes"
-          routerLinkActive="bg-teal-50 text-teal-600 dark:bg-teal-500/20 dark:text-teal-300"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-teal-600 dark:hover:text-white transition-all group"
-        >
-          <span class="material-icons-outlined mr-3">trending_up</span>
-          {{ ts.t()('nav.incomes') }}
-        </a>
-
+        <!-- Expenses -->
         <a
           routerLink="/expenses"
-          routerLinkActive="bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-rose-600 dark:hover:text-white transition-all group"
+          routerLinkActive="bg-accent/15 text-accent font-semibold border-r-2 border-accent"
+          class="flex items-center px-3.5 py-2.5 rounded-xl text-ink-muted hover:text-ink hover:bg-surface-raised transition-colors text-sm font-medium group select-none"
         >
-          <span class="material-icons-outlined mr-3">trending_down</span>
-          {{ ts.t()('nav.expenses') }}
+          <span class="material-icons-outlined mr-3 text-xl group-hover:scale-105 transition-transform">trending_down</span>
+          <span>{{ ts.t()('nav.expenses') }}</span>
         </a>
 
+        <!-- Incomes -->
         <a
-          routerLink="/banks"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
+          routerLink="/incomes"
+          routerLinkActive="bg-accent/15 text-accent font-semibold border-r-2 border-accent"
+          class="flex items-center px-3.5 py-2.5 rounded-xl text-ink-muted hover:text-ink hover:bg-surface-raised transition-colors text-sm font-medium group select-none"
         >
-          <span class="material-icons-outlined mr-3">account_balance</span>
-          {{ ts.t()('nav.banks') }}
+          <span class="material-icons-outlined mr-3 text-xl group-hover:scale-105 transition-transform">trending_up</span>
+          <span>{{ ts.t()('nav.incomes') }}</span>
         </a>
 
+        <!-- Budgets -->
         <a
           routerLink="/budgets"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
+          routerLinkActive="bg-accent/15 text-accent font-semibold border-r-2 border-accent"
+          class="flex items-center px-3.5 py-2.5 rounded-xl text-ink-muted hover:text-ink hover:bg-surface-raised transition-colors text-sm font-medium group select-none"
         >
-          <span class="material-icons-outlined mr-3">pie_chart</span>
-          {{ ts.t()('nav.budgets') }}
+          <span class="material-icons-outlined mr-3 text-xl group-hover:scale-105 transition-transform">pie_chart</span>
+          <span>{{ ts.t()('nav.budgets') }}</span>
         </a>
 
+        <!-- Goals -->
         <a
           routerLink="/goals"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
+          routerLinkActive="bg-accent/15 text-accent font-semibold border-r-2 border-accent"
+          class="flex items-center px-3.5 py-2.5 rounded-xl text-ink-muted hover:text-ink hover:bg-surface-raised transition-colors text-sm font-medium group select-none"
         >
-          <span class="material-icons-outlined mr-3">flag</span>
-          {{ ts.t()('nav.goals') }}
+          <span class="material-icons-outlined mr-3 text-xl group-hover:scale-105 transition-transform">flag</span>
+          <span>{{ ts.t()('nav.goals') }}</span>
         </a>
 
+        <!-- Reminders -->
         <a
           routerLink="/reminders"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
+          routerLinkActive="bg-accent/15 text-accent font-semibold border-r-2 border-accent"
+          class="flex items-center px-3.5 py-2.5 rounded-xl text-ink-muted hover:text-ink hover:bg-surface-raised transition-colors text-sm font-medium group select-none"
         >
-          <span class="material-icons-outlined mr-3">notifications</span>
-          {{ ts.t()('nav.reminders') }}
+          <span class="material-icons-outlined mr-3 text-xl group-hover:scale-105 transition-transform">notifications</span>
+          <span>{{ ts.t()('nav.reminders') }}</span>
         </a>
 
+        <!-- Recurring -->
         <a
           routerLink="/recurring"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
+          routerLinkActive="bg-accent/15 text-accent font-semibold border-r-2 border-accent"
+          class="flex items-center px-3.5 py-2.5 rounded-xl text-ink-muted hover:text-ink hover:bg-surface-raised transition-colors text-sm font-medium group select-none"
         >
-          <span class="material-icons-outlined mr-3">replay</span>
-          {{ ts.t()('nav.recurring') }}
+          <span class="material-icons-outlined mr-3 text-xl group-hover:scale-105 transition-transform">replay</span>
+          <span>{{ ts.t()('nav.recurring') }}</span>
         </a>
 
+        <!-- Banks (with ✨ Premium badge) -->
+        <a
+          routerLink="/banks"
+          routerLinkActive="bg-accent/15 text-accent font-semibold border-r-2 border-accent"
+          class="flex items-center px-3.5 py-2.5 rounded-xl text-ink-muted hover:text-ink hover:bg-surface-raised transition-colors text-sm font-medium group select-none"
+        >
+          <span class="material-icons-outlined mr-3 text-xl group-hover:scale-105 transition-transform">account_balance</span>
+          <span>{{ ts.t()('nav.banks') }}</span>
+          <span class="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-accent/20 text-accent border border-accent/30 tracking-wide uppercase">
+            ✨ Premium
+          </span>
+        </a>
+
+        <!-- Settings -->
         <a
           routerLink="/settings"
-          routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white"
-          class="flex items-center px-4 py-3 text-gray-500 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 hover:text-primary dark:hover:text-white transition-all group"
+          routerLinkActive="bg-accent/15 text-accent font-semibold border-r-2 border-accent"
+          class="flex items-center px-3.5 py-2.5 rounded-xl text-ink-muted hover:text-ink hover:bg-surface-raised transition-colors text-sm font-medium group select-none"
         >
-          <span class="material-icons-outlined mr-3">settings</span>
-          {{ ts.t()('nav.settings') }}
+          <span class="material-icons-outlined mr-3 text-xl group-hover:scale-105 transition-transform">settings</span>
+          <span>{{ ts.t()('nav.settings') }}</span>
         </a>
       </nav>
 
       <!-- User Profile (Bottom) -->
-      <div class="absolute bottom-0 w-full p-4 border-t border-gray-200 dark:border-white/5">
-        <div class="flex items-center p-3 rounded-xl bg-gray-50 dark:bg-white/5 space-x-3">
+      <div class="p-4 border-t border-border shrink-0">
+        <div class="flex items-center p-3 rounded-xl bg-surface-raised border border-border/50 gap-3">
           <div
-            class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center text-gray-700 dark:text-white font-semibold"
+            class="w-9 h-9 rounded-full bg-accent/20 border border-accent/30 text-accent font-bold flex items-center justify-center text-sm shrink-0 select-none"
           >
             {{ (authService.currentUserStr() || 'U').charAt(0).toUpperCase() }}
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+            <p class="text-sm font-semibold text-ink truncate leading-tight">
               {{ authService.currentUserStr() || 'User' }}
             </p>
             <button
+              type="button"
               (click)="authService.logout()"
-              class="text-xs text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300"
+              class="text-xs text-expense hover:opacity-80 transition-opacity font-medium cursor-pointer"
             >
-              {{ ts.t()('nav.logout') }}
+              {{ ts.t()('nav.logout') || 'Logout' }}
             </button>
           </div>
         </div>
       </div>
     </aside>
   `,
-  styles: [],
 })
 export class SidebarComponent {
   constructor(public authService: AuthService, public ts: TranslationService) {}

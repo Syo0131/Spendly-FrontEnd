@@ -1,58 +1,68 @@
 import { Component } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../../core/services/notification.service';
 import { TranslationService } from '../../../core/services/translation.service';
 
 @Component({
   selector: 'app-toast',
   standalone: true,
-  imports: [NgClass],
+  imports: [CommonModule],
   template: `
-    <div class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+    <div
+      class="fixed bottom-20 pb-safe lg:bottom-6 right-4 left-4 sm:left-auto z-[100] flex flex-col gap-2.5 pointer-events-none"
+    >
       @for (toast of ns.toasts(); track toast.id) {
-      <div
-        class="pointer-events-auto min-w-[300px] max-w-sm rounded-xl shadow-lg border p-4 flex items-start gap-3 backdrop-blur-md"
-        [ngClass]="{
-          'bg-green-50/90 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200':
-            toast.type === 'success',
-          'bg-red-50/90 dark:bg-red-900/30 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200':
-            toast.type === 'error',
-          'bg-blue-50/90 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200':
-            toast.type === 'info'
-        }"
-      >
-        <!-- Icon -->
-        <span class="material-icons-outlined text-xl mt-0.5">
-          {{
-            toast.type === 'success'
-              ? 'check_circle'
-              : toast.type === 'error'
-              ? 'error_outline'
-              : 'info'
-          }}
-        </span>
-
-        <!-- Content -->
-        <div class="flex-1">
-          <p class="text-sm font-medium">{{ ts.translate(toast.message) }}</p>
-          @if (toast.action) {
-          <button
-            (click)="toast.action.onClick()"
-            class="mt-2 px-3 py-1 text-xs font-semibold rounded shadow-sm transition-colors border text-gray-800 bg-white hover:bg-gray-50 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
-          >
-            {{ toast.action.label }}
-          </button>
-          }
-        </div>
-
-        <!-- Close -->
-        <button
-          (click)="ns.dismissToast(toast.id)"
-          class="opacity-60 hover:opacity-100 transition-opacity"
+        <div
+          role="status"
+          class="pointer-events-auto min-w-[280px] max-w-sm rounded-xl shadow-xl border p-3.5 flex items-start gap-3 backdrop-blur-md transition-all"
+          [ngClass]="{
+            'bg-surface/95 border-emerald-500/30 text-ink': toast.type === 'success',
+            'bg-surface/95 border-expense/30 text-ink': toast.type === 'error',
+            'bg-surface/95 border-border text-ink': toast.type === 'info'
+          }"
         >
-          <span class="material-icons-outlined text-sm">close</span>
-        </button>
-      </div>
+          <!-- Semantic Icon -->
+          <span
+            class="material-icons-outlined text-xl mt-0.5 shrink-0 select-none"
+            [ngClass]="{
+              'text-emerald-500': toast.type === 'success',
+              'text-expense': toast.type === 'error',
+              'text-accent': toast.type === 'info'
+            }"
+          >
+            {{
+              toast.type === 'success'
+                ? 'check_circle'
+                : toast.type === 'error'
+                ? 'error_outline'
+                : 'info'
+            }}
+          </span>
+
+          <!-- Message & Action -->
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium leading-snug">{{ ts.translate(toast.message) }}</p>
+            @if (toast.action) {
+              <button
+                type="button"
+                (click)="toast.action.onClick()"
+                class="mt-2 px-2.5 py-1 text-xs font-semibold rounded-md border border-border bg-surface-raised hover:bg-surface-sunken text-ink transition-colors"
+              >
+                {{ toast.action.label }}
+              </button>
+            }
+          </div>
+
+          <!-- Dismiss button -->
+          <button
+            type="button"
+            (click)="ns.dismissToast(toast.id)"
+            aria-label="Cerrar notificación"
+            class="text-ink-muted hover:text-ink transition-colors p-1 -mr-1 -mt-1 rounded-md cursor-pointer"
+          >
+            <span class="material-icons-outlined text-base">close</span>
+          </button>
+        </div>
       }
     </div>
   `,

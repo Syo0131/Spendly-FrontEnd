@@ -44,24 +44,6 @@ module.exports = {
         track: withAlpha('--color-track'),
         'bar-neutral': withAlpha('--color-bar-neutral'),
         'focus-ring': withAlpha('--color-focus-ring'),
-
-        // Legacy colors kept for unmigrated features until Phase 6 completion
-        primary: {
-          DEFAULT: '#04bbe3',
-          50: '#ecfdff',
-          100: '#cef8ff',
-          200: '#a4f1fd',
-          300: '#65e4fb',
-          400: '#20cef0',
-          500: '#04bbe3',
-          600: '#068cb4',
-          700: '#0d7191',
-          800: '#145c76',
-          900: '#154b64',
-          950: '#073145',
-        },
-        secondary: '#068cb4',
-        danger: '#ef4444',
       },
       fontFamily: {
         sans: [

@@ -121,11 +121,11 @@ import { Category } from '../../../core/models/api.models';
           <h2 class="text-xs uppercase tracking-wider font-mono text-ink-muted">03. Badges & Amounts</h2>
           <div class="p-6 rounded-2xl bg-surface border border-border space-y-6">
             <div class="flex flex-wrap gap-3 items-center">
-              <ui-badge variant="default">Default</ui-badge>
-              <ui-badge variant="primary">Primary</ui-badge>
-              <ui-badge variant="success">Success</ui-badge>
-              <ui-badge variant="warning">Warning</ui-badge>
-              <ui-badge variant="danger">Critical</ui-badge>
+              <ui-badge tone="neutral">Default</ui-badge>
+              <ui-badge tone="income">Income</ui-badge>
+              <ui-badge tone="expense">Expense</ui-badge>
+              <ui-badge tone="warning">Warning</ui-badge>
+              <ui-badge tone="critical">Critical</ui-badge>
             </div>
             <div class="flex flex-wrap gap-6 items-center">
               <div>

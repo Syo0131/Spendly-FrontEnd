@@ -153,7 +153,7 @@ import {
                   uiButton
                   variant="ghost"
                   size="sm"
-                  class="!p-1.5 text-ink-muted hover:text-danger"
+                  class="!p-1.5 text-ink-muted hover:text-expense"
                   (click)="confirmDelete(item)"
                   [title]="ts.t()('trans.delete')"
                   [attr.aria-label]="ts.t()('trans.delete')"

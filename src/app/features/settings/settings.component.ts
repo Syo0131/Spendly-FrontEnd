@@ -135,9 +135,9 @@ import {
         @if (activeTab() === 'security') {
         <div class="space-y-6 animate-fade-in">
           <div
-            class="border-l-4 border-amber-500 pl-4 py-2 bg-amber-500/10 rounded-r-lg"
+            class="border-l-4 border-status-warning pl-4 py-2 bg-status-warning/10 rounded-r-lg"
           >
-            <h4 class="text-amber-500 font-semibold text-sm">
+            <h4 class="text-status-warning font-semibold text-sm">
               {{ ts.t()('settings.security.note_title') }}
             </h4>
             <p class="text-ink-muted text-xs mt-0.5">
@@ -268,7 +268,7 @@ import {
 
           <!-- Delete Account -->
           <div class="mt-8 pt-6 border-t border-border">
-            <h4 class="text-danger font-semibold text-sm mb-1">
+            <h4 class="text-expense font-semibold text-sm mb-1">
               {{ ts.t()('settings.danger.title') }}
             </h4>
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

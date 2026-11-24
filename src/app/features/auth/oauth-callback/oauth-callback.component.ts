@@ -57,7 +57,7 @@ import { ButtonComponent, IconComponent } from '../../../shared/ui';
         @if (!loading() && !success()) {
           <div class="space-y-6 animate-fade-in">
             <div
-              class="w-16 h-16 bg-danger/15 text-danger border border-danger/25 rounded-2xl flex items-center justify-center mx-auto shadow-sm"
+              class="w-16 h-16 bg-expense/15 text-expense border border-expense/25 rounded-2xl flex items-center justify-center mx-auto shadow-sm"
             >
               <ui-icon name="error_outline" size="lg" />
             </div>
@@ -67,7 +67,7 @@ import { ButtonComponent, IconComponent } from '../../../shared/ui';
                 {{ ts.t()('oauth.error_title') }}
               </h2>
               <p
-                class="text-danger text-xs bg-danger/10 border border-danger/25 p-3 rounded-lg mt-3"
+                class="text-expense text-xs bg-expense/10 border border-expense/25 p-3 rounded-lg mt-3"
               >
                 {{ errorMessage() }}
               </p>

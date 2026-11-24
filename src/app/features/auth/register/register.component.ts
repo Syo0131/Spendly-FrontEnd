@@ -87,7 +87,7 @@ import { ButtonComponent, IconComponent, FormFieldComponent } from '../../../sha
         <!-- Error Message -->
         @if (error()) {
           <div
-            class="p-3 text-xs text-danger bg-danger/10 border border-danger/25 rounded-lg flex items-center gap-2 animate-fade-in"
+            class="p-3 text-xs text-expense bg-expense/10 border border-expense/25 rounded-lg flex items-center gap-2 animate-fade-in"
             role="alert"
           >
             <ui-icon name="error" size="sm" />

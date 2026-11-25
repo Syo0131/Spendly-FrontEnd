@@ -57,3 +57,6 @@ Thumbs.db
 
 # Environment
 .env
+
+# Local API spec exports (OpenAPI dumps)
+/data-*.json

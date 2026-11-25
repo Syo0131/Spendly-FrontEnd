@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isFutureMonth, shiftMonth } from './month';
+import { isFutureMonth, shiftMonth, lastTwelveMonths } from './month';
 
 describe('month utils', () => {
   describe('isFutureMonth', () => {
@@ -29,6 +29,16 @@ describe('month utils', () => {
       expect(next.getFullYear()).toBe(2026);
       expect(next.getMonth()).toBe(1);
       expect(next.getDate()).toBe(1);
+    });
+  });
+
+  describe('lastTwelveMonths', () => {
+    it('returns the 12 months ending at the anchor month, oldest first, across a year boundary', () => {
+      const months = lastTwelveMonths(new Date(2026, 1, 15)); // Feb 15, 2026
+      expect(months).toHaveLength(12);
+      expect(months[0]).toEqual({ year: 2025, month: 3 });
+      expect(months[10]).toEqual({ year: 2026, month: 1 });
+      expect(months[11]).toEqual({ year: 2026, month: 2 });
     });
   });
 });

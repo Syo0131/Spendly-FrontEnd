@@ -168,6 +168,14 @@ export class ApiService {
     return this.http.get<PagedResponse<ExpenseResponse>>(url, { params });
   }
 
+  /** All expenses of one month, newest first (`GET /expenses/month/{year}/{month}`). */
+  getExpensesForMonth(year: number, month: number): Observable<ExpenseResponse[]> {
+    return this.getWithCache<ExpenseResponse[]>(
+      `${CACHE_KEYS.EXPENSES}_month_${year}_${month}`,
+      `${this.baseUrl}/expenses/month/${year}/${month}`
+    );
+  }
+
   createExpense(data: CreateExpense): Observable<MessageResponse> {
     return this.http
       .post<MessageResponse>(`${this.baseUrl}/expenses/create`, data)

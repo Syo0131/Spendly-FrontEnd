@@ -24,7 +24,8 @@ import { CategorySpendingListComponent } from './category-spending-list.componen
 import { CategorySpendingRow, buildCategorySpendingRows } from '../../core/utils/category-spending';
 import { readToken } from '../../shared/ui/tokens/read-token';
 import { forkJoin, of, interval, Subscription, EMPTY, Observable } from 'rxjs';
-import { catchError, expand, reduce, map } from 'rxjs/operators';
+import { catchError, expand, reduce, map, finalize } from 'rxjs/operators';
+import { lastTwelveMonths } from '../../core/utils/month';
 
 @Component({
   selector: 'app-dashboard',
@@ -198,7 +199,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // History cache
   private lastIncomes: any[] = [];
-  private lastExpenses: any[] = [];
+  private lastExpenseTotals: number[] = [];
   private refreshSubscription: Subscription | null = null;
 
   // 12-Month Bar Chart
@@ -332,40 +333,40 @@ export class DashboardComponent implements OnInit, OnDestroy {
       incomePage: this.apiService
         .getIncomes(0, 100)
         .pipe(catchError(() => of({ content: [] } as any))),
-    }).subscribe({
-      next: ({ expenseTotal, categoryStats, monthlyBudgets, yearlyBudgets, incomePage }) => {
-        this.totalExpense.set(expenseTotal?.total || 0);
-        this.categoryStats.set(categoryStats || {});
-        this.monthlyBudgets.set(monthlyBudgets || []);
-        this.yearlyBudgets.set(yearlyBudgets || []);
+    })
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: ({ expenseTotal, categoryStats, monthlyBudgets, yearlyBudgets, incomePage }) => {
+          this.totalExpense.set(expenseTotal?.total || 0);
+          this.categoryStats.set(categoryStats || {});
+          this.monthlyBudgets.set(monthlyBudgets || []);
+          this.yearlyBudgets.set(yearlyBudgets || []);
 
-        const currentMonthIncomes = incomePage.content
-          ? incomePage.content.filter((i: any) => {
-              const [y, m] = i.date.toString().split('-');
-              return parseInt(m, 10) === month && parseInt(y, 10) === year;
-            })
-          : [];
-        const incomeTotal = currentMonthIncomes.reduce(
-          (acc: number, curr: any) => acc + curr.amount,
-          0
-        );
-        this.totalIncome.set(incomeTotal);
-        this.totalBalance.set(this.totalIncome() - this.totalExpense());
-      },
-    });
+          const currentMonthIncomes = incomePage.content
+            ? incomePage.content.filter((i: any) => {
+                const [y, m] = i.date.toString().split('-');
+                return parseInt(m, 10) === month && parseInt(y, 10) === year;
+              })
+            : [];
+          const incomeTotal = currentMonthIncomes.reduce(
+            (acc: number, curr: any) => acc + curr.amount,
+            0,
+          );
+          this.totalIncome.set(incomeTotal);
+          this.totalBalance.set(this.totalIncome() - this.totalExpense());
+        },
+      });
 
-    // 2. Slow Path: Full History for 12-Month Chart
+    // 2. Chart: 12 monthly expense totals in parallel (DOP-converted by the API) plus the
+    // income history, which is small. Does not block the loading state of the fast path.
     forkJoin({
-      incomes: this.fetchAllHistory((p, s) => this.apiService.getIncomes(p, s)).pipe(
-        catchError(() => of([]))
-      ),
-      expenses: this.fetchAllHistory((p, s) => this.apiService.getExpenses(p, s)).pipe(
-        catchError(() => of([]))
-      ),
+      incomes: this.fetchAllHistory(
+        (p, s) => this.apiService.getIncomes(p, s),
+        new Date(year, month - 12, 1),
+      ).pipe(catchError(() => of([]))),
+      expenseTotals: this.fetchExpenseTotals(targetDate),
     }).subscribe({
-      next: ({ incomes, expenses }) => {
-        this.isLoading.set(false);
-
+      next: ({ incomes, expenseTotals }) => {
         const currentMonthIncomes = incomes
           ? incomes.filter((i: any) => {
               const [y, m] = i.date.toString().split('-');
@@ -374,17 +375,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
           : [];
         const incomeTotal = currentMonthIncomes.reduce(
           (acc: number, curr: any) => acc + curr.amount,
-          0
+          0,
         );
         this.totalIncome.set(incomeTotal);
         this.totalBalance.set(this.totalIncome() - this.totalExpense());
 
         this.lastIncomes = incomes;
-        this.lastExpenses = expenses;
-        this.prepareHistoryChart(incomes, expenses);
+        this.lastExpenseTotals = expenseTotals;
+        this.prepareHistoryChart(incomes, expenseTotals);
       },
-      error: () => this.isLoading.set(false),
     });
+  }
+
+  /** One `/expenses/month/{y}/{m}/total` request per chart month, oldest first. */
+  private fetchExpenseTotals(anchor: Date): Observable<number[]> {
+    return forkJoin(
+      lastTwelveMonths(anchor).map(({ year, month }) =>
+        this.apiService.getExpensesMonthTotal(year, month).pipe(
+          map((res) => Number(res?.total) || 0),
+          catchError(() => of(0)),
+        ),
+      ),
+    );
   }
 
   private fetchYearlyBudgets(selectedYear: number): Observable<Budget[]> {
@@ -402,18 +414,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
           if (b.period !== 'YEARLY') return false;
           const bYear = b.year ?? (b.startDate ? new Date(b.startDate).getFullYear() : null);
           return bYear === selectedYear;
-        })
+        }),
       ),
-      catchError(() => of([] as Budget[]))
+      catchError(() => of([] as Budget[])),
     );
   }
 
   private fetchAllHistory<T extends { date: string }>(
-    fetchFn: (page: number, size: number) => Observable<PagedResponse<T>>
+    fetchFn: (page: number, size: number) => Observable<PagedResponse<T>>,
+    since: Date,
   ): Observable<T[]> {
-    const today = new Date();
-    const twelveMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 11, 1);
-
     return fetchFn(0, 100).pipe(
       expand((res: PagedResponse<T>) => {
         const content = res.content || [];
@@ -423,17 +433,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         const lastItem = content[content.length - 1];
         const lastDate = new Date(lastItem.date);
-        if (lastDate < twelveMonthsAgo) {
+        if (lastDate < since) {
           return EMPTY;
         }
 
         return fetchFn(res.page.number + 1, 100);
       }),
-      reduce((acc, res) => acc.concat(res.content || []), [] as T[])
+      reduce((acc, res) => acc.concat(res.content || []), [] as T[]),
     );
   }
 
-  prepareHistoryChart(incomes: any[], expenses: any[]): void {
+  prepareHistoryChart(incomes: any[], expenseTotals: number[]): void {
     const months: string[] = [];
     const incomeData: number[] = new Array(12).fill(0);
     const expenseData: number[] = new Array(12).fill(0);
@@ -457,16 +467,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         })
         .reduce((sum, t) => sum + t.amount, 0);
 
-      const monthExpense = expenses
-        .filter((t) => {
-          const [y, m] = t.date.toString().split('-');
-          return parseInt(m, 10) === monthToCheck + 1 && parseInt(y, 10) === yearToCheck;
-        })
-        .reduce((sum, t) => sum + t.amount, 0);
-
       const index = 11 - i;
       incomeData[index] = monthIncome;
-      expenseData[index] = monthExpense;
+      expenseData[index] = expenseTotals[index] ?? 0;
     }
 
     const incomeColor = readToken('income') || '#10b981';
@@ -525,8 +528,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.barChartOptions.plugins.legend.labels.color = textColor;
     }
 
-    if (this.lastIncomes.length > 0 || this.lastExpenses.length > 0) {
-      this.prepareHistoryChart(this.lastIncomes, this.lastExpenses);
+    if (this.lastIncomes.length > 0 || this.lastExpenseTotals.length > 0) {
+      this.prepareHistoryChart(this.lastIncomes, this.lastExpenseTotals);
     }
   }
 }

@@ -1,11 +1,46 @@
-import { Injectable, inject, signal, computed, effect } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CacheService } from './cache.service';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ApiService } from './api.service';
 import { ExpenseResponse, CreateExpense, UpdateExpense, Category } from '../models/api.models';
-import { firstValueFrom, Subject, combineLatest, of, Observable, EMPTY, forkJoin } from 'rxjs';
-import { tap, finalize, switchMap, startWith, catchError, shareReplay, map } from 'rxjs/operators';
+import { Observable, Subject, combineLatest, forkJoin, of } from 'rxjs';
+import { catchError, distinctUntilChanged, finalize, map, switchMap, tap } from 'rxjs/operators';
 import { BudgetStateService } from './budget-state.service';
+
+/**
+ * How the current view is fetched. The backend list endpoint has no filters, so:
+ * - no filters: server-side paging, one request per page;
+ * - month filter: one request for that month, category filtered and paged locally;
+ * - category filter over all time: full history download (only case that needs it).
+ */
+export type ExpenseQuery =
+  | { mode: 'page'; page: number; size: number }
+  | { mode: 'month'; year: number; month: number }
+  | { mode: 'all' };
+
+export function planExpenseQuery(
+  categoryId: number | null,
+  date: { month: number; year: number } | null,
+  page: number,
+  size: number,
+): ExpenseQuery {
+  if (date) return { mode: 'month', year: date.year, month: date.month };
+  if (categoryId) return { mode: 'all' };
+  return { mode: 'page', page, size };
+}
+
+const sameQuery = (a: ExpenseQuery, b: ExpenseQuery) => JSON.stringify(a) === JSON.stringify(b);
+
+interface ExpenseView {
+  /** Server page items (mode 'page') or every candidate item (local paging). */
+  items: ExpenseResponse[];
+  /** Server total for mode 'page'; ignored when paging locally. */
+  total: number;
+  localPaging: boolean;
+}
+
+const FULL_HISTORY_PAGE_SIZE = 100;
+const FULL_HISTORY_CACHE_KEY = 'expenses_all_forkjoin_v1';
 
 @Injectable({
   providedIn: 'root',
@@ -15,312 +50,223 @@ export class ExpenseStateService {
   private budgetState = inject(BudgetStateService);
   private cache = inject(CacheService);
 
-  // State Signals (Params)
+  // Params
   currentPage = signal(0);
   pageSize = signal(6);
-  // Filters (Moved up to fix "used before initialization")
   categoryFilter = signal<number | null>(null);
   dateFilter = signal<{ month: number; year: number } | null>(null);
 
-  // Triggers
-  private refresh$ = new Subject<void>();
-
-  // Loading State
-  private _isLoading = signal<boolean>(false);
-
-  // Writable Local State for Optimistic UI (Moved up for access in resource$)
-  private _localData = signal<{ content: ExpenseResponse[]; page: any } | null>(null);
-
-  // Data Source (Robust Fetch ALL - ForkJoin)
-  private resource$ = combineLatest([
-    this.refresh$, // Removed startWith to prevent auto-load
-    toObservable(this.categoryFilter),
-  ]).pipe(
-    tap(() => {
-      // Only show global loading if we have no data yet.
-      // This prevents "flashing" opacity during optimistic updates/background refreshes.
-      if (!this._localData()) {
-        this._isLoading.set(true);
-      }
-    }),
-    switchMap(() => {
-      const key = `expenses_all_forkjoin_v1`;
-      const cached = this.cache.get(key);
-      if (cached) {
-        return of(cached).pipe(finalize(() => this._isLoading.set(false)));
-      }
-
-      // Initial fetch to get metadata
-      return this.api.getExpenses(0, 100).pipe(
-        switchMap((firstPage) => {
-          const totalPages = firstPage.page.totalPages;
-          if (totalPages <= 1) {
-            return of({ content: firstPage.content, page: firstPage.page });
-          }
-
-          // Generate requests for remaining pages
-          const requests = [];
-          for (let i = 1; i < totalPages; i++) {
-            requests.push(this.api.getExpenses(i, 100));
-          }
-
-          return forkJoin(requests).pipe(
-            map((responses) => {
-              // Combine first page with rest
-              const allContent = firstPage.content.concat(...responses.map((r) => r.content));
-              return {
-                content: allContent,
-                page: {
-                  ...firstPage.page,
-                  totalElements: allContent.length,
-                  totalPages: Math.ceil(allContent.length / 100), // Approximate
-                },
-              };
-            })
-          );
-        }),
-        tap((data) => {
-          this.cache.set(key, data);
-        }),
-        catchError((err) => {
-          console.error('Failed to load expenses', err);
-          return of({ content: [], page: { totalElements: 0, totalPages: 0 } });
-        }),
-        finalize(() => this._isLoading.set(false))
-      );
-    }),
-    shareReplay(1)
+  private query = computed(() =>
+    planExpenseQuery(this.categoryFilter(), this.dateFilter(), this.currentPage(), this.pageSize()),
   );
 
-  // Read-only server state (via toSignal) to keep sync
-  private serverState = toSignal(this.resource$, { initialValue: null });
+  private refresh$ = new Subject<void>();
+  private _isLoading = signal(false);
+  private _view = signal<ExpenseView | null>(null);
 
-  // Preload Strategy: Load only first page (6 items) immediately
-  preload() {
-    if (this._localData()) return; // Already data
-
-    this.api.getExpenses(0, 6).subscribe({
-      next: (res) => {
-        this._localData.set(res);
-        // Optionally cache this small chunk to prevent re-fetch if quick navigation
-      },
-    });
+  constructor() {
+    // Nothing is fetched until the first refresh(); afterwards every query change or refresh
+    // fetches only what the current view needs.
+    combineLatest([toObservable(this.query).pipe(distinctUntilChanged(sameQuery)), this.refresh$])
+      .pipe(
+        tap(() => {
+          // Only show global loading when there is nothing to show yet.
+          if (!this._view()) this._isLoading.set(true);
+        }),
+        switchMap(([query]) =>
+          this.fetch(query).pipe(
+            catchError((err) => {
+              console.error('Failed to load expenses', err);
+              return of<ExpenseView>({ items: [], total: 0, localPaging: query.mode !== 'page' });
+            }),
+            finalize(() => this._isLoading.set(false)),
+          ),
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe((view) => this._view.set(view));
   }
 
-  // Sync Server State -> Local State
-  private syncEffect = computed(() => {
-    const serverData = this.serverState();
-    if (serverData) {
-      // Use untracked to avoid loops if needed, though computed is fine here
-      // as we are just setting a signal.
-      // Note: We cannot set signals inside computed directly without allowSignalWrites.
-      // Better to use effect() in constructor.
+  private fetch(query: ExpenseQuery): Observable<ExpenseView> {
+    switch (query.mode) {
+      case 'page':
+        return this.api.getExpenses(query.page, query.size).pipe(
+          map((res) => ({
+            items: res.content || [],
+            total: res.page?.totalElements ?? (res.content || []).length,
+            localPaging: false,
+          })),
+        );
+      case 'month':
+        return this.api
+          .getExpensesForMonth(query.year, query.month)
+          .pipe(map((items) => ({ items: items || [], total: 0, localPaging: true })));
+      case 'all':
+        return this.fetchFullHistory().pipe(
+          map((items) => ({ items, total: 0, localPaging: true })),
+        );
     }
-  });
+  }
 
-  // Public Read-only Signals
-  private filteredContent = computed(() => {
-    const all = this._localData()?.content || [];
+  private fetchFullHistory(): Observable<ExpenseResponse[]> {
+    const cached = this.cache.get(FULL_HISTORY_CACHE_KEY) as ExpenseResponse[] | null;
+    if (cached) return of(cached);
+
+    return this.api.getExpenses(0, FULL_HISTORY_PAGE_SIZE).pipe(
+      switchMap((first) => {
+        const totalPages = first.page?.totalPages ?? 1;
+        if (totalPages <= 1) return of(first.content || []);
+        const rest = [];
+        for (let i = 1; i < totalPages; i++) {
+          rest.push(this.api.getExpenses(i, FULL_HISTORY_PAGE_SIZE));
+        }
+        return forkJoin(rest).pipe(
+          map((pages) => (first.content || []).concat(...pages.map((p) => p.content || []))),
+        );
+      }),
+      tap((items) => this.cache.set(FULL_HISTORY_CACHE_KEY, items)),
+    );
+  }
+
+  // Public read-only signals
+  private matching = computed(() => {
+    const view = this._view();
+    if (!view) return [];
+    if (!view.localPaging) return view.items;
     const catId = this.categoryFilter();
-    const date = this.dateFilter();
-
-    let filtered = all;
-
-    if (catId) {
-      filtered = filtered.filter((e: ExpenseResponse) => e.category?.id === catId);
-    }
-
-    if (date) {
-      filtered = filtered.filter((e: ExpenseResponse) => {
-        // e.date likely YYYY-MM-DD
-        const [y, m] = e.date.toString().split('-');
-        return parseInt(y, 10) === date.year && parseInt(m, 10) === date.month;
-      });
-    }
-
-    return filtered;
+    return catId ? view.items.filter((e) => e.category?.id === catId) : view.items;
   });
 
   expenses = computed(() => {
-    const all = this.filteredContent();
+    const view = this._view();
+    const items = this.matching();
+    if (!view?.localPaging) return items;
     const p = this.currentPage();
     const s = this.pageSize();
-    // Slice the filtered items
-    return all.slice(p * s, (p + 1) * s);
+    return items.slice(p * s, (p + 1) * s);
   });
 
-  totalElements = computed(() => this.filteredContent().length);
+  totalElements = computed(() => {
+    const view = this._view();
+    if (!view) return 0;
+    return view.localPaging ? this.matching().length : view.total;
+  });
 
   totalPages = computed(() => {
-    const total = this.totalElements();
     const size = this.pageSize();
-    return size > 0 ? Math.ceil(total / size) : 0;
+    return size > 0 ? Math.ceil(this.totalElements() / size) : 0;
   });
 
   isLoading = this._isLoading.asReadonly();
-  loaded = computed(() => !!this._localData());
+  loaded = computed(() => !!this._view());
+
+  /** Warms the first page at app start; the default view is server-paged so it is one request. */
+  preload() {
+    if (this._view()) return;
+    this.refresh();
+  }
 
   setFilter(categoryId: number | null) {
     this.categoryFilter.set(categoryId);
-    this.currentPage.set(0); // Reset to first page on filter change
-  }
-
-  setDateFilter(month: number | null, year: number | null) {
-    if (month === null || year === null) {
-      this.dateFilter.set(null);
-    } else {
-      this.dateFilter.set({ month, year });
-    }
     this.currentPage.set(0);
   }
 
-  constructor() {
-    // Sync Server Data to Local Data
-    effect(() => {
-      const data = this.serverState();
-      if (data) {
-        this._localData.set(data);
-      }
-    });
+  setDateFilter(month: number | null, year: number | null) {
+    this.dateFilter.set(month === null || year === null ? null : { month, year });
+    this.currentPage.set(0);
   }
 
-  // Actions
   load(page = 0, size = 6, force = false) {
     const isSame = page === this.currentPage() && size === this.pageSize();
     if (isSame && !force) return;
 
-    // Setting signals triggers UI update (pagination), NOT network fetch
+    // In 'page' mode this changes the query and fetches that page; otherwise it only re-slices.
     this.currentPage.set(page);
     this.pageSize.set(size);
 
-    if (force) {
-      this.refresh();
-    }
+    if (force) this.refresh();
   }
 
   refresh() {
     this.refresh$.next();
   }
+
+  /** Applies an optimistic change to the current view; `totalDelta` adjusts the server total. */
+  private patchView(fn: (items: ExpenseResponse[]) => ExpenseResponse[], totalDelta = 0) {
+    const view = this._view();
+    if (!view) return;
+    this._view.set({ ...view, items: fn(view.items), total: Math.max(0, view.total + totalDelta) });
+  }
+
+  private afterMutation() {
+    this.cache.invalidate('expenses');
+    this.budgetState.refresh();
+    // Background refresh replaces optimistic items with server data (current view only).
+    this.refresh();
+  }
+
   add(dto: CreateExpense, optimisticCategory?: Category) {
-    // 1. Optimistic Update (Prepend)
     const tempId = -Date.now(); // Negative ID for temp items
-    const current = this._localData();
-    let tempItem: ExpenseResponse | null = null;
+    const tempItem = {
+      id: tempId,
+      description: dto.description,
+      amount: dto.amount,
+      date: new Date(dto.date).toISOString().split('T')[0],
+      currency: dto.currency,
+      category: optimisticCategory || {
+        id: dto.categoryId,
+        name: 'Loading...',
+        icons: 'hourglass_empty',
+        color: 'gray',
+      },
+      userId: 0,
+    } as ExpenseResponse;
 
-    if (current) {
-      tempItem = {
-        id: tempId,
-        description: dto.description,
-        amount: dto.amount,
-        date: new Date(dto.date).toLocaleDateString(), // Approx format for UI
-        currency: dto.currency,
-        category: optimisticCategory || {
-          id: dto.categoryId,
-          name: 'Loading...',
-          icons: 'hourglass_empty',
-          color: 'gray',
-        }, // Fallback
-        userId: 0, // Dummy
-      } as ExpenseResponse;
-
-      this._localData.set({
-        ...current,
-        content: [tempItem, ...current.content],
-        page: { ...current.page, totalElements: (current.page.totalElements || 0) + 1 },
-      });
-    }
+    this.patchView((items) => [tempItem, ...items], 1);
 
     return this.api.createExpense(dto).pipe(
-      tap(() => {
-        // Success: The temp item is already visible.
-        // Since API only returns a Message, we cannot update the ID immediately.
-        // We rely on the refresh() below to fetch the real data and overwrite our local state.
-
-        this.cache.invalidate('expenses');
-        this.budgetState.refresh();
-        // Background refresh which will replace the temp item with the real server item
-        this.refresh();
-      }),
+      tap(() => this.afterMutation()),
       catchError((err) => {
-        // Revert on error
-        const nowCurrent = this._localData();
-        if (nowCurrent && tempItem) {
-          this._localData.set({
-            ...nowCurrent,
-            content: nowCurrent.content.filter((x) => x.id !== tempId),
-            page: { ...nowCurrent.page, totalElements: (nowCurrent.page.totalElements || 1) - 1 },
-          });
-        }
+        this.patchView((items) => items.filter((x) => x.id !== tempId), -1);
         throw err;
-      })
+      }),
     );
   }
 
   update(id: number, dto: UpdateExpense, optimisticCategory?: Category) {
-    // 1. Optimistic Update
-    const current = this._localData();
-    if (current) {
-      const index = current.content.findIndex((e) => e.id === id);
-      if (index !== -1) {
-        const item = current.content[index];
-        const updatedItem = {
-          ...item,
-          ...dto,
-          // Use provided category or keep existing
-          category:
-            optimisticCategory ||
-            (dto.categoryId === item.category.id ? item.category : item.category), // Best effort
-          date: new Date(dto.date).toISOString().split('T')[0],
-        } as ExpenseResponse;
+    const before = this._view();
+    this.patchView((items) =>
+      items.map((item) =>
+        item.id === id
+          ? ({
+              ...item,
+              ...dto,
+              category: optimisticCategory || item.category,
+              date: new Date(dto.date).toISOString().split('T')[0],
+            } as ExpenseResponse)
+          : item,
+      ),
+    );
 
-        const newContent = [...current.content];
-        newContent[index] = updatedItem;
-
-        this._localData.set({
-          ...current,
-          content: newContent,
-        });
-      }
-    }
-
-    // 2. API Call
     return this.api.updateExpense(id, dto).pipe(
-      tap(() => {
-        this.cache.invalidate('expenses');
-        this.budgetState.refresh();
-        this.refresh();
-      }),
+      tap(() => this.afterMutation()),
       catchError((err) => {
-        if (current) this._localData.set(current);
+        if (before) this._view.set(before);
         throw err;
-      })
+      }),
     );
   }
 
   delete(id: number) {
-    // 1. Optimistic Update
-    const current = this._localData();
-    if (current) {
-      this._localData.set({
-        ...current,
-        content: current.content.filter((e) => e.id !== id),
-        page: { ...current.page, totalElements: (current.page.totalElements || 1) - 1 },
-      });
-    }
+    const before = this._view();
+    this.patchView((items) => items.filter((e) => e.id !== id), -1);
 
-    // 2. API Call
     return this.api.deleteExpense(id).pipe(
-      tap(() => {
-        this.cache.invalidate('expenses');
-        this.budgetState.refresh();
-        // Background refresh to ensure consistency
-        this.refresh();
-      }),
+      tap(() => this.afterMutation()),
       catchError((err) => {
-        // Revert on error
-        if (current) this._localData.set(current);
+        if (before) this._view.set(before);
         throw err;
-      })
+      }),
     );
   }
 }

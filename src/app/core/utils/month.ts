@@ -20,3 +20,13 @@ export function isFutureMonth(year: number, month1to12: number, today: Date = ne
 export function shiftMonth(date: Date, delta: number): Date {
   return new Date(date.getFullYear(), date.getMonth() + delta, 1);
 }
+
+/**
+ * The 12 months ending at the anchor's month (inclusive), oldest first. Months are 1-based.
+ */
+export function lastTwelveMonths(anchor: Date): { year: number; month: number }[] {
+  return Array.from({ length: 12 }, (_, i) => {
+    const d = shiftMonth(anchor, i - 11);
+    return { year: d.getFullYear(), month: d.getMonth() + 1 };
+  });
+}

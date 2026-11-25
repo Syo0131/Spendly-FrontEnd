@@ -30,14 +30,7 @@ function hexToRgba(hex: string | null | undefined, alpha: number): string | null
   template: `
     <span
       class="inline-flex items-center rounded-full font-medium transition-colors select-none"
-      [class.text-xs]="size() === 'sm'"
-      [class.px-2]="size() === 'sm'"
-      [class.py-0.5]="size() === 'sm'"
-      [class.gap-1]="size() === 'sm'"
-      [class.text-sm]="size() === 'md'"
-      [class.px-2.5]="size() === 'md'"
-      [class.py-1]="size() === 'md'"
-      [class.gap-1.5]="size() === 'md'"
+      [ngClass]="sizeClasses()"
       [style.background-color]="bgStyle()"
       [style.border]="borderStyle()"
       [style.color]="'var(--fg-default)'"
@@ -61,6 +54,12 @@ export class CategoryBadgeComponent {
   color = input<string | null>(null);
   icon = input<string | null>(null);
   size = input<CategoryBadgeSize>('md');
+
+  // A single class string: `[class.gap-1.5]` bindings are cut at the dot by Angular
+  // (they bind `gap-1`), so fractional Tailwind classes must not use per-class bindings.
+  sizeClasses = computed(() =>
+    this.size() === 'sm' ? 'text-xs px-2 py-0.5 gap-1' : 'text-sm px-2.5 py-1 gap-1.5'
+  );
 
   bgStyle = computed(() => {
     const c = this.color();

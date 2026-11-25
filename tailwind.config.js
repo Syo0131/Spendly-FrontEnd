@@ -54,6 +54,8 @@ module.exports = {
           'sans-serif',
         ],
         mono: ['"JetBrains Mono Variable"', '"JetBrains Mono"', 'monospace'],
+        // Category icons from the API are emojis; use the platform color-emoji font.
+        emoji: ['"Apple Color Emoji"', '"Segoe UI Emoji"', '"Noto Color Emoji"', 'sans-serif'],
       },
     },
   },

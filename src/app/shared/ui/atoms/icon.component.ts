@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { resolveIcon } from './icon-map';
+import { resolveIconGlyph } from './icon-map';
 
 export type IconSize = 'sm' | 'md' | 'lg';
 
@@ -15,12 +15,12 @@ export type IconSize = 'sm' | 'md' | 'lg';
         role="img"
         [attr.aria-label]="label()"
         [class]="classes()"
-        >{{ resolvedName() }}</span>
+        >{{ glyph().value }}</span>
     } @else {
       <span
         aria-hidden="true"
         [class]="classes()"
-        >{{ resolvedName() }}</span>
+        >{{ glyph().value }}</span>
     }
   `,
   styles: [`
@@ -38,7 +38,8 @@ export class IconComponent {
   label = input<string | undefined>(undefined);
   customClass = input<string>('');
 
-  resolvedName = computed(() => resolveIcon(this.name()));
+  glyph = computed(() => resolveIconGlyph(this.name()));
+  resolvedName = computed(() => this.glyph().value);
 
   classes = computed(() => {
     const sizeClasses = {
@@ -48,6 +49,8 @@ export class IconComponent {
     }[this.size()];
 
     const extra = this.customClass();
-    return `material-icons-outlined select-none flex items-center justify-center leading-none ${sizeClasses} ${extra}`.trim();
+    // Emojis are drawn by the system emoji font; the Material font would not render them.
+    const font = this.glyph().kind === 'emoji' ? 'font-emoji' : 'material-icons-outlined';
+    return `${font} select-none flex items-center justify-center leading-none ${sizeClasses} ${extra}`.trim();
   });
 }

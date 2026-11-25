@@ -78,7 +78,7 @@ import { Category } from '../../../core/models/api.models';
               size="sm"
               (click)="toggleTheme()"
             >
-              <ui-icon [name]="isDark() ? 'light_mode' : 'dark_mode'" size="sm" class="mr-1.5" />
+              <ui-icon [name]="isDark() ? 'light_mode' : 'dark_mode'" size="sm" />
               <span>{{ isDark() ? 'Light Mode' : 'Dark Mode' }}</span>
             </button>
           </div>
@@ -229,6 +229,8 @@ import { Category } from '../../../core/models/api.models';
               <ui-category-badge name="Vivienda" color="#6366f1" icon="home" />
               <ui-category-badge name="Vehículo" color="#f59e0b" icon="directions_car" />
               <ui-category-badge name="Restaurante" color="#ec4899" icon="restaurant" />
+              <ui-category-badge name="Alimentación" color="#22c55e" icon="🍔" />
+              <ui-category-badge name="Mantenimiento" color="#94a3b8" icon="🛠️" size="sm" />
             </div>
 
             <div class="space-y-3">
@@ -341,6 +343,9 @@ export class UiShowcaseComponent {
     { id: 2, name: 'Vivienda', color: '#6366f1', icons: 'home' },
     { id: 3, name: 'Transporte', color: '#f59e0b', icons: 'directions_car' },
     { id: 4, name: 'Restaurantes', color: '#ec4899', icons: 'restaurant' },
+    // The API stores category icons as emojis.
+    { id: 5, name: 'Alimentación', color: '#22c55e', icons: '🍔' },
+    { id: 6, name: 'Mantenimiento', color: '#94a3b8', icons: '🛠️' },
   ];
 
   toggleTheme(): void {

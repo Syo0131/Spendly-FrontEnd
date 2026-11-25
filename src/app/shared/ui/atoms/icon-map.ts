@@ -18,3 +18,24 @@ export function resolveIcon(name: string | null | undefined): string {
   const normalized = name.trim().toLowerCase();
   return LIGATURE_NAME.test(normalized) ? normalized : FALLBACK_ICON;
 }
+
+export type IconGlyph = { kind: 'ligature' | 'emoji'; value: string };
+
+/**
+ * One emoji sequence: pictographs plus the joiners/modifiers that compose them
+ * (ZWJ families, skin tones, variation selector, regional-indicator flags).
+ * Category icons stored by the API are emojis (e.g. 🍔, 🚗, 🛠️).
+ */
+const EMOJI = /^(?:\p{Extended_Pictographic}|\p{Emoji_Modifier}|\p{Regional_Indicator}|‍|️)+$/u;
+
+/**
+ * Resolves an icon value to what `ui-icon` should draw: an emoji as text, or a Material ligature
+ * (with FALLBACK_ICON for empty or malformed values).
+ */
+export function resolveIconGlyph(name: string | null | undefined): IconGlyph {
+  const trimmed = typeof name === 'string' ? name.trim() : '';
+  if (trimmed.length > 0 && trimmed.length <= 32 && EMOJI.test(trimmed)) {
+    return { kind: 'emoji', value: trimmed };
+  }
+  return { kind: 'ligature', value: resolveIcon(name) };
+}

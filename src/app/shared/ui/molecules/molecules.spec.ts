@@ -34,6 +34,26 @@ describe('Shared UI Molecules', () => {
       // background should be rgba(16, 185, 129, 0.15)
       expect(span.nativeElement.style.backgroundColor).toContain('rgba(16, 185, 129, 0.15)');
     });
+
+    function badgeClasses(size: 'sm' | 'md'): string[] {
+      const fixture = TestBed.createComponent(TestHost);
+      fixture.componentInstance.size = size;
+      fixture.detectChanges();
+      return [...fixture.debugElement.query(By.css('span.inline-flex')).nativeElement.classList];
+    }
+
+    it('applies the fractional spacing classes of the sm size', () => {
+      const classes = badgeClasses('sm');
+      expect(classes).toEqual(expect.arrayContaining(['text-xs', 'px-2', 'py-0.5', 'gap-1']));
+      expect(classes).not.toContain('gap-1.5');
+    });
+
+    it('applies the fractional spacing classes of the md size', () => {
+      const classes = badgeClasses('md');
+      expect(classes).toEqual(expect.arrayContaining(['text-sm', 'px-2.5', 'py-1', 'gap-1.5']));
+      expect(classes).not.toContain('gap-1');
+      expect(classes).not.toContain('px-2');
+    });
   });
 
   describe('ListRowComponent', () => {

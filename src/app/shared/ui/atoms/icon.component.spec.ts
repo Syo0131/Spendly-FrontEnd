@@ -50,4 +50,14 @@ describe('IconComponent', () => {
     const span = fixture.nativeElement.querySelector('span');
     expect(span.textContent.trim()).toBe('category');
   });
+
+  it('renders an emoji as plain text without the Material icon font', () => {
+    fixture.componentRef.setInput('name', '🍔');
+    fixture.detectChanges();
+
+    const span = fixture.nativeElement.querySelector('span');
+    expect(span.textContent.trim()).toBe('🍔');
+    expect(span.classList.contains('material-icons-outlined')).toBe(false);
+    expect(span.getAttribute('aria-hidden')).toBe('true');
+  });
 });

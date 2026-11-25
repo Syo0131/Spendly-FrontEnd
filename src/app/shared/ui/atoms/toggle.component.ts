@@ -35,8 +35,7 @@ import { CommonModule } from '@angular/common';
       >
         <span
           class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-out shadow-sm"
-          [class.translate-x-5]="checked()"
-          [class.translate-x-0.5]="!checked()"
+          [ngClass]="checked() ? 'translate-x-5' : 'translate-x-0.5'"
         ></span>
       </button>
       @if (label()) {

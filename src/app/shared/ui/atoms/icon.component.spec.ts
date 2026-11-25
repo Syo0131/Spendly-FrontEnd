@@ -36,8 +36,15 @@ describe('IconComponent', () => {
     expect(span.getAttribute('aria-label')).toBe('Restaurant icon');
   });
 
-  it('falls back to category when unknown name is given', () => {
-    fixture.componentRef.setInput('name', 'unknown_xyz');
+  it('renders a well-formed name not used elsewhere in the app', () => {
+    fixture.componentRef.setInput('name', 'visibility_off');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('span').textContent.trim()).toBe('visibility_off');
+  });
+
+  it('falls back to category when a malformed name is given', () => {
+    fixture.componentRef.setInput('name', 'Comida rápida');
     fixture.detectChanges();
 
     const span = fixture.nativeElement.querySelector('span');

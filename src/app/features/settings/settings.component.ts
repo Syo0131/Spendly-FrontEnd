@@ -122,7 +122,7 @@ import {
                 [disabled]="profileForm.invalid || isLoading()"
               >
                 @if (isLoading()) {
-                  <ui-icon name="sync" size="sm" class="mr-1.5 animate-spin" />
+                  <ui-icon name="sync" size="sm" class="animate-spin" />
                 }
                 {{ ts.t()('settings.profile.save') }}
               </button>
@@ -202,7 +202,7 @@ import {
                 [disabled]="securityForm.invalid || isLoading()"
               >
                 @if (isLoading()) {
-                  <ui-icon name="sync" size="sm" class="mr-1.5 animate-spin" />
+                  <ui-icon name="sync" size="sm" class="animate-spin" />
                 }
                 {{ ts.t()('settings.security.btn_update') }}
               </button>

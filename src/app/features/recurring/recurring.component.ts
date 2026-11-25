@@ -67,12 +67,12 @@ import {
           <button
             uiButton
             variant="primary"
-            size="sm"
+            size="md"
             type="button"
             (click)="openModal()"
             class="h-9 whitespace-nowrap"
           >
-            <ui-icon name="add" size="sm" class="mr-1" />
+            <ui-icon name="add" size="sm" />
             <span>{{ ts.t()('recurring.new') }}</span>
           </button>
         </div>
@@ -116,7 +116,7 @@ import {
             type="button"
             (click)="openModal()"
           >
-            <ui-icon name="add" size="sm" class="mr-1" />
+            <ui-icon name="add" size="sm" />
             <span>{{ ts.t()('recurring.create_now') }}</span>
           </button>
         </ui-empty-state>

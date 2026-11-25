@@ -59,7 +59,7 @@ import {
           variant="primary"
           (click)="openModal()"
         >
-          <ui-icon name="add" size="sm" class="mr-1.5" />
+          <ui-icon name="add" size="sm" />
           {{ ts.t()('forms.add') }}
         </button>
       </ui-page-header>
@@ -98,7 +98,7 @@ import {
           variant="primary"
           (click)="openModal()"
         >
-          <ui-icon name="add" size="sm" class="mr-1.5" />
+          <ui-icon name="add" size="sm" />
           {{ ts.t()('forms.add') }}
         </button>
       </ui-empty-state>
@@ -265,7 +265,7 @@ import {
                 type="submit"
                 [disabled]="form.invalid || state.isLoading()"
               >
-                <ui-icon name="check" size="sm" class="mr-1.5" />
+                <ui-icon name="check" size="sm" />
                 {{ isEditing() ? ts.t()('action.save') : ts.t()('forms.add') }}
               </button>
             </div>

@@ -22,7 +22,7 @@ import { IconComponent } from '../atoms/icon.component';
         (click)="goTo(page() - 1)"
         aria-label="Previous page"
       >
-        <ui-icon name="chevron_left" size="sm" class="mr-1" />
+        <ui-icon name="chevron_left" size="sm" />
         <span>{{ prevLabel() }}</span>
       </button>
 
@@ -40,7 +40,7 @@ import { IconComponent } from '../atoms/icon.component';
         aria-label="Next page"
       >
         <span>{{ nextLabel() }}</span>
-        <ui-icon name="chevron_right" size="sm" class="ml-1" />
+        <ui-icon name="chevron_right" size="sm" />
       </button>
     </nav>
   `,

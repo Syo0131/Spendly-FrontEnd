@@ -59,12 +59,12 @@ import {
           <button
             uiButton
             variant="primary"
-            size="sm"
+            size="md"
             type="button"
             (click)="openModal()"
             class="h-9 whitespace-nowrap"
           >
-            <ui-icon name="add" size="sm" class="mr-1" />
+            <ui-icon name="add" size="sm" />
             <span>{{ ts.t()('goals.add') }}</span>
           </button>
         </div>
@@ -111,7 +111,7 @@ import {
             type="button"
             (click)="openModal()"
           >
-            <ui-icon name="add" size="sm" class="mr-1" />
+            <ui-icon name="add" size="sm" />
             <span>{{ ts.t()('goals.add') }}</span>
           </button>
         </ui-empty-state>
@@ -218,7 +218,7 @@ import {
                   class="w-full justify-center font-semibold"
                   (click)="addFunds(goal)"
                 >
-                  <ui-icon name="add" size="sm" class="mr-1" />
+                  <ui-icon name="add" size="sm" />
                   <span>{{ ts.t()('goals.add_funds') }}</span>
                 </button>
               </div>

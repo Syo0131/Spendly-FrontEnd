@@ -13,7 +13,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (loading()) {
-      <ui-spinner [size]="spinnerSize()" class="mr-2" />
+      <ui-spinner [size]="spinnerSize()" />
     }
     <ng-content />
   `,

@@ -65,12 +65,12 @@ import {
           <button
             uiButton
             variant="primary"
-            size="sm"
+            size="md"
             type="button"
             (click)="openModal()"
             class="h-9 whitespace-nowrap"
           >
-            <ui-icon name="add" size="sm" class="mr-1" />
+            <ui-icon name="add" size="sm" />
             <span>{{ ts.t()('trans.add_income') }}</span>
           </button>
         </div>
@@ -127,7 +127,7 @@ import {
             type="button"
             (click)="openModal()"
           >
-            <ui-icon name="add" size="sm" class="mr-1" />
+            <ui-icon name="add" size="sm" />
             <span>{{ ts.t()('trans.add_income') }}</span>
           </button>
         </ui-empty-state>
@@ -308,7 +308,7 @@ import {
                 class="w-full justify-start text-left"
                 (click)="onEditFromMenu()"
               >
-                <ui-icon name="edit" size="sm" class="mr-2 text-accent" />
+                <ui-icon name="edit" size="sm" class="text-accent" />
                 <span>{{ ts.t()('trans.edit') }}</span>
               </button>
 
@@ -319,7 +319,7 @@ import {
                 class="w-full justify-start text-left"
                 (click)="onDeleteFromMenu()"
               >
-                <ui-icon name="delete" size="sm" class="mr-2" />
+                <ui-icon name="delete" size="sm" />
                 <span>{{ ts.t()('trans.delete') }}</span>
               </button>
             </div>

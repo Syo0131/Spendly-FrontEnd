@@ -115,7 +115,7 @@ import { ButtonComponent, IconComponent, FormFieldComponent } from '../../../sha
             class="w-full justify-center"
           >
             @if (isLoading()) {
-              <ui-icon name="sync" size="sm" class="mr-2 animate-spin" />
+              <ui-icon name="sync" size="sm" class="animate-spin" />
             }
             {{ isLoading() ? ts.t()('auth.creating') : ts.t()('auth.signup') }}
           </button>
